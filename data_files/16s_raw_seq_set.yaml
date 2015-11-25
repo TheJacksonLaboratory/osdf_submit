@@ -1,10 +1,10 @@
 --- #16S_raw_seq_set
 checksums: { md5: 72bdc024d83226ccc90fbd2177e78d56 }
-comment: This is kinda cool.
+comment: This is lotsa data.
 exp_length: 2000
-format: fasta
+format: fastq
 format_doc: url
-seq_model: a machine
+seq_model: MiSeq
 sequence_type: nucleotide
 size: 3000
 study: prediabetes
