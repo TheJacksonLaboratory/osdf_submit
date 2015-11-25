@@ -1,0 +1,18 @@
+--- #16S_raw_seq_set
+checksums: { md5: 72bdc024d83226ccc90fbd2177e78d56 }
+comment: This is kinda cool.
+exp_length: 2000
+format: fasta
+format_doc: url
+seq_model: a machine
+sequence_type: nucleotide
+size: 3000
+study: prediabetes
+tags: [
+  16S_raw_seq_set,
+  Stanford/JAX-GM,
+  prediabetic,
+  ihmp,
+]
+links: { prepared_from: 610a4911a5ca67de12cdc1e4b4014133 }
+

@@ -1,0 +1,36 @@
+--- #Visit
+visit_id: STFD123
+visit_number: 2
+date: 2015-01-01
+interval: 1
+clinic_id: Test clinic ID
+attributes: {}
+tags: [ visit, ihmp, Stanford/JAX-GM, prediabetic, ]
+links: { by: [ 610a4911a5ca67de12cdc1e4b400e7e9 ] }
+--- #Visit
+visit_id: STFD124
+visit_number: 2
+date: 2000-01-01
+interval: 14
+clinic_id: Test clinic ID
+attributes: {}
+tags: [ visit, ihmp, Stanford/JAX-GM, prediabetic, ]
+links: { by: [ 610a4911a5ca67de12cdc1e4b400e7e9 ] }
+--- #Visit
+visit_id: STFD125
+visit_number: 2
+date: 2000-01-01
+interval: 25
+clinic_id: Test clinic ID
+attributes: {}
+tags: [ visit, ihmp, Stanford/JAX-GM, prediabetic, ]
+links: { by: [ 610a4911a5ca67de12cdc1e4b400e7e9 ] }
+--- #Visit
+visit_id: STFD126
+visit_number: 2
+date: 2000-01-01
+interval: 40
+clinic_id: Test clinic ID
+attributes: {}
+tags: [ visit, ihmp, Stanford/JAX-GM, prediabetic, ]
+links: { by: [ 610a4911a5ca67de12cdc1e4b400e7e9 ] }

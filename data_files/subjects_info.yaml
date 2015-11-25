@@ -1,0 +1,29 @@
+--- #Subject
+subject_id: 69-10-10
+gender: male
+race: caucasian
+attributes: {}
+tags: [ subject, ihmp, Stanford/JAX-GM, prediabetic, ]
+links: { participates_in : [ 610a4911a5ca67de12cdc1e4b4006f5d ] }
+--- #Subject
+subject_id: 70-10-10
+gender: female
+race: asian
+attributes: {}
+tags: [ subject, ihmp, Stanford/JAX-GM, prediabetic, ]
+links: { participates_in : [ 610a4911a5ca67de12cdc1e4b4006f5d ] }
+--- #Subject
+subject_id: 71-10-10
+gender: male
+race: hispanic_or_latino
+attributes: {}
+tags: [ subject, ihmp, Stanford/JAX-GM, prediabetic, ]
+links: { participates_in : [ 610a4911a5ca67de12cdc1e4b4006f5d ] }
+--- #Subject
+subject_id: 72-10-10
+gender: female
+race: caucasian
+attributes: {}
+tags: [ subject, ihmp, Stanford/JAX-GM, prediabetic, ]
+links: { participates_in : [ 610a4911a5ca67de12cdc1e4b4006f5d ] }
+

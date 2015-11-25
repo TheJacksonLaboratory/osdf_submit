@@ -1,0 +1,55 @@
+--- #wgs_dna_prep
+comment: This is kinda cool.
+frag_size: 200
+lib_layout: test lib layout
+lib_selection: test lib selection
+storage_duration: 3
+sequencing_center: JAX-GM
+sequencing_contact: Shana Leopold
+prep_id: test prep id
+ncbi_taxon_id: NCBI123ABC
+tags: [
+  wgs_dna_prep,
+  Stanford/JAX-GM,
+  prediabetic,
+  ihmp,
+]
+links: { prepared_from: 610a4911a5ca67de12cdc1e4b4011876 }
+mims: {
+  adapters: test,
+  annot_source: test,
+  assembly: test,
+  assembly_name: test,
+  biome: test,
+  collection_date: test,
+  env_package: test,
+  extrachrom_elements: test,
+  encoded_traits: test,
+  experimental_factor: test,
+  feature: test,
+  findex: test,
+  finishing_strategy: test,
+  geo_loc_name: test,
+  investigation_type: test,
+  lat_lon: test,
+  lib_const_meth: test,
+  lib_reads_seqd: test,
+  lib_screen: test,
+  lib_size: 2000,
+  lib_vector: test,
+  material: test,
+  nucl_acid_amp: test,
+  nucl_acid_ext: test,
+  project_name: test,
+  rel_to_oxygen: test,
+  rindex: test,
+  samp_collect_device: test,
+  samp_mat_process: test,
+  samp_size: test,
+  seq_meth: test,
+  sop: [a, b, c],
+  source_mat_id: [a, b, c],
+  submitted_to_insdc: True,
+  url: [a, b, c]
+}
+

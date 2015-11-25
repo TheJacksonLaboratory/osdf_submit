@@ -1,0 +1,27 @@
+--- #Sample
+visit_id: STFD126
+visit_number: 2
+date: 2000-01-01
+interval: 40
+clinic_id: Test clinic ID
+fma_body_site: human-gut
+attributes: {}
+tags: [ sample, ihmp, Stanford/JAX-GM, prediabetic, ]
+links: { collected_during: [ 610a4911a5ca67de12cdc1e4b400f121 ] } 
+mixs: {
+    biome: 16S,
+    body_product: stool,
+    collection_date: test,
+    env_package: human-gut,
+    feature: test,
+    geo_loc_name: test,
+    lat_lon: test,
+    material: test,
+    project_name: test,
+    rel_to_oxygen: testest,
+    samp_collect_device: test,
+    samp_mat_process: test,
+    samp_size: test,
+    source_mat_id: [ a, b, c ]
+  }
+

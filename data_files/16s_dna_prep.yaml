@@ -1,0 +1,53 @@
+--- #16S_dna_prep
+comment: This is kinda cool.
+frag_size: 200
+lib_layout: test lib layout
+lib_selection: test lib selection
+storage_duration: 3
+sequencing_center: JAX-GM
+sequencing_contact: Shana Leopold
+prep_id: test prep id
+ncbi_taxon_id: NCBI123ABC
+tags: [
+  16S_dna_prep,
+  Stanford/JAX-GM,
+  prediabetic,
+  ihmp,
+]
+links: { prepared_from:
+  610a4911a5ca67de12cdc1e4b4011876 }
+mimarks: {
+  adapters: blah,
+  biome: blah,
+  collection_date: blah,
+  experimental_factor: blah,
+  feature: blah,
+  findex: blah,
+  geo_loc_name: blah,
+  investigation_type: blah,
+  isol_growth_condt: blah,
+  lat_lon: blah,
+  lib_const_meth: blah,
+  lib_reads_seqd: blah,
+  lib_size: 500,
+  lib_vector: blah,
+  material: blah,
+  nucl_acid_amp: blah,
+  nucl_acid_ext: blah,
+  pcr_primers: blah,
+  pcr_cond: blah,
+  project_name: blah,
+  rel_to_oxygen: blah,
+  rindex: blah,
+  samp_collect_device: blah,
+  samp_mat_process: blah,
+  samp_size: blah,
+  seq_meth: blah,
+  sop: [a, b, c],
+  source_mat_id: [a, b, c],
+  submitted_to_insdc: True,
+  target_gene: blah,
+  target_subfragment: blah,
+  url: [a, b, c]
+}
+
