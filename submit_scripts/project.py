@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import json
 import logging
 
 from cutlass_utils import save_if_valid, \
@@ -9,7 +8,7 @@ from cutlass_utils import save_if_valid, \
 from cutlass import iHMPSession
 from cutlass import Project as OSDFNode
 
-# Project info yaml file name
+# Project info file name
 info_file = '../data_files/project_info.yaml'
 
 # load username, password from files

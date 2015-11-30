@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 
-import json
 import logging
 
-from cutlass import iHMPSession
-from cutlass import WgsDnaPrep as OSDFNode
 from cutlass_utils import save_if_valid, \
     load_string_from_file, \
     load_config_from_file
+from cutlass import iHMPSession
+from cutlass import WgsDnaPrep as OSDFNode
 
-# 16S dna prep info yaml file name
+# 16S dna prep info file name
 info_file = '../data_files/wgs_dna_prep.yaml'
 
 # load username, password from files

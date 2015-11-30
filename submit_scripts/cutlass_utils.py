@@ -9,7 +9,8 @@ def save_if_valid(data_dict, nodetype):
         if success:
             data_id = data_dict.id
             print("Succesfully saved {}. ID: {}".format(nodename,data_id))
-            print(data_dict.to_json(indent=4))
+            # TODO: print json data_dict to exernal log file
+            # print(data_dict.to_json(indent=4))
         else:
             print("Save failed")
     else:

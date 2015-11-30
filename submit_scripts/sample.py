@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 
-import json
 import logging
-from pprint import pprint
-import yaml
 
+from cutlass_utils import save_if_valid, \
+    load_string_from_file, \
+    load_config_from_file
 from cutlass import iHMPSession
 from cutlass import Sample as OSDFNode
-from cutlass_utils import save_if_valid, load_string_from_file
 
-# Subject info yaml file name
-yaml_info_file = '../data_files/samples_info.yaml'
+# Subject info file name
+info_file = '../data_files/samples_info.yaml'
 
 # load username, password from files
 username = load_string_from_file('../auth/username.txt')
@@ -20,8 +19,9 @@ session = iHMPSession(username, password)
 
 print("Required fields: {}".format(OSDFNode.required_fields()))
 
-# load  subject info sets from yaml_info_file
-for node_info in yaml.load_all(open(yaml_info_file)):
+# load info sets from info_file
+config = load_config_from_file(info_file)
+for node_info in config:
     node = OSDFNode()
 
     node.visit_id = node_info['visit_id']

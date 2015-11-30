@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import json
 import logging
 
 from cutlass_utils import save_if_valid, \
@@ -9,7 +8,7 @@ from cutlass_utils import save_if_valid, \
 from cutlass import iHMPSession
 from cutlass import SixteenSDnaPrep as OSDFNode
 
-# 16S dna prep info yaml file name
+# 16S dna prep info file name
 info_file = '../data_files/16S_dna_prep.yaml'
 
 # load username, password from files

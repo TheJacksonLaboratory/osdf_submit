@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import json
-import logging
 import tempfile
 
 from cutlass_utils import save_if_valid, \
@@ -10,8 +8,8 @@ from cutlass_utils import save_if_valid, \
 from cutlass import iHMPSession
 from cutlass import SixteenSRawSeqSet as OSDFNode
 
-# 16S dna prep info yaml file name
-info_file = '../data_files/16S_seq_set.yaml'
+# 16S dna prep info file name
+info_file = '../data_files/16S_raw_seq_set.yaml'
 
 # load username, password from files
 username = load_string_from_file('../auth/username.txt')
@@ -40,10 +38,10 @@ for node_info in config:
     node.links = node_info['links']
 
 
-    print("Creating a temp file for example/testing purposes.")
-    temp_file = tempfile.NamedTemporaryFile(delete=False).name
-    print("Local file: %s" % temp_file)
-    node.local_file = temp_file
+    # print("Creating a temp file for example/testing purposes.")
+    # temp_file = tempfile.NamedTemporaryFile(delete=False).name
+    # print("Local file: %s" % temp_file)
+    # node.local_file = temp_file
 
     # print(node.to_json(indent=2))
     save_if_valid(node, OSDFNode)
