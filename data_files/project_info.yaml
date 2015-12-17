@@ -1,14 +1,14 @@
 --- #Project
-name: prediabetic overeaters
+name: Prediabetes overeaters
 description: many visits from most of the subjects
 center: Stanford University / Jackson Laboratory
 contact: Wenyu Zhou
-srp_id: None yet
+srp_id: None_yet
 mixs: {
-  project_name: blah,
-  biome: blah,
+  project_name: Prediabetes,
+  biome: several,
   body_product: saliva,
-  collection_date: blah,
+  collection_date: several,
   env_package: several,
   feature: blah,
   lat_lon: Frisco,
@@ -18,12 +18,12 @@ mixs: {
   samp_collect_device: swab,
   samp_mat_process: blah,
   samp_size: blah,
-  source_mat_id: [ a, b, c ],
+  source_mat_id: [ ST, OP ],
   }
 tags: [
   project,
   ihmp,
   Stanford/JAX-GM,
-  prediabetic,
+  Prediabetes,
 ]
 

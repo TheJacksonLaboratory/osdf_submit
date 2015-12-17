@@ -6,22 +6,28 @@ interval: 40
 clinic_id: Test clinic ID
 fma_body_site: human-gut
 attributes: {}
-tags: [ sample, ihmp, Stanford/JAX-GM, prediabetic, ]
-links: { collected_during: [ 610a4911a5ca67de12cdc1e4b400f121 ] } 
+links: { collected_during: [ 700f3b77246a81f33c15af8787357ba6 ] } 
 mixs: {
-    biome: 16S,
-    body_product: stool,
-    collection_date: test,
-    env_package: human-gut,
-    feature: test,
-    geo_loc_name: test,
-    lat_lon: test,
-    material: test,
-    project_name: test,
-    rel_to_oxygen: testest,
-    samp_collect_device: test,
-    samp_mat_process: test,
-    samp_size: test,
-    source_mat_id: [ a, b, c ]
-  }
+  project_name: HMP2,
+  biome: terrestrial biome [ENVO:00000446],
+  env_package: human-associated,
+  feature: human-associated habitat [ENVO:00009003],
+  lat_lon: N 37° 26' 30.78" W 122° 8' 34.87",
+  geo_loc_name: Palo Alto, CA, USA,
+  material: biological product [ENVO:02000043],
+  body_product: stool,
+  collection_date: ?,
+  rel_to_oxygen: ?,
+  samp_collect_device: sample collection swab?,
+  samp_mat_process: Nucleic Acid Extraction [OBI:0666667],
+  samp_size: ?,
+  source_mat_id: ,
+}
+tags: [
+  hmp2,
+  sample,
+  Stanford/JAX-GM,
+  Prediabetes,
+  overeaters,
+]
 

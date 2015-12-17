@@ -1,21 +1,20 @@
 --- #16S_dna_prep
-comment: This is kinda cool.
+comment: STFD126, 
 frag_size: 200
 lib_layout: test lib layout
-lib_selection: test lib selection
+lib_selection: 16S stool sample
 storage_duration: 3
-sequencing_center: JAX-GM
+sequencing_center: Jackson Laboratory
 sequencing_contact: Shana Leopold
-prep_id: test prep id
-ncbi_taxon_id: NCBI123ABC
+prep_id: J12345
+ncbi_taxon_id: 'get the one from HMP1 for microbiome'
 tags: [
   16S_dna_prep,
   Stanford/JAX-GM,
   prediabetic,
   ihmp,
 ]
-links: { prepared_from:
-  610a4911a5ca67de12cdc1e4b4011876 }
+links: { prepared_from: [ 700f3b77246a81f33c15af878736fb4e ] }
 mimarks: {
   adapters: blah,
   biome: blah,

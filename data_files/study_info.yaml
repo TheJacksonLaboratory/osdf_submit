@@ -1,29 +1,31 @@
 --- #Study
-name: overeaters
-description: many visits from most of the subjects
-center: Stanford University / Jackson Laboratory
+name: Prediabetes
+description: <Wenyu? Denis?>
+center: Stanford University & Jackson Laboratory
 contact: Wenyu Zhou
-srp_id: None yet
+srp_id: None
+subtype: overeaters
 mixs: {
-  project_name: blah,
-  biome: blah,
-  body_product: saliva,
-  collection_date: blah,
-  env_package: human-gut,
-  feature: blah,
-  lat_lon: Frisco,
-  geo_loc_name: blah,
-  material: blah,
-  rel_to_oxygen: blah,
-  samp_collect_device: swab,
-  samp_mat_process: blah,
-  samp_size: blah,
-  source_mat_id: [ a, b, c ],
+  project_name: HMP2
+  biome: terrestrial biome [ENVO:00000446],
+  env_package: human-associated,
+  feature: human-associated habitat [ENVO:00009003],
+  lat_lon: N 37° 26' 30.78" W 122° 8' 34.87",
+  geo_loc_name: Palo Alto, CA, USA,
+  material: biological product [ENVO:02000043],
+  body_product: '',
+  collection_date: '',
+  rel_to_oxygen: '',
+  samp_collect_device: '',
+  samp_mat_process: '',
+  samp_size: '',
+  source_mat_id: '',
   }
 tags: [
+  hmp2,
   study,
   Stanford/JAX-GM,
-  prediabetic,
-  ihmp,
+  Prediabetes,
+  overeaters,
 ]
-links: { part_of: [ 610a4911a5ca67de12cdc1e4b40018e1 ] } #TODO: get this from node_ids.txt
+links: { part_of: [ 700f3b77246a81f33c15af87873433ae ] } #TODO: get this from node_ids.txt
