@@ -33,6 +33,7 @@ for node_info in config:
     node.sequence_type = node_info['sequence_type']
     node.size = node_info['size']
     node.study = node_info['study']
+    node.subtype = node_info['subtype']
     node.local_file = node_info['local_file']
     node.tags = node_info['tags']
     node.links = node_info['links']

@@ -1,11 +1,14 @@
-from pprint import pprint
-def save_if_valid(data_dict, nodetype):
-    """Usage: save_if_valid( metadata_dict, NodeType(e.g.Project))"""
-    nodename = nodetype.__name__
-    if data_dict.is_valid():
-        print("Valid!")
-        success = data_dict.save()
+import logging
+logging.basicConfig()
 
+from pprint import pprint
+def save_if_valid(data_dict):
+    """Usage: save_if_valid( metadata_dict, NodeType(e.g.Project))"""
+    nodename = data_dict.__name__
+    valid = data_dict.is_valid()
+    errors = data_dict.validate()
+    if valid and (len(errors)==0):
+        success = data_dict.save()
         if success:
             data_id = data_dict.id
             print("Succesfully saved {}. ID: {}".format(nodename,data_id))
