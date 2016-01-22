@@ -39,11 +39,7 @@ session = iHMPSession(username, password)
 
 
 
-
-
-
-
-# load project info from info_file
+""" load Project info from node info file """
 config = load_config_from_file(NodeInfo['Project'])
 for node_info in config:
     node = session.create_project()
@@ -58,6 +54,7 @@ for node_info in config:
     save_if_valid(node, Project)
     project_id = node.id
 
+""" load Study info from node info file """
 config = load_config_from_file(NodeInfo['Study'])
 for node_info in config:
     node = session.create_study()
@@ -69,9 +66,10 @@ for node_info in config:
     node.srp_id = node_info['srp_id']
     node.subtype = node_info['subtype']
     node.tags = node_info['tags']
-    # node.links = node_info['links']
-    save_if_valid(node)
+    node.links = { part_of : [ project_id ] }
+    study_id = save_if_valid(node)
 
+""" load Subject info from node info file """
 config = load_config_from_file(NodeInfo['Subject'])
 for node_info in config:
     node = session.create_subject()
@@ -81,9 +79,10 @@ for node_info in config:
     node.race = node_info['race']
     node.tags = node_info['tags']
     node._attribs = node_info['attributes']
-    # node.links = node_info['links']
-    save_if_valid(node)
+    node.links = { participates_in : [ study_id ] }
+    subject_id = save_if_valid(node)
 
+    """ load Visit info from node info file """
     config = load_config_from_file(NodeInfo['Visit'])
     for node_info in config:
         node = session.create_visit()
@@ -95,9 +94,10 @@ for node_info in config:
         node.clinic_id = node_info['clinic_id']
         node.tags = node_info['tags']
         node._attribs = node_info['attributes']
-        # node.links = node_info['links']
-        save_if_valid(node)
+        node.links = { by : [ subject_id ] }
+        visit_id = save_if_valid(node)
 
+        """ load Sample info from node info file """
         config = load_config_from_file(NodeInfo['Sample'])
         for node_info in config:
             node = session.create_sample()
@@ -107,15 +107,16 @@ for node_info in config:
             node.date = str(node_info['date']) # cutlass expects 'str' format, not 'datetime'
             node.interval = node_info['interval']
             node.clinic_id = node_info['clinic_id']
-            node.fma_body_site = node_info['fma_body_site'] 
+            node.fma_body_site = node_info['fma_body_site']
             node.tags = node_info['tags']
             node.mixs = node_info['mixs']
             node._attribs = node_info['attributes']
-            # node.links = node_info['links']
-            save_if_valid(node)
+            node.links = { ollected_during : [ visit_id ] }
+            sample_id = save_if_valid(node)
 
 
 
+""" load 16S DNA Prep info from node info file """
 config = load_config_from_file(NodeInfo['SixteenSDnaPrep'])
 for node_info in config:
     node = session.create_16s_dna_prep()
@@ -131,9 +132,10 @@ for node_info in config:
     node.prep_id = node_info['prep_id']
     node.ncbi_taxon_id = node_info['ncbi_taxon_id']
     node.tags = node_info['tags']
-    # node.links = node_info['links']
-    save_if_valid(node)
+    node.links = node_info['links']
+    sixteensdnaprep_id = save_if_valid(node)
 
+""" load 16S Raw Sequence Set info from node info file """
 config = load_config_from_file(NodeInfo['SixteenSRawSeqSet'])
 for node_info in config:
     node = session.create_16s_raw_seq_set()
@@ -150,8 +152,8 @@ for node_info in config:
     node.subtype = node_info['subtype']
     node.local_file = node_info['local_file']
     node.tags = node_info['tags']
-    # node.links = node_info['links']
-    save_if_valid(node)
+    node.links = node_info['links']
+    sixteensrawseqset_id = save_if_valid(node)
 
 # config = load_config_from_file(NodeInfo['SixteenSTrimmedSeqSet'])
 # for node_info in config:
@@ -159,6 +161,7 @@ for node_info in config:
     # print("Required fields: {}".format(SixteenSTrimmedSeqSet.required_fields()))
     # save_if_valid(node)
 
+""" load WGS DNA Prep info from node info file """
 config = load_config_from_file(NodeInfo['WgsDnaPrep'])
 for node_info in config:
     node = session.create_wgs_dna_prep()
@@ -174,12 +177,13 @@ for node_info in config:
     node.prep_id = node_info['prep_id']
     node.ncbi_taxon_id = node_info['ncbi_taxon_id']
     node.tags = node_info['tags']
-    # node.links = node_info['links']
-    save_if_valid(node)
+    node.links = node_info['links']
+    wgsdnaprep_id = save_if_valid(node)
 
+# """ load WGS Raw Sequence Set info from node info file """
 # config = load_config_from_file(NodeInfo['WgsRawSeqSet'])
 # for node_info in config:
     # node = session.create_wgs_raw_seq_set()
     # print("Required fields: {}".format(WgsRawSeqSet.required_fields()))
-    # save_if_valid(node)
+    # wgsrawseqset_id = save_if_valid(node)
 

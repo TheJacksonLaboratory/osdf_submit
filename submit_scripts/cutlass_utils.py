@@ -14,12 +14,15 @@ def save_if_valid(data_dict):
             print("Succesfully saved {}. ID: {}".format(nodename,data_id))
             # TODO: print json data_dict to exernal log file
             # print(data_dict.to_json(indent=4))
+            return data_id
         else:
             print("Save failed")
+            return None
     else:
         print("Invalid...")
         validation_errors = data_dict.validate()
         pprint(validation_errors)
+        return None
 
 
 def delete_node(data_dict, nodetype):
@@ -34,13 +37,16 @@ def delete_node(data_dict, nodetype):
             data_id = data_dict.id
             print("Deleted {} with ID {}".format(nodename,data_id))
             print(data_dict.to_json(indent=4))
+            return data_id
         else:
             print("Deletion of {} with ID {} failed.".format(
                     nodetype,data_id))
+            return None
     else:
         print("Invalid...")
         validation_errors = data_dict.validate()
         pprint(validation_errors)
+        return None
 
 
 import os
