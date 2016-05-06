@@ -1,31 +1,13 @@
 --- #Study
-name: Prediabetes
-description: <Wenyu? Denis?>
-center: Stanford University & Jackson Laboratory
-contact: Wenyu Zhou
-srp_id: None
-subtype: overeaters
-mixs: {
-  project_name: HMP2
-  biome: terrestrial biome [ENVO:00000446],
-  env_package: human-associated,
-  feature: human-associated habitat [ENVO:00009003],
-  lat_lon: N 37° 26' 30.78" W 122° 8' 34.87",
-  geo_loc_name: Palo Alto, CA, USA,
-  material: biological product [ENVO:02000043],
-  body_product: '',
-  collection_date: '',
-  rel_to_oxygen: '',
-  samp_collect_device: '',
-  samp_mat_process: '',
-  samp_size: '',
-  source_mat_id: '',
-  }
+name: "prediabetes"
+description: "Type 2 diabetes mellitus (T2D) is a significant health problem facing our nation. Close to 20 million individuals in the United States have T2D, and 79 million aged 20 years or older are clinically pre-diabetic, with a 5-year conversion rate of 10% to 23% from prediabetes to T2D. In a collaborative effort to systematically understand diabetes and its etiology, the team is comprised of leading experts in research on both the human host as well as the microbiome, as properties of both are likely relevant in T2D development. For a better elucidation of mechanisms of onset and progression of T2D disease, the group is performing a detailed analysis of the biological processes that occur in the microbiome and human host by longitudinal profiling of patients at risk for T2D. Both microbiome and host profiles are being analyzed by state-of-the-art omics platforms, and these large-scale and diverse data sets will be integrated to determine the dynamic pathways that change during the onset and progression of T2D, especially during viral infections and other stresses. This longitudinal study is expected to reveal changes in the microbiome and host at an unprecedented level of detail, and identify molecules and pathways that play important roles in diabetes onset and progression."
+center: 'Stanford University / Jackson Laboratory'
+contact: 'Wenyu Zhou <wenyuz@stanford.edu>'
+subtype: 'overeaters'
 tags: [
-  hmp2,
+  iHMP,
   study,
   Stanford/JAX-GM,
-  Prediabetes,
+  prediabetes,
   overeaters,
 ]
-links: { part_of: [ 700f3b77246a81f33c15af87873433ae ] } #TODO: get this from node_ids.txt

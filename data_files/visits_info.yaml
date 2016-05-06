@@ -5,8 +5,7 @@ date: 2015-01-01
 interval: 1
 clinic_id: Test clinic ID
 attributes: {}
-tags: [ visit, ihmp, Stanford/JAX-GM, Prediabetes, ]
-links: { by: [ 700f3b77246a81f33c15af8787355859 ] }
+tags: [ visit, ihmp, Stanford/JAX-GM, Prediabetes, subject_id='69-001' ]
 --- #Visit
 visit_id: STFD124
 visit_number: 2
@@ -15,7 +14,6 @@ interval: 14
 clinic_id: Test clinic ID
 attributes: {}
 tags: [ visit, ihmp, Stanford/JAX-GM, Prediabetes, ]
-links: { by: [ 700f3b77246a81f33c15af8787355859 ] }
 --- #Visit
 visit_id: STFD125
 visit_number: 2
@@ -24,7 +22,6 @@ interval: 25
 clinic_id: Test clinic ID
 attributes: {}
 tags: [ visit, ihmp, Stanford/JAX-GM, Prediabetes, ]
-links: { by: [ 700f3b77246a81f33c15af8787355859 ] }
 --- #Visit
 visit_id: STFD126
 visit_number: 2
@@ -33,4 +30,3 @@ interval: 40
 clinic_id: Test clinic ID
 attributes: {}
 tags: [ visit, ihmp, Stanford/JAX-GM, Prediabetes, ]
-links: { by: [ 700f3b77246a81f33c15af8787355859 ] }

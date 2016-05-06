@@ -1,19 +1,21 @@
 --- #16S_dna_prep
-comment: , 
+comment: ,
 frag_size:
 lib_layout:
 lib_selection: 16S stool sample
 storage_duration:
 sequencing_center: Jackson Laboratory
 sequencing_contact: Shana Leopold
+prep_id:
 ncbi_taxon_id: 646099
 tags: [
   ihmp,
   Prediabetes,
   Stanford/JAX-GM,
   16S_dna_prep,
+  flowcell=ABCDE,
+  sample_ids = [],
 ]
-links: { prepared_from: [  ] }
 mimarks: {
   project_name: HMP2,
   biome: terrestrial biome [ENVO:00000446],

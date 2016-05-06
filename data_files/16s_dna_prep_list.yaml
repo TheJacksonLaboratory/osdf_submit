@@ -68,7 +68,7 @@ tags: [
   Stanford/JAX-GM,
   16S_dna_prep,
 ]
-links: { prepared_from: [  ] }
+links: { prepared_from: [ sample_node_id ] }
 prep_id: HMP2-16S-stool-54ST
 mimarks: {
   project_name: HMP2,
@@ -124,7 +124,7 @@ tags: [
   16S_dna_prep,
 ]
 links: { prepared_from: [  ] }
-prep_id: HMP2-16S-nasal-58bN
+prep_id: HMP2-16S-NP-58bN
 mimarks: {
   project_name: HMP2,
   biome: terrestrial biome [ENVO:00000446],
@@ -153,7 +153,7 @@ mimarks: {
   nucl_acid_amp: ,
   nucl_acid_ext: ,
   pcr_cond: initial denaturation: 95C_2min; [denaturation: 95C_20sec; anealing: 56C_30sec; extension: 72C_5min]-30 cycles: hold: 4C,
-  pcr_primers: [ CAAGCAGAAGACGGCATACGAGATTTCGCGGAGTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTATTACCGCGGCTGCTGG, AATGATACGGCGACCACCGAGATCTACACCAGGACGTACACTCTTTCCCTACACGACGCTCTTCCGATCTAGAGTTTGATCCTGGCTCAG ],
+  pcr_primers: "[ CAAGCAGAAGACGGCATACGAGATTTCGCGGAGTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTATTACCGCGGCTGCTGG, AATGATACGGCGACCACCGAGATCTACACCAGGACGTACACTCTTTCCCTACACGACGCTCTTCCGATCTAGAGTTTGATCCTGGCTCAG ]",
   rel_to_oxygen: ,
   rindex: ,
   samp_size: ,
@@ -179,7 +179,7 @@ tags: [
   16S_dna_prep,
 ]
 links: { prepared_from: [  ] }
-prep_id: HMP2-16S-stool-58bST
+prep_id: HMP2-16S-ST-58bST
 mimarks: {
   project_name: HMP2,
   biome: terrestrial biome [ENVO:00000446],
@@ -208,7 +208,7 @@ mimarks: {
   nucl_acid_amp: ,
   nucl_acid_ext: ,
   pcr_cond: initial denaturation: 95C_2min; [denaturation: 95C_20sec; anealing: 56C_30sec; extension: 72C_5min]-30 cycles: hold: 4C,
-  pcr_primers: [ CAAGCAGAAGACGGCATACGAGATTTCGCGGAGTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTATTACCGCGGCTGCTGG, AATGATACGGCGACCACCGAGATCTACACGTACTGACACACTCTTTCCCTACACGACGCTCTTCCGATCTAGAGTTTGATCCTGGCTCAG ],
+  pcr_primers: "[ CAAGCAGAAGACGGCATACGAGATTTCGCGGAGTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTATTACCGCGGCTGCTGG, AATGATACGGCGACCACCGAGATCTACACGTACTGACACACTCTTTCCCTACACGACGCTCTTCCGATCTAGAGTTTGATCCTGGCTCAG ]",
   rel_to_oxygen: ,
   rindex: ,
   samp_size: ,

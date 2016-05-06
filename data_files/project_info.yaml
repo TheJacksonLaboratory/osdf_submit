@@ -1,25 +1,25 @@
 --- #Project
-name: Prediabetes overeaters
-description: many visits from most of the subjects
-center: Stanford University / Jackson Laboratory
+name: iHMP
+description: integrative Human Microbiome Project
+center: Stanford University / Jackson Laboratory for Genomic Medicine
 contact: Wenyu Zhou
 srp_id: None_yet
 mixs: {
-  project_name: Prediabetes,
-  biome: several,
-  body_product: saliva,
-  collection_date: several,
-  env_package: several,
-  feature: blah,
-  lat_lon: Frisco,
-  geo_loc_name: blah,
-  material: blah,
-  rel_to_oxygen: blah,
-  samp_collect_device: swab,
-  samp_mat_process: blah,
-  samp_size: blah,
-  source_mat_id: [ ST, OP ],
-  }
+  project_name: 'iHMP',
+  biome: 'terrestrial biome [ENVO:00000446]',
+  env_package: 'human-associated',
+  feature: 'human-associated habitat [ENVO:00009003]',
+  lat_lon: '37.441883, -122.143019',
+  geo_loc_name: 'Palo Alto, CA, USA',
+  material: 'biological product [ENVO:02000043]',
+  body_product: 'several',
+  collection_date: 'several',
+  rel_to_oxygen: N/A,
+  samp_collect_device: 'several',
+  samp_mat_process: 'Nucleic Acid Extraction [OBI:0666667]',
+  samp_size: 'several',
+  source_mat_id: ''
+}
 tags: [
   project,
   ihmp,

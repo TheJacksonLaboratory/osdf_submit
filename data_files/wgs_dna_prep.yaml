@@ -14,7 +14,7 @@ tags: [
   prediabetic,
   ihmp,
 ]
-links: { prepared_from: 610a4911a5ca67de12cdc1e4b4011876 }
+links: { prepared_from: parent_id }
 mims: {
   adapters: test,
   annot_source: test,

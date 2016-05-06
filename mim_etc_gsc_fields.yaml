@@ -1,0 +1,135 @@
+--- #Project
+mixs: {
+  project_name:         prediabetic,
+  biome:                human-associated ??,
+  body_product:         saliva|stool|blood|etc?,
+  collection_date:      several?  not applicable?  or a range of them from beginning to projected end?,
+  env_package:          several,
+  feature:              ???,
+  lat_lon:              N 37° 26' 30.78" W 122° 8' 34.87",
+  geo_loc_name:         blah,
+  material:             blah,
+  rel_to_oxygen:        blah,
+  samp_collect_device:  swab,
+  samp_mat_process:     blah,
+  samp_size:            blah,
+  source_mat_id:        [ ST, OP ],
+  }
+
+
+--- #Study
+mixs: {
+  project_name:         blah,
+  biome:                blah,
+  body_product:         saliva,
+  collection_date:      N/A
+  env_package:          human-gut,
+  feature:              blah,
+  lat_lon:              N 37° 26' 30.78" W 122° 8' 34.87",
+  geo_loc_name:         'Palo Alto, CA, USA',
+  material:             [ stool, nasopharyngeal, etc?? ],
+  rel_to_oxygen:        metagenomic,
+  samp_collect_device:  [ swab, self ],
+  samp_mat_process:     blah,
+  samp_size:            varies,
+  source_mat_id:        [ a, b, c ],
+  }
+
+
+
+--- #Sample
+mixs: {
+  biome:                16S,
+  body_product:         stool,
+  collection_date:      test,
+  env_package:          human-gut,
+  feature:              Colon(FMA:14543),
+  geo_loc_name:         'Palo Alto, CA, USA', 
+  lat_lon:              N 37° 26' 30.78" W 122° 8' 34.87",
+  material:             test,
+  project_name:         test,
+  rel_to_oxygen:        testest,
+  samp_collect_device:  test,
+  samp_mat_process:     test,
+  samp_size:            test,
+  source_mat_id:        [ ST ]
+}
+
+
+--- #wgs_dna_prep
+mims: {
+  adapters:             test,
+  annot_source:         test,
+  assembly:             test,
+  assembly_name:        test,
+  biome:                test,
+  collection_date:      test,
+  env_package:          test,
+  extrachrom_elements:  test,
+  encoded_traits:       test,
+  experimental_factor:  test,
+  feature:              test,
+  findex:               test,
+  finishing_strategy:   test,
+  geo_loc_name:         test,
+  investigation_type:   test,
+  lat_lon:              N 41° 44' 0.463" W 72° 47' 42.319",
+  lib_const_meth:       test,
+  lib_reads_seqd:       test,
+  lib_screen:           test,
+  lib_size:             2000,
+  lib_vector:           test,
+  material:             test,
+  nucl_acid_amp:        test,
+  nucl_acid_ext:        test,
+  project_name:         test,
+  rel_to_oxygen:        test,
+  rindex:               test,
+  samp_collect_device:  test,
+  samp_mat_process:     test,
+  samp_size:            test,
+  seq_meth:             test,
+  sop:                  [a, b, c],
+  source_mat_id:        [a, b, c],
+  submitted_to_insdc:   True,
+  url:                  [a, b, c]
+}
+
+
+--- #16S_dna_prep
+mimarks: {
+  adapters:             blah,
+  biome:                blah,
+  collection_date:      blah,
+  experimental_factor:  blah,
+  feature:              blah,
+  findex:               blah,
+  geo_loc_name:         blah,
+  investigation_type:   blah,
+  isol_growth_condt:    blah,
+  lat_lon:              blah,
+  lib_const_meth:       blah,
+  lib_reads_seqd:       blah,
+  lib_size:             500,
+  lib_vector:           blah,
+  material:             blah,
+  nucl_acid_amp:        blah,
+  nucl_acid_ext:        blah,
+  pcr_primers:          blah,
+  pcr_cond:             blah,
+  project_name:         blah,
+  rel_to_oxygen:        blah,
+  rindex:               blah,
+  samp_collect_device:  blah,
+  samp_mat_process:     blah,
+  samp_size:            blah,
+  seq_meth:             blah,
+  sop:                  [a, b, c],
+  source_mat_id:        [a, b, c],
+  submitted_to_insdc:   True,
+  target_gene:          blah,
+  target_subfragment:   blah,
+  url:                  [a, b, c]
+}
+
+

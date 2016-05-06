@@ -1,30 +1,24 @@
 #these are just EXMAPLES of Subject records!
 --- #Subject
-subject_id: 69-10-10
+rand_subject_id: 69-10-10
 gender: male
-race: caucasian
-attributes: {}
-tags: [ subject, ihmp, Stanford/JAX-GM, Prediabetes, ]
-links: { participates_in : [ 700f3b77246a81f33c15af8787355449 ] }
+race: C
+_attribs: {}
+tags: [ age:58, ]
 --- #Subject
-subject_id: 70-10-10
+rand_subject_id: 70-10-10
 gender: female
-race: asian
-attributes: {}
-tags: [ subject, ihmp, Stanford/JAX-GM, Prediabetes, ]
-links: { participates_in : [ 700f3b77246a81f33c15af8787355449 ] }
---- #Subject
-subject_id: 71-10-10
+race: A
+_attribs: {}
+tags: [ age:58, ]
 gender: male
-race: hispanic_or_latino
-attributes: {}
-tags: [ subject, ihmp, Stanford/JAX-GM, Prediabetes, ]
-links: { participates_in : [ 700f3b77246a81f33c15af8787355449 ] }
+race: H
+_attribs: {}
+tags: [ age:58, ]
 --- #Subject
-subject_id: 72-10-10
+rand_subject_id: 72-10-10
 gender: female
-race: caucasian
-attributes: {}
-tags: [ subject, ihmp, Stanford/JAX-GM, Prediabetes, ]
-links: { participates_in : [ 700f3b77246a81f33c15af8787355449 ] }
+race: B
+_attribs: {}
+tags: [ age:58, ]
 
