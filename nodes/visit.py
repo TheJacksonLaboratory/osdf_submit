@@ -1,21 +1,10 @@
 #!/usr/bin/env python
 
 import logging
+logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger(name=basename(__file__))
 
-from cutlass_utils import save_if_valid, \
-    load_string_from_file, \
-    load_config_from_file
-from cutlass import iHMPSession
 from cutlass import Visit as OSDFNode
-
-# Subject info file name
-info_file = '../data_files/visits_info.yaml'
-
-# load username, password from files
-username = load_string_from_file('../auth/username.txt')
-password = load_string_from_file('../auth/password.txt')
-
-session = iHMPSession(username, password)
 
 print("Required fields: {}".format(OSDFNode.required_fields()))
 
