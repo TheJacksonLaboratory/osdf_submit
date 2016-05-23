@@ -8,8 +8,8 @@ import csv
 
 
 #TODO: argparse?
-CSV_infile = open('hmp2_samplesheets.csv', "r")
-YAML_outfile = open("hmp2_samplesheets.yaml", "w")
+CSV_infile = open('subjects_20160510.csv', "r")
+YAML_outfile = open("subjects_20160510.yaml", "w")
 items = []
 
 try:
