@@ -3,17 +3,28 @@ import sys
 import csv
 import re
 import logging
+from datetime import date
+import time
 
 # Log It!
 def log_it(filename=os.path.basename(__file__)):
     """log_it setup"""
-    logging.basicConfig(level=logging.DEBUG,
-        format="%(asctime)s %(levelname)5s %(funcName)20s: %(message)s")
-    return logging.getLogger(filename)
+    curtime = time.strftime("%Y%m%d-%H%M")
+    logfile = curtime + '_osdf_submit.log'
+    loglevel = logging.DEBUG
+
+    logging.basicConfig(level=loglevel,
+            format="%(asctime)s %(levelname)5s %(funcName)20s: %(message)s")
+    l = logging.getLogger(filename)
+
+    fh = logging.FileHandler(logfile, mode='a')
+    fh.setLevel(loglevel)
+    l.addHandler(fh)
+    return l
 log = log_it()
+# log.setLevel(logging.INFO)
 
 import cutlass
-
 import settings
 
 id_fields = settings.node_id_tracking.id_fields
@@ -22,10 +33,12 @@ id_fields = settings.node_id_tracking.id_fields
 
 # generator of rows in csv file
 def load_data(csv_file):
+    """yield row dicts from csv_file using DictReader
+    """
     log.info('Loading rows from {}'.format(csv_file))
     with open(csv_file) as csvfh:
         reader = csv.DictReader(csvfh)
-        log.debug('csv dictreader opened')
+        # log.debug('csv dictreader opened')
         try:
             for row in reader:
                 # log.debug(row)
@@ -36,7 +49,9 @@ def load_data(csv_file):
 
 
 def write_out_csv(csv_file,fieldnames=id_fields,values=[]):
-    """ write all values in csv format to outfile """
+    """write all values in csv format to outfile.
+    values is list of dicts w/ keys matching fieldnames.
+    """
     log.debug('writing out...')
     if values[0] is not None:
         try:
@@ -89,7 +104,7 @@ def get_parent_node_id(id_file_name, node_type, parent_id):
     """
     log.debug('--> args: '+ id_file_name +','+ node_type +','+ parent_id)
     try:
-        for row in yield_csv_rows(id_file_name):
+        for row in load_data(id_file_name):
             if re.match(node_type,row['node_type']):
                 # node_ids.append(row.parent_id)
                 if re.match(parent_id,row['internal_id']):
@@ -107,7 +122,7 @@ def format_query(strng, patt='-', field='rand_subj_id', mode='&&'):
     """
     strgs = re.split(patt,strng)
     if len(strgs) > 1:
-        strngs = ['"{s}"[{field}] ".format(s,field) for s in strngs]
+        strngs = ['"{s}"[{field}] "'.format(s,field) for s in strngs]
         #TODO: does the JSON query require spaces between terms?? e.g.  ' && '
         strng = '{mode}'.join(strngs)
     return strng
@@ -128,6 +143,30 @@ class osdf_gensc_required_dicts():
 
 
 
+# dump_args decorator
+# orig from: https://wiki.python.org/moin/PythonDecoratorLibrary#Easy_Dump_of_Function_Arguments
+def dump_args(func):
+    "This decorator dumps out the arguments passed to a function before calling it"
+    argnames = func.func_code.co_varnames[:func.func_code.co_argcount]
+    fname = func.func_name
+
+    def func_args(*args,**kwargs):
+        log.debug("'{}' args: {}".format(
+            fname, ', '.join('%s=%r' % entry
+                for entry in zip(argnames,args) + kwargs.items())) )
+            # "'"+fname+"' args: "+', '.join(
+            # '%s=%r' % entry
+            # for entry in zip(argnames,args) + kwargs.items()))
+        return func(*args, **kwargs)
+
+    return func_args
+
+# use example:
+# @dump_args
+# def f1(a,b,c):
+#     print a + b + c
+
+# f1(1, 2, 3)
 
 
 # All functions below no longer used!

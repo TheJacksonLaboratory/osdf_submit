@@ -11,7 +11,7 @@ from cutlass_utils import \
         load_data, get_parent_node_id, \
         list_tags, format_query, \
         values_to_node_dict, write_out_csv, \
-        log_it
+        log_it, dump_args
 
 filename=os.path.basename(__file__)
 log = log_it(filename)
@@ -37,7 +37,8 @@ race_code_map = {
          '': 'ethnic_other'
         }
 
-def get_race(race_code):
+@dump_args
+def get_race(race_code=None):
     if not race_code:
         race_code = 'O'
     if race_code_map.get(race_code) not in Subject.valid_races:
@@ -53,44 +54,57 @@ gender_code_map = {
          '': 'unknown'
         }
 
-def get_gender(gender_code):
+@dump_args
+def get_gender(gender_code=None):
+    """return gender as listed, or unknown, or map to code dict"""
     if not gender_code:
         gender_code = 'U'
-    if gender_code_map.get(gender_code) not in Subject.valid_genders:
+    if gender_code in Subject.valid_genders:
+        return gender_code
+    elif gender_code_map.get(gender_code) not in Subject.valid_genders:
         raise ValueError("Gender value is not valid! Choose from {}".format(
             str(Subject.valid_gender)))
     return gender_code_map.get(gender_code)
 
 
+@dump_args
 def load(internal_id):
     """search for existing node to update, else create new"""
     try:
-        query = format_query(internal_id) 
+        # query = format_query(internal_id)
+        # query = '("1636"[rand_subject_id] && "69"[rand_subject_id]) && "001"[rand_subject_id]'
             #, patt='-', field='rand_subject_id', mode='&&')
+        # query = "1636_123_123_123[tags]"  # search with '-' still not functional! (ticket CUTLASS-003)
+        query = '"{}"[rand_subject_id]'.format(internal_id)
+        log.debug("query:"+query)
         s = Subject.search(query)
         for n in s:
             if n.rand_subject_id == internal_id:
                 return Subject.load_subject(info)
         # no match, return empty node:
         n = Subject()
+        log.debug('loaded node newbie...')
         return n
     except Exception, e:
         raise e
 
 
+@dump_args
 def validate_record(parent_id, node, record):
     """update record fields
        validate node
        if valid, save, if not, return false
     """
     log.debug("in validate/save: "+node_type)
-    node.race = get_race(record['race_code'])
-    node.rand_subject_id = record['subject_id']
+    node.rand_subject_id = record['rand_subject_id']
     node.gender = get_gender(record['gender'])
-    # node.tags = [] # erases all pre-existing tags!!
-    # node.add_tag('test') # for debug!!
-    node.add_tag('age: '+record['age'])
-    node.add_tag('study: '+record['study'])
+    node.race = get_race(record['race_code'])
+    node.tags = list_tags(node.tags,
+                'test', # for debug!!
+                'age: '+record['age'] if record['age'] else 'unk',
+                'rand_subject_id: '+record['rand_subject_id'],
+                'study: prediabetes',
+                )
     node.links = {'participates_in':[parent_id]}
     if not node.is_valid():
         invalidities = node.validate()
@@ -109,11 +123,11 @@ def submit(parent_name, parent_id, data_file,
     nodes = []
     for record in load_data(data_file):
         try:
-            log.debug('trying...')
-            log.debug(record)
-            n = load(record['subject_id'])
+            log.debug('...trying next record...')
+            # log.debug(record)
+            n = load(record['rand_subject_id'])
+            # n = Subject()
             if not n.rand_subject_id:
-                log.debug('loaded node newbie...')
                 saved = validate_record(parent_id, n, record)
                 if saved:
                     header = settings.node_id_tracking.id_fields

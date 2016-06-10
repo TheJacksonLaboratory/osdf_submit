@@ -10,16 +10,16 @@ from cutlass_utils import \
         load_data, get_parent_node_id, \
         list_tags, format_query, \
         values_to_node_dict, write_out_csv, \
-        log_it
+        log_it, dump_args
 
 # Log It!
-import os, logging # needed for LogIt function!
-def log_it(filename=os.path.basename(__file__)):
-    """log_it setup"""
-    logging.basicConfig(level=logging.DEBUG,
-        format="%(asctime)s %(levelname)5s %(filename)15s: %(message)s")
-    return logging.getLogger(filename)
-log = log_it()
+# import os, logging # needed for LogIt function!
+# def log_it(filename=os.path.basename(__file__)):
+#     """log_it setup"""
+#     logging.basicConfig(level=logging.DEBUG,
+#         format="%(asctime)s %(levelname)5s %(filename)15s: %(message)s")
+#     return logging.getLogger(filename)
+log = log_it('osdf_submit')
 log.info('Starting metadata submission to OSDF server.')
 
 # load username, password from files
@@ -62,14 +62,14 @@ def main():
 
     """ Subject node """
     from nodes import subject
-    subject_nodes = subject.submit(study_name, study_node_id,
-            settings.NodeDataFiles['Subject'])
-    # """89 subjects submitted...""""
-
+    # subject_nodes = subject.submit(study_name, study_node_id,
+            # settings.NodeDataFiles['Subject'])
+    # -> 124 Submitted successfully
 
     """ Visit node """
-    from nodes import visit
-    visit_nodes = visit.submit(settings.NodeDataFiles['Visit'])
+    # from nodes import visit
+    # visit_nodes = visit.submit(settings.NodeDataFiles['Visit'])
+    # -> ??? submitted and linked successfully
 
     """ Sample node """
     from nodes import sample

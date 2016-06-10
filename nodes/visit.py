@@ -10,7 +10,7 @@ from cutlass_utils import \
         load_data, get_parent_node_id, \
         list_tags, format_query, \
         values_to_node_dict, write_out_csv, \
-        log_it
+        log_it, dump_args
 
 filename=os.path.basename(__file__)
 log = log_it(filename)
@@ -27,13 +27,17 @@ class node_values:
     visit_number = ''
     interval = ''
     clinic_id = ''
-    tags = ['subject_id: ','sub_study: ','study: ']
+    tags = ['rand_subject_id: ','sub_study: ','study: ']
 
 
+import re
+@dump_args
 def load(internal_id,parent_id):
-    """search for existing node to update, else create new"""
+    """search for existing node to update, else create new
+    """
+    re_internal_id = re.split('-',internal_id)[1]
     try:
-        query = '"'+internal_id+'"[visit_id]'
+        query = '"'+re_internal_id+'"[visit_id]'
         query += '&&"'+parent_id+'"[tags]'
         s = Visit.search(query)
         for n in s:
@@ -44,6 +48,7 @@ def load(internal_id,parent_id):
         return n
 
 
+@dump_args
 def validate_record(parent_id, node, record):
     """update record fields
        validate node
@@ -52,12 +57,14 @@ def validate_record(parent_id, node, record):
     log.info("in validate/save: "+node_type)
     node.visit_id = record['visit_id']
     node.visit_number = int(record['visit_number'])
-    node.interval = int(record['collection_date'])
-    # node.tags = [] # erases all pre-existing tags!!
-    node.add_tag('test') # for debug!!
-    node.add_tag('subject_id: '+record['subject_id'])
-    node.add_tag('study: '+record['study'])
-    node.add_tag('sub_study: '+record['sub_study'])
+    node.interval = int(record['interval'])
+    node.tags = list_tags(node.tags,
+                'test', # for debug!!
+                'rand_subject_id: '+record['rand_subject_id'],
+                'study: prediabetes',
+                # 'study: '+record['study'],
+                # 'sub_study: '+record['sub_study'],
+                )
     log.debug('parent_id: '+str(parent_id))
     node.links = {'by':[parent_id]}
     if not node.is_valid():
@@ -71,32 +78,41 @@ def validate_record(parent_id, node, record):
         return False
 
 
+@dump_args
 def submit(data_file, id_tracking_file=node_tracking_file):
     log.info('Starting submission of visits.')
     nodes = []
     for record in load_data(data_file):
-        try:
-            # log.debug('trying...')
-            log.debug('record: '+str(record))
+        if record['consented'] == 'YES' \
+        and record['visit_number'] != 'UNK':
+            # use of 'UNK' = hack workaround for unreconciled visit list
+            try:
+                log.debug('...next record...')
+                log.debug('record: '+str(record))
 
-            parent_id = get_parent_node_id(
-                    id_tracking_file, parent_type, record['subject_id'])
+                parent_id = get_parent_node_id(
+                        id_tracking_file, parent_type,
+                        record['rand_subject_id'])
 
-            n = load(record['visit_id'],record['subject_id'])
-            if not n.visit_number:
-                log.debug('loaded newbie...')
-                saved = validate_record(parent_id, n, record)
-                if saved:
-                    header = settings.node_id_tracking.id_fields
-                    vals = values_to_node_dict(
-                            [[node_type,saved.visit_id,saved.id,
-                              parent_type,record['subject_id'],parent_id]]
-                            )
-                    nodes.append(vals)
-                    write_out_csv(id_tracking_file,values=vals)
-        except Exception, e:
-            log.error(e)
-            raise e
+                n = load(record['visit_id'],record['rand_subject_id'])
+                if not n.visit_number:
+                    log.debug('loaded newbie...')
+                    saved = validate_record(parent_id, n, record)
+                    if saved:
+                        header = settings.node_id_tracking.id_fields
+                        vals = values_to_node_dict(
+                                [[node_type,saved.visit_id,saved.id,
+                                  parent_type,record['rand_subject_id'],
+                                  parent_id]]
+                                )
+                        nodes.append(vals)
+                        write_out_csv(id_tracking_file,values=vals)
+            except Exception, e:
+                log.error(e)
+                raise e
+        else:
+            write_out_csv(data_file+'_records_no_submit.csv',
+                    fieldnames=record.keys(),values=[record,])
     return nodes
 
 

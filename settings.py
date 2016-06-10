@@ -1,10 +1,18 @@
 """ Settings, Variables
     for Stanford/JAXGM iHMP OSDF submissions
 """
+import os
+import yaml
+
+
+def load_string_from_file(filename):
+    with open(os.path.join(os.curdir, filename)) as f:
+        return f.read().strip()
+
 
 class auth():
-    dcc_user = 'bleopold'
-    dcc_pass = 'undrogin15'
+    dcc_user = load_string_from_file('auth/username.txt')
+    dcc_pass = load_string_from_file('auth/password.txt')
 
 class data_node_ids():
         project = ''
@@ -21,20 +29,19 @@ class node_id_tracking:
 
 # data file names
 NodeDataFiles = {
-        'Project':          './data_files/project_info.yaml',
-        'Study':            './data_files/study_info.yaml',
-        # 'Subject':          './data_files/subjects_20160510.csv',
-        'Subject':          './data_files/subjects_20160520.csv',
-        # 'Visit':            './data_files/visits_20160511.csv',
-        # 'Visit':            './data_files/visits_MISSING_subjects_20160512.csv',
-        'Visit':            './data_files/visits_20160520.csv',
-        # 'Sample':           './data_files/samples_20160520.csv',
-        'Sample':           './data_files/samples_20160521.csv',
+        'Project':        './data_files/project_info.yaml',
+        'Study':          './data_files/study_info.yaml',
+        'Subject':        './data_files/20160608-HMP2_metadata-subjects.csv',
+        'Visit':          './data_files/20160609-HMP2_metadata-visits_jaxgm.csv',
+        'Sample':         './data_files/20160610-HMP2_metadata-samples-final.csv',
         #
-        'r16sSDnaPrep':     './data_files/16S_dna_prep.2016.....csv',
-        'r16sSRawSeqs':     './data_files/16s_raw_seq_set.2016.....csv',
-        'r16sSTrimSeqs':    './data_files/16s_trim_set.2016.....csv',
-        'WgsDnaPrep':       './data_files/wgs_dna_prep.2016.....csv',
-        'WgsRawSeqs':       './data_files/wgs_raw_seq_set.2016.....csv',
+        'r16SDnaPrep':    './data_files/16S_dna_prep.2016.....csv',
+        'r16SRawSeqs':    './data_files/16s_raw_seq_set.2016.....csv',
+        'r16STrimSeqs':   './data_files/16s_trim_set.2016.....csv',
+        'WgsDnaPrep':     './data_files/wgs_dna_prep.2016.....csv',
+        'WgsRawSeqs':     './data_files/wgs_raw_seq_set.2016.....csv',
         }
 
+
+if __name__ == '__main__':
+    pass
