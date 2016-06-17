@@ -35,13 +35,41 @@ NodeDataFiles = {
         'Visit':          './data_files/20160609-HMP2_metadata-visits_jaxgm.csv',
         'Sample':         './data_files/20160610-HMP2_metadata-samples-final.csv',
         #
-        'r16SDnaPrep':    './data_files/16S_dna_prep.2016.....csv',
-        'r16SRawSeqs':    './data_files/16s_raw_seq_set.2016.....csv',
-        'r16STrimSeqs':   './data_files/16s_trim_set.2016.....csv',
+        'r16sDnaPrep':    './data_files/20160615-HMP2_metadata-16S_dna_prep.csv',
+        'r16sRawSeqs':    './data_files/20160617-HMP2_metadata-r16sRawSeqs.csv',
+        'r16sRawSeqs':    './data_files/20160617-HMP2_metadata-r16sRawSeqs2.csv',
+        'r16sTrimSeqs':   './data_files/20160615-HMP2_metadata-16sTrimmedSeqs.csv',
+        #
         'WgsDnaPrep':     './data_files/wgs_dna_prep.2016.....csv',
         'WgsRawSeqs':     './data_files/wgs_raw_seq_set.2016.....csv',
         }
 
 
+class node_hierarchy:
+  """node_hierarchy lists nodes in hierarchical tree"""
+  node_tree = [
+    'project', [
+      'subject', [
+        'visit', [
+          'sample',
+            [ 'r16sDnaPrep',
+              'r16sRawSeqSet',[
+                 'r16sTrimSeqSet', ] ],
+            [ 'wgsDnaPrep', [
+              'wgsRawSeqSet',[
+                'wgsAssembledSeqSet', ] ],
+            ['hostAssay', 'etc',],
+          ]
+        ]
+      ]
+    ]
+  ]
+
+
 if __name__ == '__main__':
+    # from pprint import pprint
+    # print('nodes')
+    # n = node_hierarchy()
+    # pprint(n.node_tree)
+
     pass

@@ -1,37 +1,71 @@
+"""Set of utility functions shared amongst the Stanford/JAXGM OSDF script suite
+"""
+
 import os
 import sys
 import csv
 import re
 import logging
-from datetime import date
 import time
 
+import cutlass
+import settings
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Functional ~~~~~
 # Log It!
 def log_it(filename=os.path.basename(__file__)):
     """log_it setup"""
     curtime = time.strftime("%Y%m%d-%H%M")
     logfile = curtime + '_osdf_submit.log'
-    loglevel = logging.DEBUG
 
-    logging.basicConfig(level=loglevel,
-            format="%(asctime)s %(levelname)5s %(funcName)20s: %(message)s")
+    loglevel = logging.DEBUG
+    logFormat="%(asctime)s %(levelname)5s: %(name)15s %(funcName)15s: %(message)s"
+
+    logging.basicConfig(format=logFormat)
     l = logging.getLogger(filename)
+    l.setLevel(loglevel)
+
+    formatter = logging.Formatter(logFormat)
+
+    # ch = logging.StreamHandler()
+    # ch.setLevel(loglevel)
+    # ch.setFormatter(formatter)
+    # l.addHandler(ch)
 
     fh = logging.FileHandler(logfile, mode='a')
     fh.setLevel(loglevel)
+    fh.setFormatter(formatter)
     l.addHandler(fh)
     return l
 log = log_it()
 # log.setLevel(logging.INFO)
 
-import cutlass
-import settings
+# dump_args decorator
+# orig from: https://wiki.python.org/moin/PythonDecoratorLibrary#Easy_Dump_of_Function_Arguments
+def dump_args(func):
+    "This decorator dumps out the arguments passed to a function before calling it"
+    argnames = func.func_code.co_varnames[:func.func_code.co_argcount]
+    fname = func.func_name
 
-id_fields = settings.node_id_tracking.id_fields
-# sample: subject,69-01,610a491c,study,prediabetes,610a4911a5c
+    def func_args(*args,**kwargs):
+        log.debug("'{}' args: {}".format(
+            fname, ', '.join('%s=%r' % entry
+                for entry in zip(argnames,args) + kwargs.items())) )
+            # "'"+fname+"' args: "+', '.join(
+            # '%s=%r' % entry
+            # for entry in zip(argnames,args) + kwargs.items()))
+        return func(*args, **kwargs)
+
+    return func_args
+
+# use example:
+# @dump_args
+# def f1(a,b,c):
+#     print a + b + c
+#
+# f1(1, 2, 3)
 
 
-# generator of rows in csv file
 def load_data(csv_file):
     """yield row dicts from csv_file using DictReader
     """
@@ -44,19 +78,39 @@ def load_data(csv_file):
                 # log.debug(row)
                 yield row
         except csv.Error as e:
-            sys.exit('CSV file %s, line %d: %s'.format(\
-                    csv_file, reader.line_num, e))
+            log.exception('Reading CSV file %s, line %d: %s',
+                    csv_file, reader.line_num, e)
 
+
+def csv_type_sniff(csv_file):
+    """find the line/ending type using csv.sniffer"""
+    try:
+        with open(csv_file, 'rb') as f:
+            dialect = csv.Sniffer().sniff(f.read(1024))
+            return dialect
+    except Exception, e:
+        raise e
+
+
+id_fields = settings.node_id_tracking.id_fields
+# sample: subject,69-01,610a491c,study,prediabetes,610a4911a5c
 
 def write_out_csv(csv_file,fieldnames=id_fields,values=[]):
     """write all values in csv format to outfile.
     values is list of dicts w/ keys matching fieldnames.
     """
     log.debug('writing out...')
+    # try:
+        #TODO: use dialect(??) to omit the '^M' character at lineend
+        # dialect = csv_type_sniff(csv_file)
+    # except Exception, e:
+        # dialect = 'csv'
     if values[0] is not None:
         try:
             with open(csv_file, 'a') as csvout:
                 writer = csv.DictWriter(csvout,fieldnames)
+                    # ,dialect=dialect,
+                    # quoting=csv.QUOTE_NONE, quotechar='')
                 try:
                     # log.debug(values)
                     for row in values:
@@ -64,18 +118,18 @@ def write_out_csv(csv_file,fieldnames=id_fields,values=[]):
                             log.debug(row)
                             writer.writerow(row)
                 except Exception, e:
-                    sys.exit('CSV file %s, %s'.format(
-                            csv_file, str(e)))
+                    log.exception('Writing CSV file %s, %s',
+                            csv_file, str(e))
+                    raise e
         except IOError, e:
             raise e
 
 
-id_keys = settings.node_id_tracking.id_fields
-from collections import OrderedDict
-def values_to_node_dict(values=[],keynames=id_keys):
+def values_to_node_dict(values=[],keynames=id_fields):
     """pass list of lists of values and list of keys of desired dict
        This converts to list of dicts
     """
+    from collections import OrderedDict
     log.info('In values_to_node_dict')
     final_list = []
 
@@ -115,183 +169,52 @@ def get_parent_node_id(id_file_name, node_type, parent_id):
     except Exception, e:
         raise e
 
-
-def format_query(strng, patt='-', field='rand_subj_id', mode='&&'):
-    """format OQL query by replacing control character e.g. '-'
-       Split 'strng' on 'patt'; append 'field' text; concat using mode
+@dump_args
+def get_child_node_ids(id_file_name, node_type, parent_id):
+    """ read node ids from csv tracking file
+        yield "child" node ids matching node_type
     """
-    strgs = re.split(patt,strng)
-    if len(strgs) > 1:
-        strngs = ['"{s}"[{field}] "'.format(s,field) for s in strngs]
-        #TODO: does the JSON query require spaces between terms?? e.g.  ' && '
-        strng = '{mode}'.join(strngs)
+    try:
+        for row in load_data(id_file_name):
+            if re.match(node_type,row['node_type']):
+                if re.match(parent_id,row['internal_id']):
+                    log.debug('--> matching node row: '+ str(row))
+                    log.debug('parent type: {}, osdf_node_id: {}'.format(
+                        node_type,str(row['osdf_node_id'])))
+                    return row['osdf_node_id']
+    except Exception, e:
+        raise e
+
+
+@dump_args
+def format_query(strng, patt='-', field='rand_subj_id', mode='&&'):
+    """format OQL query by removing character e.g. '-'
+           1) Split lowercased 'strng' on 'patt';
+           2) append 'field' text to each piece;
+           3) join using 'mode'
+    """
+    mode = ' '+mode+' ' # spaces between and/or's and strng splits
+    strngs = re.split(patt,strng.lower())
+    if len(strngs) > 1:
+        strngs = ['"{}"[{}]'.format(s,field) for s in strngs]
+        #TODO: insert () around first two strngs, plus third, then...
+        if len(strngs) > 2:
+            strng = "("+mode.join(strngs[0:2])+")"
+            for piece in strngs[2:]:
+                strng = "("+mode.join([strng,piece])+")"
+        else:
+            strng = "("+mode.join(strngs)+")"
+    else:
+        strng = '("{}"[{}])'.format(strng,field)
     return strng
 
 
 def list_tags(node_tags, *tags):
-    """generate list of all tags to be used in add_tag method"""
+    """generate list of all tags to be used in add_tag method, then rm dupes"""
     end_tags = []
     [end_tags.append(t) for t in node_tags]
     [end_tags.append(t) for t in tags]
-    return end_tags
-
-
-class osdf_gensc_required_dicts():
-    mimarks = dict(cutlass.mimarks.MIMARKS._fields)
-    mixs = dict(cutlass.mixs.MIXS._fields)
-    mims = dict(cutlass.mims.MIMS._fields)
-
-
-
-# dump_args decorator
-# orig from: https://wiki.python.org/moin/PythonDecoratorLibrary#Easy_Dump_of_Function_Arguments
-def dump_args(func):
-    "This decorator dumps out the arguments passed to a function before calling it"
-    argnames = func.func_code.co_varnames[:func.func_code.co_argcount]
-    fname = func.func_name
-
-    def func_args(*args,**kwargs):
-        log.debug("'{}' args: {}".format(
-            fname, ', '.join('%s=%r' % entry
-                for entry in zip(argnames,args) + kwargs.items())) )
-            # "'"+fname+"' args: "+', '.join(
-            # '%s=%r' % entry
-            # for entry in zip(argnames,args) + kwargs.items()))
-        return func(*args, **kwargs)
-
-    return func_args
-
-# use example:
-# @dump_args
-# def f1(a,b,c):
-#     print a + b + c
-
-# f1(1, 2, 3)
-
-
-# All functions below no longer used!
-def submit_node(node_type, node_creation, node_info, child_text, parent_id):
-    """ Load node into OSDF using info from file.
-        Can be called from specific node-type functions with predetermined args
-    """
-    try:
-        node = node_creation
-
-        log.debug("Required fields: {}".format(node.required_fields()))
-        # set node required fields empty as start point
-        for f in node.required_fields():
-            node.f = ''
-        log.debug("Required fields all set empty.")
-        #TODO: set empty required MIMS, MIMARKS, MIXS fields
-
-        # load all other fields from data file
-        node.update(node_info)
-        # for f in node_info:
-            # node.f = node_info[f]
-
-        log.debug("All fields set from data file.")
-        log.debug("node info:", node)
-
-        # set linkage as passed in 'child_text'
-        node.linkage = { child_text: [ parent_id ] }
-        log.debug("Node 'linkage' set. ({})".format(child_txt))
-
-        success = node.save()
-        log.info('Node: {}, parent: {}, ID: {}'.format(
-            node_type, parent_id, node._id))
-        return node._id
-    except Exception as e:
-        log.warn(e)
-        raise e
-
-def save_if_valid_test2(data_dict):
-    """Usage: save_if_valid( metadata_dict, NodeType(e.g.Project))"""
-    nodename = 'name' #data_dict.__name__
-    valid = True
-    valid = data_dict.is_valid()
-    # errors = data_dict.validate()
-    # import pdb; pdb.set_trace()
-    # if valid and (len(errors)==0):
-    if valid:
-        success = data_dict.save()
-        if success:
-            data_id = data_dict._id
-            log.info("Succesfully saved {}. ID: {}".format(nodename,data_id))
-            # TODO: print json data_dict to exernal log file
-            # json_log_filename = "{}_{}".format(nodename,data_id)
-            # node_json_to_file(data_dict, json_log_filename)
-            return data_id
-        else:
-            log.info("Save failed")
-            raise Exception
-        return None
-    else:
-        log.info("Invalid...")
-        validation_errors = data_dict.validate()
-        log.info(validation_errors)
-        raise Exception
-    return None
-
-def save_if_valid(data_dict, nodename=''):
-    """Usage: save_if_valid( metadata_dict, NodeType(e.g.Project))"""
-    # valid = data_dict.is_valid()
-    errors = data_dict.validate()
-    # if valid and
-    if (len(errors)==0):
-        success = data_dict.save()
-        if success:
-            data_id = data_dict._id
-            log.info("Succesfully saved {}. ID: {}".format(nodename,data_id))
-            return data_id
-        else:
-            log.info("Save failed. Errors: {}".format(errors))
-            return None
-    else:
-        log.info("Data invalid! Errors: {}".format(errors))
-        return None
-
-from pprint import pprint
-def node_json_to_file(data_dict, filename):
-    # pprint(data_dict.to_json(indent=4))
-    pass
-
-def delete_node(data_dict, nodetype):
-    # TODO: test delete_node() function
-    """Usage: delete_node( metadata_dict, NodeType(e.g.Project))"""
-    nodename = nodetype.__name__
-    if data_dict.is_valid():
-        log.info("Valid!")
-        success = data_dict.delete()
-
-        if success:
-            data_id = data_dict.id
-            log.info("Deleted {} with ID {}".format(nodename,data_id))
-            log.info(data_dict.to_json(indent=4))
-            return data_id
-        else:
-            log.info("Deletion of {} with ID {} failed.".format(
-                nodetype,data_id))
-            return None
-    else:
-        log.info("Invalid...")
-        validation_errors = data_dict.validate()
-        pprint(validation_errors)
-        return None
-
-
-import os
-def load_string_from_file(filename):
-    with open(os.path.join(os.curdir, filename)) as f:
-        return f.read().strip()
-
-
-import yaml
-def load_yaml_data(yaml_file):
-    config = []
-    log.info('Loading config from {}'.format(yaml_file))
-    for config_set in yaml.load_all(open(yaml_file)):
-        config.append(config_set)
-    return config
+    return sorted(set(end_tags))
 
 
 

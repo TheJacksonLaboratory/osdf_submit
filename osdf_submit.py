@@ -12,13 +12,6 @@ from cutlass_utils import \
         values_to_node_dict, write_out_csv, \
         log_it, dump_args
 
-# Log It!
-# import os, logging # needed for LogIt function!
-# def log_it(filename=os.path.basename(__file__)):
-#     """log_it setup"""
-#     logging.basicConfig(level=logging.DEBUG,
-#         format="%(asctime)s %(levelname)5s %(filename)15s: %(message)s")
-#     return logging.getLogger(filename)
 log = log_it('osdf_submit')
 log.info('Starting metadata submission to OSDF server.')
 
@@ -61,7 +54,7 @@ def main():
     # write_out_csv(node_tracking_file,values=values)
 
     """ Subject node """
-    from nodes import subject
+    # from nodes import subject
     # subject_nodes = subject.submit(study_name, study_node_id,
             # settings.NodeDataFiles['Subject'])
     # -> 124 Submitted successfully
@@ -69,21 +62,26 @@ def main():
     """ Visit node """
     # from nodes import visit
     # visit_nodes = visit.submit(settings.NodeDataFiles['Visit'])
-    # -> ??? submitted and linked successfully
+    # -> 546 submitted and linked successfully
 
     """ Sample node """
     from nodes import sample
-    sample_nodes = sample.submit(settings.NodeDataFiles['Sample'])
+    # sample_nodes = sample.submit(settings.NodeDataFiles['Sample'])
+    # -> 1403 submitted and linked successfully
 
     """ 16S DNA Prep node """
-    # from nodes.r16s import dna_prep
-    # dna_prep_nodes = dna_prep.submit(settings.NodeDataFiles['r16sSDnaPrep'])
+    from nodes import r16sDnaPrep
+    # r16_dna_nodes = r16s_dna_prep.submit(settings.NodeDataFiles['r16sDnaPrep'])
+    # -> 149 submitted and linked successfully
+
     """ 16S Raw Sequence Set node """
-    # from nodes.r16s import raw_seq
-    # raw_seq_nodes = raw_seq.submit(settings.NodeDataFiles['r16sSRawSeqs'])
+    from nodes import r16sRawSeqSet
+    # raw_seq_nodes = r16sRawSeqSet.submit(settings.NodeDataFiles['r16sRawSeqs'])
+    # -> 149 submitted and linked successfully
     """ 16S Trimmed Sequence Set node """
-    # from nodes.r16s import trimmed_seq
-    # trim_nodes = trim_seq.submit(settings.NodeDataFiles['r16sSTrimSeqs'])
+    # from nodes import r16sTrimSeqSet
+    # trim_nodes = r16sTrimSeqSet.submit(settings.NodeDataFiles['r16sTrimSeqs'])
+
     """ WGS DNA Prep node """
     # from nodes.wga import dna_prep
     # sample_nodes = dna_prep.submit(settings.NodeDataFiles['WgsDnaPrep'])

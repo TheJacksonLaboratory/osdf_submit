@@ -4,7 +4,7 @@
 import os
 import re
 
-from cutlass.WgsDnaPrep import WgsDnaPrep
+from cutlass.SixteenSDnaPrep import SixteenSDnaPrep
 
 import settings
 from cutlass_utils import \
@@ -17,7 +17,7 @@ filename=os.path.basename(__file__)
 log = log_it(filename)
 
 # the Higher-Ups
-node_type          = 'r16s_dna_prep'
+node_type          = 'r16sDnaPrep'
 parent_type        = 'sample'
 grand_parent_type  = 'visit'
 great_parent_type  = 'subject'
@@ -112,8 +112,7 @@ def concat_tag(index_type,index_seq):
     return tag_pre + index_seq + tag_post
 
 
-def generate_mims(row):
-    pass # TODO: re-make wgs dna prep mims from current mimarks
+def generate_mimarks(row):
     DEGREE_SIGN = u"\N{DEGREE SIGN}"
     DEGREE = DEGREE_SIGN.encode("UTF-8")
     try:
@@ -133,8 +132,7 @@ def generate_mims(row):
             'geo_loc_name': 'Palo Alto, CA, USA',
             'investigation_type': 'metagenome',
             'isol_growth_condt': 'N/A',
-            # 'lat_lon': 'N 37'+DEGREE+' 26\' 30.78" W 122'+DEGREE+' 8\' 34.87"',
-            'lat_lon': '37.4418800,-122.1430200'
+            'lat_lon': 'N 37'+DEGREE+' 26\' 30.78" W 122'+DEGREE+' 8\' 34.87"',
             'lib_const_meth': 'paired end 16S 454 Amp protocol',
             'lib_reads_seqd': 'N/A',
             'lib_size': 700,
@@ -177,16 +175,16 @@ def generate_mims(row):
 
 
 @dump_args
-def load(internal_id,parent_id,grand_parent_id):
+def load(internal_id):
     """search for existing node to update, else create new"""
     try:
         query = format_query(internal_id, field='prep_id')
-        s = WgsDnaPrep.search(query)
+        s = SixteenSDnaPrep.search(query)
         for n in s:
-            if parent_id in n.tags:
-                return WgsDnaPrep.load_wgsDnaPrep(n)
+            if internal_id in n.prep_id:
+                return SixteenSDnaPrep.load_sixteenSDnaPrep(n)
         # no match, return empty node:
-        n = WgsDnaPrep()
+        n = SixteenSDnaPrep()
         return n
     except Exception, e:
         raise e
@@ -202,7 +200,7 @@ def validate_record(parent_id, node, record, data_filename=node_type):
     node.frag_size = 301 #record['frag_size']
     node.lib_layout = 'paired 301bp'
     node.lib_selection = ''
-    node.mims = generate_mims(record)
+    node.mimarks = generate_mimarks(record)
     node.ncbi_taxon_id = '408170' if 'stool' == record['body_site'] \
             else '1131769' # nasal
             # ST: http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=408170
@@ -257,7 +255,9 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                     id_tracking_file, parent_type, sample_name)
             grand_parent_id = get_parent_node_id(
                     id_tracking_file, grand_parent_type, record['visit_id'])
-            n = load(record['prep_id'],parent_id,grand_parent_id)
+            n = load(record['prep_id'])
+            internal_id = prep_id
+            parent_internal_id = sample_name
             if not n.prep_id:
                 log.debug('loaded node newbie...')
                 saved = validate_record(parent_id, n, record,
@@ -265,8 +265,8 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                 if saved:
                     header = settings.node_id_tracking.id_fields
                     vals = values_to_node_dict(
-                            [[node_type,saved.prep_id,saved.id,
-                              parent_type,sample_name,parent_id]] #hack: identical variables!
+                            [[node_type,internal_id,saved.id,
+                              parent_type,parent_internal_id,parent_id]]
                             )
                     nodes.append(vals)
                     write_out_csv(id_tracking_file,values=vals)
