@@ -17,11 +17,11 @@ filename=os.path.basename(__file__)
 log = log_it(filename)
 
 # the Higher-Ups
-node_type          = 'r16sDnaPrep'
-parent_type        = 'sample'
-grand_parent_type  = 'visit'
-great_parent_type  = 'subject'
-great_great1_type  = 'study'
+node_type          = 'SixteenSDnaPrep'
+parent_type        = 'Sample'
+grand_parent_type  = 'Visit'
+great_parent_type  = 'Subject'
+great_great1_type  = 'Study'
 
 node_tracking_file = settings.node_id_tracking.path
 
@@ -132,7 +132,7 @@ def generate_mimarks(row):
             'geo_loc_name': 'Palo Alto, CA, USA',
             'investigation_type': 'metagenome',
             'isol_growth_condt': 'N/A',
-            'lat_lon': 'N 37'+DEGREE+' 26\' 30.78" W 122'+DEGREE+' 8\' 34.87"',
+            'lat_lon': '37.441883, -122.143019',
             'lib_const_meth': 'paired end 16S 454 Amp protocol',
             'lib_reads_seqd': 'N/A',
             'lib_size': 700,

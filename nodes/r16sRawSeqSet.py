@@ -16,8 +16,20 @@ from cutlass_utils import \
 filename=os.path.basename(__file__)
 log = log_it(filename)
 
+# # Cutlass Logging:
+# import logging, sys
+# root = logging.getLogger()
+# root.setLevel(logging.DEBUG)
+# ch = logging.StreamHandler(sys.stdout)
+# ch.setLevel(logging.DEBUG)
+# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# ch.setFormatter(formatter)
+# root.addHandler(ch)
+
+
+
 # the Higher-Ups
-node_type          = 'r16sRawSeqSet'
+node_type          = 'SixteenSRawSeqSet'
 parent_type        = 'r16sDnaPrep'
 grand_parent_type  = 'sample'
 great_parent_type  = 'visit'
@@ -55,23 +67,28 @@ class node_values:
     tags          = []
 
 
-@dump_args
-def load(internal_id):
+# @dump_args
+def load(internal_id, search_field):
     """search for existing node to update, else create new"""
+
+    # node-specific variables:
+    NodeTypeName = SixteenSRawSeqSet
+    NodeLoadFunc = NodeTypeName.load_16s_raw_seq_set
+
     try:
-        query = format_query(internal_id, field='comment')
-        s = SixteenSRawSeqSet.search(query)
-        for n in s:
-            if internal_id in n.comment:  # stored 'prep_id' in 'comment' field
-                return SixteenSRawSeqSet.load_16s_raw_seq_set(n)
-        # no match, return empty node:
-        n = SixteenSRawSeqSet()
-        return n
+        query = format_query(internal_id, '[-\.]', field=search_field)
+        results = NodeTypeName.search(query)
+        for node in results:
+            if internal_id in getattr(node, search_field):
+                return NodeLoadFunc(node)
+        # no match, return new, empty node:
+        node = NodeTypeName()
+        return node
     except Exception, e:
         raise e
 
 
-@dump_args
+# @dump_args
 def validate_record(parent_id, node, record, data_filename=node_type):
     """update record fields
        validate node
@@ -79,15 +96,14 @@ def validate_record(parent_id, node, record, data_filename=node_type):
     """
 
     node.study         = 'prediabetes'
-    node.comment       = record['prep_id']
+    node.comment       = record['local_file']
     node.sequence_type = 'nucleotide'
     node.seq_model     = record['seq_model']
     node.format        = 'fastq'
     node.format_doc    = 'https://en.wikipedia.org/wiki/FASTQ_format'
     node.exp_length    = 0 #record['exp_length']
     node.local_file    = record['local_file']
-    checks = {'md5':record['md5']} #, 'sha256':record['sha256']}
-    node.checksums     = checks
+    node.checksums     ={'md5':record['md5'], 'sha256':record['sha256']} 
     node.size          = int(record['size'])
     node.tags = list_tags(node.tags,
                 'test', # for debug!!
@@ -105,16 +121,17 @@ def validate_record(parent_id, node, record, data_filename=node_type):
                 'visit id: '+record['visit_id'],
                 'subject id: '+record['rand_subject_id'],
                 'study: prediabetes',
-                'prep id: '+ record['prep_id'],
+                'file prefix: '+ record['prep_id'],
+                'file name: '+ record['local_file'],
                 )
 
-    log.debug('parent_id: '+str(parent_id))
+    # log.debug('parent_id: '+str(parent_id))
     node.links = {'sequenced_from':[parent_id]}
     if not node.is_valid():
         write_out_csv(data_filename+'_invalid_records.csv',
             fieldnames=record.keys(),values=[record,])
         invalidities = node.validate()
-        err_str = "Invalid {}!\n{}".format(node_type, "\n".join(invalidities))
+        err_str = "Invalid {}!\n\t{}".format(node_type, str(invalidities))
         log.error(err_str)
         # raise Exception(err_str)
     elif node.save():
@@ -125,23 +142,27 @@ def validate_record(parent_id, node, record, data_filename=node_type):
 
 # @dump_args
 def submit(data_file, id_tracking_file=node_tracking_file):
-    log.info('Starting submission of SixteenSRawSeqSet.')
+    log.info('Starting submission of %ss.', node_type)
     nodes = []
     for record in load_data(data_file):
         log.debug('...next record...')
         try:
             log.debug('data record: '+str(record))
-            prep_id = record['prep_id']
+
+            load_search_field = 'local_file'
+            internal_id = os.path.basename(record['local_file'])
+            parent_internal_id = record['prep_id']
+            grand_parent_internal_id = record['visit_id']
+
             parent_id = get_parent_node_id(
-                    id_tracking_file, parent_type, prep_id)
-            grand_parent_id = get_parent_node_id(
-                    id_tracking_file, grand_parent_type, record['visit_id'])
-            internal_id = prep_id
-            parent_internal_id = prep_id
-            n = load(internal_id)
-            if not n.local_file:
+                id_tracking_file, parent_type, parent_internal_id)
+            # grand_parent_id = get_parent_node_id(
+                # id_tracking_file, grand_parent_type, grand_parent_internal_id)
+
+            node = load(internal_id, load_search_field)
+            if not getattr(node, search_field):
                 log.debug('loaded node newbie...')
-                saved = validate_record(parent_id, n, record,
+                saved = validate_record(parent_id, node, record,
                                         data_filename=data_file)
                 if saved:
                     header = settings.node_id_tracking.id_fields

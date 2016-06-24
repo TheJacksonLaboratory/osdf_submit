@@ -65,6 +65,17 @@ def dump_args(func):
 #
 # f1(1, 2, 3)
 
+def get_field_header(csv_file):
+    """returns first row of csv file as list of fieldnames"""
+    log.info('Loading fields from {}'.format(csv_file))
+    with open(csv_file) as csvfh:
+        try:
+            reader = csv.DictReader(csvfh)
+            return reader.fieldnames
+        except csv.Error as e:
+            log.exception('Reading CSV file %s, line %d: %s',
+                    csv_file, reader.line_num, e)
+
 
 def load_data(csv_file):
     """yield row dicts from csv_file using DictReader
@@ -187,7 +198,7 @@ def get_child_node_ids(id_file_name, node_type, parent_id):
 
 
 @dump_args
-def format_query(strng, patt='-', field='rand_subj_id', mode='&&'):
+def format_query(strng, patt='-\.', field='rand_subj_id', mode='&&'):
     """format OQL query by removing character e.g. '-'
            1) Split lowercased 'strng' on 'patt';
            2) append 'field' text to each piece;

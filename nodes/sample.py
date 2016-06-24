@@ -10,17 +10,17 @@ import settings
 from cutlass_utils import \
         load_data, get_parent_node_id, \
         list_tags, format_query, \
-        values_to_node_dict, write_out_csv, \
+        values_to_node_dict, write_out_csv, get_field_header, \
         log_it, dump_args
 
 filename=os.path.basename(__file__)
 log = log_it(filename)
 
 # the Higher-Ups
-node_type          = 'sample'
-parent_type        = 'visit'
-grand_parent_type  = 'subject'
-great_parent_type  = 'study'
+node_type          = 'Sample'
+parent_type        = 'Visit'
+grand_parent_type  = 'Subject'
+great_parent_type  = 'Study'
 node_tracking_file = settings.node_id_tracking.path
 
 class node_values:
@@ -65,7 +65,7 @@ def generate_mixs(row):
                     else 'human-associated',
             'feature': 'N/A',
             'geo_loc_name': 'Palo Alto, CA, USA',
-            'lat_lon': 'N 37'+DEGREE+' 26\' 30.78" W 122'+DEGREE+' 8\' 34.87"',
+            'lat_lon': '37.441883, -122.143019',
             'material': 'feces(ENVO:00002003)' \
                     if re.match('stool',row['body_site']) \
                     else 'oronasal secretion(ENVO:02000035)',
@@ -84,17 +84,22 @@ def generate_mixs(row):
             '    Exception message:{}'.format(row['sample_name'], e.message))
 
 @dump_args
-def load(internal_id,parent_id,grand_parent_id):
+def load(internal_id, search_field):
     """search for existing node to update, else create new"""
+
+    # node-specific variables:
+    NodeTypeName = Sample
+    NodeLoadFunc = NodeTypeName.load_sample
+
     try:
-        query = format_query(internal_id, field='name')
-        s = Sample.search(query)
-        for n in s:
-            if parent_id in n.tags:
-                return Sample.load_sample(n)
-        # no match, return empty node:
-        n = Sample()
-        return n
+        query = format_query(internal_id, '[-\.]', field=search_field)
+        results = NodeTypeName.search(query)
+        for node in results:
+            if internal_id in getattr(node, search_field):
+                return NodeLoadFunc(node)
+        # no match, return new, empty node:
+        node = NodeTypeName()
+        return node
     except Exception, e:
         raise e
 
@@ -132,7 +137,7 @@ def validate_record(parent_id, node, record, data_filename=node_type):
         write_out_csv(data_filename+'_invalid_records.csv',
             fieldnames=record.keys(),values=[record,])
         invalidities = node.validate()
-        err_str = "Invalid {}!\n{}".format(node_type, "\n".join(invalidities))
+        err_str = "Invalid {}!\n\t{}".format(node_type, str(invalidities))
         log.error(err_str)
         # raise Exception(err_str)
     elif node.save():
@@ -156,36 +161,37 @@ def write_csv_headers(base_filename='data_file', fieldname_list=[]):
 
 # @dump_args
 def submit(data_file, id_tracking_file=node_tracking_file):
-    log.info('Starting submission of Samples.')
+    log.info('Starting submission of %ss.', node_type)
     nodes = []
     for record in load_data(data_file):
         # write_csv_headers(data_file, record.keys()) # done by hand
         log.debug('...next record...')
         try:
             log.debug('data record: '+str(record))
+
+            # Node-Specific Variables:
+            load_search_field = 'local_file'
+            internal_id = os.path.basename(record['local_file'])
+            parent_internal_id = record['sample_name'] # sample id = visit id
+            grand_parent_internal_id = record['rand_subject_id']
+
             parent_id = get_parent_node_id(
-                    id_tracking_file, parent_type, record['sample_name'])
-                                                  #record['visit_id'])
-            # sample_node_id = get_parent_node_id(id_tracking_file, node_type,)
-            # n = load(record['sample_name'],
-            #      record['sample_name'], #convenient identity of name/id...
-            #      # record['visit_id'],
-            #      record['rand_subject_id'])
-            # # n = load(record['sample_name'],parent_id,grand_parent_id)
+                id_tracking_file, parent_type, parent_internal_id)
+
+            node = load(internal_id, load_search_field)
             # Loading NEW sample records, due to non-searchability via OQL to ES
-            n = Sample()
-            if not n.name:
+            # node = Sample()
+            if not getattr(node, load_search_field):
                 log.debug('loaded node newbie...')
-                saved = validate_record(parent_id, n, record,
+                saved = validate_record(parent_id, node, record,
                                         data_filename=data_file)
                 if saved:
                     header = settings.node_id_tracking.id_fields
+                    saved_name = getattr(saved, load_search_field)
                     vals = values_to_node_dict(
-                            # [[node_type,saved.visit_id,saved.id,
-                              # parent_type,record['visit_id'],parent_id]]
-                            [[node_type,saved.name,saved.id, #hack: identical variables!
-                              parent_type,record['sample_name'],parent_id]]
-                            )
+                        [[lower(node_type),saved_name,saved.id,
+                          lower(parent_type),parent_internal_id,parent_id]]
+                        )
                     nodes.append(vals)
                     write_out_csv(id_tracking_file,values=vals)
                     write_out_csv(data_file+'_submitted.csv',
