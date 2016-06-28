@@ -9,7 +9,7 @@ import settings
 from cutlass_utils import \
         load_data, get_parent_node_id, \
         list_tags, format_query, \
-        values_to_node_dict, write_out_csv, \
+        values_to_node_dict, write_out_csv, get_field_header, \
         log_it, dump_args
 
 log = log_it('osdf_submit')
@@ -71,7 +71,7 @@ def main():
 
     """ 16S DNA Prep node """
     from nodes import r16sDnaPrep
-    r16_dna_nodes = r16s_dna_prep.submit(settings.NodeDataFiles['r16sDnaPrep'])
+    r16_dna_nodes = r16sDnaPrep.submit(settings.NodeDataFiles['r16sDnaPrep'])
     # -> 149 submitted and linked successfully
 
     """ 16S Raw Sequence Set node """
@@ -83,24 +83,15 @@ def main():
     trim_nodes = r16sTrimSeqSet.submit(settings.NodeDataFiles['r16sTrimSeqs'])
 
     """ WGS DNA Prep node """
-    # from nodes.wga import dna_prep
-    # sample_nodes = dna_prep.submit(settings.NodeDataFiles['WgsDnaPrep'])
+    # from nodes import WgsDnaPrep
+    # wgs_dna_nodes = WgsDnaPrep.submit(settings.NodeDataFiles['WgsDnaPrep'])
     """ WGS Raw Sequence Set node """
-    # from nodes.wgs import raw_seq
-    # raw_seq_nodes = raw_seq.submit(settings.NodeDataFiles['WgsRawSeqs'])
+    # from nodes import WgsRawSeqSet
+    # wgs_raw_nodes = WgsRawSeqSet.submit(settings.NodeDataFiles['WgsRawSeqs'])
 
-
-    """ load 16S DNA Prep into OSDF using info from data file """
-    #'prepared_from'
-    """ load 16S Raw Sequence Set into OSDF using info from data file """
-    #'sequenced_from'
-    """ load 16S Trimmed Sequence Set into OSDF using info from data file """
-    #'computed_from'
-
-    """ load WGS DNA Prep into OSDF using info from data file """
-    #'prepared_from'
-    """ load WGS DNA Raw Sequence Set into OSDF using info from data file """
-    #'sequenced_from'
+    """ RNASeq DNA Prep node """
+    # from nodes import ?????????
+    # rna_prep_nodes = ?????????.submit(settings.NodeDataFiles['WgsDnaPrep'])
 
 
 if __name__ == '__main__':

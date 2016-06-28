@@ -37,7 +37,7 @@ race_code_map = {
          '': 'ethnic_other'
         }
 
-@dump_args
+# @dump_args
 def get_race(race_code=None):
     if not race_code:
         race_code = 'O'
@@ -54,7 +54,7 @@ gender_code_map = {
          '': 'unknown'
         }
 
-@dump_args
+# @dump_args
 def get_gender(gender_code=None):
     """return gender as listed, or unknown, or map to code dict"""
     if not gender_code:
@@ -67,7 +67,7 @@ def get_gender(gender_code=None):
     return gender_code_map.get(gender_code)
 
 
-@dump_args
+# @dump_args
 def load(internal_id):
     """search for existing node to update, else create new"""
     try:
@@ -89,7 +89,7 @@ def load(internal_id):
         raise e
 
 
-@dump_args
+# @dump_args
 def validate_record(parent_id, node, record):
     """update record fields
        validate node

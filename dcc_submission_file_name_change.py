@@ -27,7 +27,6 @@ from subprocess import CalledProcessError as SubprocCallError
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Constants ~~~~~
 COOLNESS = True
 
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Functional ~~~~~
 # Log It!
 def log_it(logname=os.path.basename(__file__)):
@@ -68,7 +67,7 @@ def yield_csv_data(csv_file):
     """yield row dicts from csv_file using DictReader
     """
     log.info('Loading rows from {}'.format(csv_file))
-    with open(csv_file) as csvfh:
+    with open(csv_file,'U') as csvfh:
         reader = csv.DictReader(csvfh)
         # log.debug('csv dictreader opened')
         try:
@@ -88,7 +87,7 @@ def write_out_csv(csv_file,fieldnames,values=[]):
     try:
         with open(csv_file, 'a') as csvout:
             writer = csv.DictWriter(csvout, fieldnames)
-            if values[0] is not None:
+            if values:
                 try:
                     for row in values:
                         if isinstance(row, dict):
@@ -164,9 +163,8 @@ def write_checksum_list(file_name="", outfile='checksum_file_list.csv'):
                         'md5':md5_str,'sha256':sha_str}]
             write_out_csv(outfile, fields, values)
 
-        # else:
-            # ---> pre-write headers to file!!
-            # write_out_csv(outfile, fields) #write headers
+        else:
+            write_out_csv(outfile, fields) #write headers
 
     except Exception, e:
         log.error('Uh-Oh with writing list %s... %s', file_name, e)

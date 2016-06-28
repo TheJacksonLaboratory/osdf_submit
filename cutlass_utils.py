@@ -108,32 +108,27 @@ id_fields = settings.node_id_tracking.id_fields
 
 def write_out_csv(csv_file,fieldnames=id_fields,values=[]):
     """write all values in csv format to outfile.
-    values is list of dicts w/ keys matching fieldnames.
+    Values is list of dicts w/ keys matching fieldnames.
+    To write header to file, omit `values`
     """
-    log.debug('writing out...')
-    # try:
-        #TODO: use dialect(??) to omit the '^M' character at lineend
-        # dialect = csv_type_sniff(csv_file)
-    # except Exception, e:
-        # dialect = 'csv'
-    if values[0] is not None:
-        try:
-            with open(csv_file, 'a') as csvout:
-                writer = csv.DictWriter(csvout,fieldnames)
-                    # ,dialect=dialect,
-                    # quoting=csv.QUOTE_NONE, quotechar='')
+    log.info('Writing csv to {}'.format(csv_file))
+    try:
+        with open(csv_file, 'a') as csvout:
+            writer = csv.DictWriter(csvout, fieldnames)
+            if values:
                 try:
-                    # log.debug(values)
                     for row in values:
-                        if isinstance(row,dict):
+                        if isinstance(row, dict):
                             log.debug(row)
                             writer.writerow(row)
                 except Exception, e:
-                    log.exception('Writing CSV file %s, %s',
-                            csv_file, str(e))
+                    log.exception('Writing CSV file %s, %s', csv_file, str(e))
                     raise e
-        except IOError, e:
-            raise e
+            else:
+                log.info('Writing header of fieldnames to {}'.format(csv_file))
+                writer.writeheader()
+    except IOError, e:
+        raise e
 
 
 def values_to_node_dict(values=[],keynames=id_fields):
@@ -180,7 +175,7 @@ def get_parent_node_id(id_file_name, node_type, parent_id):
     except Exception, e:
         raise e
 
-@dump_args
+# @dump_args
 def get_child_node_ids(id_file_name, node_type, parent_id):
     """ read node ids from csv tracking file
         yield "child" node ids matching node_type
@@ -197,15 +192,16 @@ def get_child_node_ids(id_file_name, node_type, parent_id):
         raise e
 
 
-@dump_args
-def format_query(strng, patt='-\.', field='rand_subj_id', mode='&&'):
-    """format OQL query by removing character e.g. '-'
-           1) Split lowercased 'strng' on 'patt';
+# @dump_args
+def format_query(strng, patt='[-. ]', field='rand_subj_id', mode='&&'):
+    """format OQL query by removing characterset (e.g. '[-\.]')
+           1) Split 'strng' on 'patt';
            2) append 'field' text to each piece;
            3) join using 'mode'
+           4) return lowercased strng
     """
-    mode = ' '+mode+' ' # spaces between and/or's and strng splits
-    strngs = re.split(patt,strng.lower())
+    mode = ' '+mode.strip()+' ' # spaces between and/or's and strng splits
+    strngs = re.split(patt,strng)
     if len(strngs) > 1:
         strngs = ['"{}"[{}]'.format(s,field) for s in strngs]
         #TODO: insert () around first two strngs, plus third, then...
@@ -217,7 +213,8 @@ def format_query(strng, patt='-\.', field='rand_subj_id', mode='&&'):
             strng = "("+mode.join(strngs)+")"
     else:
         strng = '("{}"[{}])'.format(strng,field)
-    return strng
+    log.debug('formatted query: '+ strng.lower())
+    return strng.lower()
 
 
 def list_tags(node_tags, *tags):
@@ -228,6 +225,39 @@ def list_tags(node_tags, *tags):
     return sorted(set(end_tags))
 
 
+def run_tests():
+    log = log_it('Testing functions')
+    tests = 0
+    failures = 0
+
+    from tempfile import mkstemp
+
+    # test csv read/write/headers:
+    tests += 1
+    (csvfh1, csv_file1) = mkstemp('test','test',text=True)
+    field_names1 = ['one','two','three']
+    # print('field_names1: '+str(field_names1))
+    csv_values1 = [{'one':'a', 'two':'b', 'three':'c'},
+                   {'one':'d', 'two':'e', 'three':'f'}]
+    write_out_csv(csv_file1,field_names1) #write headers
+    write_out_csv(csv_file1,field_names1,csv_values1)
+    field_names_read1 = get_field_header(csv_file1)
+    # print('field_names_read1: '+str(field_names_read1))
+
+    (csvfh2, csv_file2) = mkstemp('test2','test',text=True)
+    values2 = [['g', 'h', 'i'], ['j', 'k', 'l']]
+    csv_values2 = values_to_node_dict(values2,field_names_read1)
+    write_out_csv(csv_file2,field_names1) #write headers
+    write_out_csv(csv_file2,field_names_read1,csv_values2)
+    field_names_read2 = get_field_header(csv_file2)
+    # print('field_names_read2: '+str(field_names_read2))
+
+    failures += 1 if field_names1 != field_names_read2 else 0
+
+    log.warn('Tests run: %s', tests)
+    log.warn('Test failures: %s', failures)
+
 
 if __name__ == '__main__':
+    run_tests()
     pass

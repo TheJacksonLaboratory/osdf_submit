@@ -48,7 +48,6 @@ class mixs_fields:
     source_mat_id = []
 
 
-# @dump_args
 def generate_mixs(row):
     DEGREE_SIGN = u"\N{DEGREE SIGN}"
     # DEGREE = DEGREE_SIGN.encode("iso-8859-1")
@@ -83,7 +82,7 @@ def generate_mixs(row):
         log.warn('Conversion to MIXS format failed?! (SampleName: {}).\n'
             '    Exception message:{}'.format(row['sample_name'], e.message))
 
-@dump_args
+
 def load(internal_id, search_field):
     """search for existing node to update, else create new"""
 
@@ -103,8 +102,8 @@ def load(internal_id, search_field):
     except Exception, e:
         raise e
 
-@dump_args
-def validate_record(parent_id, node, record, data_filename=node_type):
+
+def validate_record(parent_id, node, record, data_file_name=node_type):
     """update record fields
        validate node
        if valid, save, if not, return false
@@ -133,17 +132,24 @@ def validate_record(parent_id, node, record, data_filename=node_type):
 
     log.debug('parent_id: '+str(parent_id))
     node.links = {'collected_during':[parent_id]}
+
+    csv_fieldnames = get_field_header(data_file_name)
     if not node.is_valid():
-        write_out_csv(data_filename+'_invalid_records.csv',
-            fieldnames=record.keys(),values=[record,])
+        write_out_csv(data_file_name+'_invalid_records.csv',
+            fieldnames=csv_fieldnames,values=[record,])
         invalidities = node.validate()
         err_str = "Invalid {}!\n\t{}".format(node_type, str(invalidities))
         log.error(err_str)
         # raise Exception(err_str)
     elif node.save():
+        write_out_csv(data_file_name+'_submitted.csv',
+                      fieldnames=record.keys(),values=[record,])
         return node
     else:
+        write_out_csv(data_file_name+'_unsaved_records.csv',
+                      fieldnames=csv_fieldnames,values=[record,])
         return False
+
 
 def write_csv_headers(base_filename='data_file', fieldname_list=[]):
     """init other csv files (invalid, unsaved, etc) with fieldname headers"""
@@ -157,9 +163,8 @@ def write_csv_headers(base_filename='data_file', fieldname_list=[]):
         values=[fieldname_list,])
         for suff in err_file_appends
         if not os.path.exists(base_filename+suff) ]
-    
 
-# @dump_args
+
 def submit(data_file, id_tracking_file=node_tracking_file):
     log.info('Starting submission of %ss.', node_type)
     nodes = []
@@ -170,8 +175,8 @@ def submit(data_file, id_tracking_file=node_tracking_file):
             log.debug('data record: '+str(record))
 
             # Node-Specific Variables:
-            load_search_field = 'local_file'
-            internal_id = os.path.basename(record['local_file'])
+            load_search_field = 'name'
+            internal_id = record['sample_name']
             parent_internal_id = record['sample_name'] # sample id = visit id
             grand_parent_internal_id = record['rand_subject_id']
 
@@ -183,22 +188,18 @@ def submit(data_file, id_tracking_file=node_tracking_file):
             # node = Sample()
             if not getattr(node, load_search_field):
                 log.debug('loaded node newbie...')
-                saved = validate_record(parent_id, node, record,
-                                        data_filename=data_file)
-                if saved:
-                    header = settings.node_id_tracking.id_fields
-                    saved_name = getattr(saved, load_search_field)
-                    vals = values_to_node_dict(
-                        [[lower(node_type),saved_name,saved.id,
-                          lower(parent_type),parent_internal_id,parent_id]]
-                        )
-                    nodes.append(vals)
-                    write_out_csv(id_tracking_file,values=vals)
-                    write_out_csv(data_file+'_submitted.csv',
-                        fieldnames=record.keys(),values=[record,])
-                # else:
-                    # write_out_csv(data_file+'_unsaved_records.csv',
-                        # fieldnames=record.keys(),values=[record,])
+            saved = validate_record(parent_id, node, record,
+                                    data_file_name=data_file)
+            if saved:
+                header = settings.node_id_tracking.id_fields
+                saved_name = getattr(saved, load_search_field)
+                vals = values_to_node_dict(
+                    [[node_type.lower(),saved_name,saved.id,
+                      parent_type.lower(),parent_internal_id,parent_id]],
+                    header
+                    )
+                nodes.append(vals)
+                write_out_csv(id_tracking_file,values=vals)
         except Exception, e:
             log.exception(e)
             raise e

@@ -10,7 +10,7 @@ import settings
 from cutlass_utils import \
         load_data, get_parent_node_id, \
         list_tags, format_query, \
-        values_to_node_dict, write_out_csv, \
+        values_to_node_dict, write_out_csv, get_field_header, \
         log_it, dump_args
 
 filename=os.path.basename(__file__)
@@ -174,30 +174,34 @@ def generate_mimarks(row):
                   ,row['prep_id'], e.message)
 
 
-@dump_args
-def load(internal_id):
+def load(internal_id, search_field):
     """search for existing node to update, else create new"""
+
+    # node-specific variables:
+    NodeTypeName = SixteenSDnaPrep
+    NodeLoadFunc = NodeTypeNameload_sixteenSDnaPrep.
+
     try:
-        query = format_query(internal_id, field='prep_id')
-        s = SixteenSDnaPrep.search(query)
-        for n in s:
-            if internal_id in n.prep_id:
-                return SixteenSDnaPrep.load_sixteenSDnaPrep(n)
-        # no match, return empty node:
-        n = SixteenSDnaPrep()
-        return n
+        query = format_query(internal_id, '[-\.]', field=search_field)
+        results = NodeTypeName.search(query)
+        for node in results:
+            if internal_id in getattr(node, search_field):
+                return NodeLoadFunc(node)
+        # no match, return new, empty node:
+        node = NodeTypeName()
+        return node
     except Exception, e:
         raise e
 
 
-@dump_args
-def validate_record(parent_id, node, record, data_filename=node_type):
+# @dump_args
+def validate_record(parent_id, node, record, data_file_name=node_type):
     """update record fields
        validate node
        if valid, save, if not, return false
     """
     node.comment = record['prep_id']
-    node.frag_size = 301 #record['frag_size']
+    node.frag_size = 301 # goal size
     node.lib_layout = 'paired 301bp'
     node.lib_selection = ''
     node.mimarks = generate_mimarks(record)
@@ -226,55 +230,64 @@ def validate_record(parent_id, node, record, data_filename=node_type):
                 'study: prediabetes',
                 'file prefix: '+ record['prep_id'],
                 )
+    parent_link = {'prepared_from':[parent_id]}
+    log.debug('parent_id: '+str(parent_link))
+    node.links = parent_link
 
-    log.debug('parent_id: '+str(parent_id))
-    node.links = {'prepared_from':[parent_id]}
+    csv_fieldnames = get_field_header(data_file_name)
     if not node.is_valid():
-        write_out_csv(data_filename+'_invalid_records.csv',
-            fieldnames=record.keys(),values=[record,])
+        write_out_csv(data_file_name+'_invalid_records.csv',
+            fieldnames=csv_fieldnames,values=[record,])
         invalidities = node.validate()
-        err_str = "Invalid {}!\n{}".format(node_type, "\n".join(invalidities))
+        err_str = "Invalid {}!\n\t{}".format(node_type, str(invalidities))
         log.error(err_str)
         # raise Exception(err_str)
     elif node.save():
+        write_out_csv(data_file_name+'_submitted.csv',
+                      fieldnames=record.keys(),values=[record,])
         return node
     else:
+        write_out_csv(data_file_name+'_unsaved_records.csv',
+                      fieldnames=csv_fieldnames,values=[record,])
         return False
 
 
-# @dump_args
 def submit(data_file, id_tracking_file=node_tracking_file):
-    log.info('Starting submission of SixteenSDnaPreps.')
+    log.info('Starting submission of %ss.', node_type)
     nodes = []
     for record in load_data(data_file):
-        log.debug('...next record...')
+        log.info('\n...next record...')
         try:
             log.debug('data record: '+str(record))
-            sample_name = record['visit_id']
-            parent_id = get_parent_node_id(
-                    id_tracking_file, parent_type, sample_name)
-            grand_parent_id = get_parent_node_id(
-                    id_tracking_file, grand_parent_type, record['visit_id'])
-            n = load(record['prep_id'])
-            internal_id = prep_id
+
+            # node-specific variables:
+            load_search_field = 'prep_id'
+            internal_id = record['prep_id']
             parent_internal_id = sample_name
-            if not n.prep_id:
+            grand_parent_internal_id = record['visit_id']
+
+            parent_id = get_parent_node_id(
+                id_tracking_file, parent_type, parent_internal_id)
+            # grand_parent_id = get_parent_node_id(
+                # id_tracking_file, grand_parent_type, grand_parent_internal_id)
+
+            node = load(internal_id, load_search_field)
+            if not getattr(node, load_search_field):
                 log.debug('loaded node newbie...')
-                saved = validate_record(parent_id, n, record,
-                                        data_filename=data_file)
-                if saved:
-                    header = settings.node_id_tracking.id_fields
-                    vals = values_to_node_dict(
-                            [[node_type,internal_id,saved.id,
-                              parent_type,parent_internal_id,parent_id]]
-                            )
-                    nodes.append(vals)
-                    write_out_csv(id_tracking_file,values=vals)
-                    write_out_csv(data_file+'_submitted.csv',
-                        fieldnames=record.keys(),values=[record,])
-                # else:
-                    # write_out_csv(data_file+'_unsaved_records.csv',
-                        # fieldnames=record.keys(),values=[record,])
+
+            saved = validate_record(parent_id, node, record,
+                                    data_file_name=data_file)
+            if saved:
+                header = settings.node_id_tracking.id_fields
+                saved_name = getattr(saved, load_search_field)
+                vals = values_to_node_dict(
+                    [[node_type.lower(),saved_name,saved.id,
+                      parent_type.lower(),parent_internal_id,parent_id]],
+                    header
+                    )
+                nodes.append(vals)
+                write_out_csv(id_tracking_file,values=vals)
+
         except Exception, e:
             log.exception(e)
             raise e
