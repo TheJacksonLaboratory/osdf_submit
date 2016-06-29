@@ -27,3 +27,4 @@ pip-delete-this-directory.txt
 # username/password files
 auth/*
 prediabetes_node_id_tracking.csv
+*.log
