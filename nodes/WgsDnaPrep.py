@@ -9,7 +9,7 @@ from cutlass.WgsDnaPrep import WgsDnaPrep
 import settings
 from cutlass_utils import \
         load_data, get_parent_node_id, \
-        list_tags, format_query, \
+        list_tags, format_query, write_csv_headers, \
         values_to_node_dict, write_out_csv, get_field_header, \
         log_it, dump_args
 
@@ -255,6 +255,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
 def submit(data_file, id_tracking_file=node_tracking_file):
     log.info('Starting submission of %ss.', node_type)
     nodes = []
+    write_csv_headers(data_file,field_list=get_field_header(data_file))
     for record in load_data(data_file):
         log.info('\n...next record...')
         try:

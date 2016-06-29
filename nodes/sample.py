@@ -9,7 +9,7 @@ from cutlass.Sample import Sample
 import settings
 from cutlass_utils import \
         load_data, get_parent_node_id, \
-        list_tags, format_query, \
+        list_tags, format_query, write_csv_headers, \
         values_to_node_dict, write_out_csv, get_field_header, \
         log_it, dump_args
 
@@ -151,23 +151,10 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
         return False
 
 
-def write_csv_headers(base_filename='data_file', fieldname_list=[]):
-    """init other csv files (invalid, unsaved, etc) with fieldname headers"""
-    # TODO:  ?? use DictWriter.writeheader() instead ??
-    err_file_appends = ['_unsaved_records.csv',
-                        '_invalid_records.csv',
-                        '_submitted.csv']
-    [ write_out_csv(
-        base_filename+suff,
-        fieldnames=fieldname_list,
-        values=[fieldname_list,])
-        for suff in err_file_appends
-        if not os.path.exists(base_filename+suff) ]
-
-
 def submit(data_file, id_tracking_file=node_tracking_file):
     log.info('Starting submission of %ss.', node_type)
     nodes = []
+    write_csv_headers(data_file,field_list=get_field_header(data_file))
     for record in load_data(data_file):
         # write_csv_headers(data_file, record.keys()) # done by hand
         log.debug('...next record...')

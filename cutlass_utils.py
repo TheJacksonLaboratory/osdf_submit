@@ -11,7 +11,7 @@ import time
 import cutlass
 import settings
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Functional ~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Functional ~~~~~
 # Log It!
 def log_it(filename=os.path.basename(__file__)):
     """log_it setup"""
@@ -19,7 +19,8 @@ def log_it(filename=os.path.basename(__file__)):
     logfile = curtime + '_osdf_submit.log'
 
     loglevel = logging.DEBUG
-    logFormat="%(asctime)s %(levelname)5s: %(name)15s %(funcName)15s: %(message)s"
+    logFormat = \
+        "%(asctime)s %(levelname)5s: %(name)15s %(funcName)s: %(message)s"
 
     logging.basicConfig(format=logFormat)
     l = logging.getLogger(filename)
@@ -36,9 +37,21 @@ def log_it(filename=os.path.basename(__file__)):
     fh.setLevel(loglevel)
     fh.setFormatter(formatter)
     l.addHandler(fh)
+
     return l
 log = log_it()
 # log.setLevel(logging.INFO)
+
+# # Cutlass logging:
+# logFormat = \
+#     "%(asctime)s %(levelname)5s: %(name)15s %(funcName)s: %(message)s"
+# formatter = logging.Formatter(logFormat)
+# root = logging.getLogger()
+# root.setLevel(logging.DEBUG)
+# ch = logging.StreamHandler(sys.stdout)
+# ch.setLevel(logging.DEBUG)
+# ch.setFormatter(formatter)
+# root.addHandler(ch)
 
 # dump_args decorator
 # orig from: https://wiki.python.org/moin/PythonDecoratorLibrary#Easy_Dump_of_Function_Arguments
@@ -129,6 +142,20 @@ def write_out_csv(csv_file,fieldnames=id_fields,values=[]):
                 writer.writeheader()
     except IOError, e:
         raise e
+
+
+def write_csv_headers(base_filename='node_data_file', field_list=[]):
+    """init other csv files (invalid, unsaved, etc) with fieldname headers"""
+    err_file_appends = ['_unsaved_records.csv',
+                        '_invalid_records.csv',
+                        '_records_no_submit.csv',
+                        '_submitted.csv',
+                        ]
+    [ write_out_csv(
+        base_filename+suff,
+        fieldnames=field_list,
+        for suff in err_file_appends
+        if not os.path.exists(base_filename+suff) ]
 
 
 def values_to_node_dict(values=[],keynames=id_fields):
@@ -253,6 +280,7 @@ def run_tests():
     # print('field_names_read2: '+str(field_names_read2))
 
     failures += 1 if field_names1 != field_names_read2 else 0
+    log.warning('Test: fieldnames equal: %s', 'Y' if failures==0 else 'N')
 
     log.warn('Tests run: %s', tests)
     log.warn('Test failures: %s', failures)
