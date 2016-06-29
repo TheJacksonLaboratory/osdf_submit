@@ -42,17 +42,6 @@ def log_it(filename=os.path.basename(__file__)):
 log = log_it()
 # log.setLevel(logging.INFO)
 
-# # Cutlass logging:
-# logFormat = \
-#     "%(asctime)s %(levelname)5s: %(name)15s %(funcName)s: %(message)s"
-# formatter = logging.Formatter(logFormat)
-# root = logging.getLogger()
-# root.setLevel(logging.DEBUG)
-# ch = logging.StreamHandler(sys.stdout)
-# ch.setLevel(logging.DEBUG)
-# ch.setFormatter(formatter)
-# root.addHandler(ch)
-
 # dump_args decorator
 # orig from: https://wiki.python.org/moin/PythonDecoratorLibrary#Easy_Dump_of_Function_Arguments
 def dump_args(func):
@@ -153,7 +142,7 @@ def write_csv_headers(base_filename='node_data_file', field_list=[]):
                         ]
     [ write_out_csv(
         base_filename+suff,
-        fieldnames=field_list,
+        fieldnames=field_list)
         for suff in err_file_appends
         if not os.path.exists(base_filename+suff) ]
 
