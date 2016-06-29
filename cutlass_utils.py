@@ -183,7 +183,7 @@ def get_parent_node_id(id_file_name, node_type, parent_id):
         for row in load_data(id_file_name):
             if re.match(node_type,row['node_type']):
                 # node_ids.append(row.parent_id)
-                if re.match(parent_id,row['internal_id']):
+                if re.match(parent_id.lower(),row['internal_id']):
                     log.debug('--> matching node row: '+ str(row))
                     log.debug('parent type: {}, osdf_node_id: {}'.format(
                         node_type,str(row['osdf_node_id'])))
