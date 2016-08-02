@@ -105,11 +105,11 @@ def build_id_ref_map(ref_csv):
     return ref_map
 
 
-def replace_ids(ref_map_file,csv_mod_file,match_field='Final Sample Name'):
+def replace_ids(ref_map_file,csv_mod_file,match_field='old_sample_name'):
     """replace all matching id strings in csv_mod_file, using ref_map_file
        dict for reference."""
     csv_field_names = get_field_header(csv_mod_file)
-    new_field_name = 'New Final Sample Name'
+    new_field_name = 'Random ' + match_field
 
     # insert new column just after matched column
     csv_field_names.insert(csv_field_names.index(match_field)+1,new_field_name)
@@ -127,11 +127,14 @@ def replace_ids(ref_map_file,csv_mod_file,match_field='Final Sample Name'):
         """search row[match_field] for match with key to orig id
            and insert new column with matching new id or empty string
         """
-        match_id= row[match_field]
+        match_id = row[match_field]
 
         for old_id,new_id in ref_dict.items():
-            if re.match(old_id,match_id):
-                row[new_field_name] = re.sub(old_id,new_id,match_id,count=1)
+            old_patt = re.subn('-','[-_]',old_id)[0]
+            # log.info('--> old_patt %s, match_id %s', old_patt, match_id)
+            if re.search(old_patt,match_id):
+                # log.info('--> Match %s == %s', old_patt, match_id)
+                row[new_field_name] = re.subn(old_patt,new_id,match_id,count=1)[0]
 
         new_rows.append(row)
 
@@ -145,14 +148,17 @@ if __name__ == '__main__':
 
         Must be run from within the directory containing the id mapping csv!
     """
+    # default_match_field = 'sheet_sample_name'
+    default_match_field = 'Final Sample Name'
 
     if len(sys.argv)<2:
         log.error("Usage: %s csv_file_name_to_modify.csv\n"
-              "NOTE: this presumes field_name_to_match == 'Final Sample Name'",
-              os.path.basename(sys.argv[0]))
+              "NOTE: this presumes field_name_to_match == %s",
+              os.path.basename(sys.argv[0]),
+              default_match_field)
         sys.exit(1)
     else:
         csv_file = sys.argv[1] # presume first arg is file to search/modify
         map_file = 'hmp2_stanford_subject_id_replacements.csv'
 
-    replace_ids(map_file,csv_file)
+    replace_ids(map_file,csv_file,match_field=default_match_field)

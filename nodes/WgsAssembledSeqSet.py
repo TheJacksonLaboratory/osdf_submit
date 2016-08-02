@@ -4,7 +4,7 @@
 import os
 import re
 
-from cutlass.SixteenSTrimmedSeqSet import SixteenSTrimmedSeqSet
+from cutlass.WgsAssembledSeqSet import WgsAssembledSeqSet
 
 import settings
 from cutlass_utils import \
@@ -16,13 +16,13 @@ filename=os.path.basename(__file__)
 log = log_it(filename)
 
 # the Higher-Ups
-node_type          = 'SixteenSTrimmedSeqSet'
-parent_type        = 'SixteenSRawSeqSet'
-grand_parent_type  = 'SixteenSDnaPrep'
-great_parent_type  = 'sample'
-great_great1_type  = 'visit'
-great_great2_type  = 'subject'
-great_great3_type  = 'study'
+node_type          = 'WgsAssembledSeqSet'
+parent_type        = 'WgsRawSeqSet'
+grand_parent_type  = 'WgsDnaPrep'
+great_parent_type  = 'Sample'
+great_great1_type  = 'Visit'
+great_great2_type  = 'Subject'
+great_great3_type  = 'Study'
 
 node_tracking_file = settings.node_id_tracking.path
 

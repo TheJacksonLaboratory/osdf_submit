@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import json
+import logging
 
 from cutlass import iHMPSession
 
 import settings
 from cutlass_utils import \
-        load_data, get_parent_node_id, \
-        list_tags, format_query, \
-        values_to_node_dict, write_out_csv, get_field_header, \
-        log_it, dump_args
+        load_data, get_parent_node_id, list_tags, format_query, \
+        write_csv_headers, values_to_node_dict, write_out_csv, \
+        get_field_header, dump_args, log_it
 
 log = log_it('osdf_submit')
 log.info('Starting metadata submission to OSDF server.')
@@ -60,34 +61,45 @@ def main():
     # -> 124 Submitted successfully
 
     """ Visit node """
-    from nodes import visit
-    visit_nodes = visit.submit(settings.NodeDataFiles['Visit'])
-    # -> 546 submitted and linked successfully
+    # from nodes import visit
+    # visit_nodes = visit.submit(settings.NodeDataFiles['Visit'])
+    # -> 721 submitted and linked successfully
+    #    (30 extra visit nodes unable to delete! Sent email to Victor.)
 
     """ Sample node """
     from nodes import sample
     sample_nodes = sample.submit(settings.NodeDataFiles['Sample'])
-    # -> 1403 submitted and linked successfully
+    # -> 630 submitted and linked successfully
+
 
     """ 16S DNA Prep node """
-    from nodes import r16sDnaPrep
-    r16_dna_nodes = r16sDnaPrep.submit(settings.NodeDataFiles['r16sDnaPrep'])
-    # -> 149 submitted and linked successfully
+    # from nodes import r16sDnaPrep
+    # r16_dna_nodes = r16sDnaPrep.submit(settings.NodeDataFiles['r16sDnaPrep'])
+    # -> 226 submitted and linked successfully
 
     """ 16S Raw Sequence Set node """
-    from nodes import r16sRawSeqSet
-    raw_seq_nodes = r16sRawSeqSet.submit(settings.NodeDataFiles['r16sRawSeqs'])
-    # -> 149 submitted and linked successfully
+    # from nodes import r16sRawSeqSet
+    # raw_seq_nodes = r16sRawSeqSet.submit(settings.NodeDataFiles['r16sRawSeqs'])
+    # -> 226 submitted and linked successfully
+
     """ 16S Trimmed Sequence Set node """
-    from nodes import r16sTrimSeqSet
-    trim_nodes = r16sTrimSeqSet.submit(settings.NodeDataFiles['r16sTrimSeqs'])
+    # from nodes import r16sTrimSeqSet
+    # trim_nodes = r16sTrimSeqSet.submit(settings.NodeDataFiles['r16sTrimSeqs'])
+    # -> 219 submitted and linked successfully
+
 
     """ WGS DNA Prep node """
     # from nodes import WgsDnaPrep
     # wgs_dna_nodes = WgsDnaPrep.submit(settings.NodeDataFiles['WgsDnaPrep'])
+
     """ WGS Raw Sequence Set node """
     # from nodes import WgsRawSeqSet
     # wgs_raw_nodes = WgsRawSeqSet.submit(settings.NodeDataFiles['WgsRawSeqs'])
+
+    """ WGS Assembled Sequence Set node """
+    # from nodes import WgsAsseembledSeqSet
+    # wgs_asseembled_nodes = WgsAsseembledSeqSet.submit(settings.NodeDataFiles['WgsAssembledSeqs'])
+
 
     """ RNASeq DNA Prep node """
     # from nodes import ?????????
@@ -95,5 +107,15 @@ def main():
 
 
 if __name__ == '__main__':
-    import sys
+    # imclude Cutlass Library logging:
+    # root = logging.getLogger()
+    # root.setLevel(logging.DEBUG)
+    # ch = logging.StreamHandler(sys.stdout)
+    # ch.setLevel(logging.DEBUG)
+    # formatter = logging.Formatter(
+        # "%(asctime)s %(levelname)5s: %(name)15s %(funcName)s: %(message)s"
+        # )
+    # ch.setFormatter(formatter)
+    # root.addHandler(ch)
+
     sys.exit(main())

@@ -2,15 +2,15 @@
 """ load Visit into OSDF using info from data file """
 
 import os
+import re
 
 from cutlass.Visit import Visit
 
 import settings
 from cutlass_utils import \
-        load_data, get_parent_node_id, \
-        list_tags, format_query, write_csv_headers, \
-        values_to_node_dict, write_out_csv, get_field_header, \
-        log_it, dump_args
+        load_data, get_parent_node_id, list_tags, format_query, \
+        write_csv_headers, values_to_node_dict, write_out_csv, \
+        get_field_header, dump_args, log_it
 
 filename=os.path.basename(__file__)
 log = log_it(filename)
@@ -37,11 +37,14 @@ def load(internal_id, search_field, parent_id):
     NodeTypeName = Visit
     NodeLoadFunc = NodeTypeName.load
 
+    log.debug('In load(%s, %s) using node (%s, %s)',
+              internal_id, search_field, NodeTypeName, NodeLoadFunc)
+
     try:
         query = format_query(internal_id, field=search_field)
         results = NodeTypeName.search(query)
         for node in results:
-            if internal_id in getattr(node, search_field):
+            if internal_id == getattr(node, search_field):
                 return NodeLoadFunc(node)
         # no match, return new, empty node:
         node = NodeTypeName()
@@ -56,11 +59,14 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
        if valid, save, if not, return false
     """
     log.info("in validate/save: "+node_type)
+    csv_fieldnames = get_field_header(data_file_name)
+    write_csv_headers(data_file_name,fieldnames=csv_fieldnames)
+
     node.visit_id = record['visit_id']
     node.visit_number = int(record['visit_number'])
     node.interval = int(record['interval'])
     node.tags = list_tags(node.tags,
-                'test', # for debug!!
+                # 'test', # for debug!!
                 'rand_subject_id: '+record['rand_subject_id'],
                 'study: prediabetes',
                 # 'study: '+record['study'],
@@ -79,7 +85,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
         # raise Exception(err_str)
     elif node.save():
         write_out_csv(data_file_name+'_submitted.csv',
-                      fieldnames=record.keys(),values=[record,])
+                      fieldnames=csv_fieldnames,values=[record,])
         return node
     else:
         write_out_csv(data_file_name+'_unsaved_records.csv',
@@ -90,7 +96,8 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
 def submit(data_file, id_tracking_file=node_tracking_file):
     log.info('Starting submission of %ss.', node_type)
     nodes = []
-    write_csv_headers(data_file,field_list=get_field_header(data_file))
+    csv_fieldnames = get_field_header(data_file)
+    write_csv_headers(data_file,fieldnames=csv_fieldnames)
     for record in load_data(data_file):
         if record['consented'] == 'YES' \
         and record['visit_number'] != 'UNK':
@@ -125,7 +132,9 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                         header
                         )
                     nodes.append(vals)
-                    write_out_csv(id_tracking_file,values=vals)
+                    write_out_csv(id_tracking_file,
+                                  fieldnames=get_field_header(id_tracking_file),
+                                  values=vals)
 
             except Exception, e:
                 log.exception(e)

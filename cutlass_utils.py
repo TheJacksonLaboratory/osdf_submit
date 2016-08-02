@@ -7,8 +7,10 @@ import csv
 import re
 import logging
 import time
+import importlib
 
 import cutlass
+
 import settings
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Functional ~~~~~
@@ -21,24 +23,30 @@ def log_it(filename=os.path.basename(__file__)):
     loglevel = logging.DEBUG
     logFormat = \
         "%(asctime)s %(levelname)5s: %(name)15s %(funcName)s: %(message)s"
+    formatter = logging.Formatter(logFormat)
 
     logging.basicConfig(format=logFormat)
     l = logging.getLogger(filename)
     l.setLevel(loglevel)
 
-    formatter = logging.Formatter(logFormat)
+    root = logging.getLogger()
+    root.setLevel(loglevel)
 
     # ch = logging.StreamHandler()
     # ch.setLevel(loglevel)
     # ch.setFormatter(formatter)
+    # root.addHandler(ch)
     # l.addHandler(ch)
 
     fh = logging.FileHandler(logfile, mode='a')
     fh.setLevel(loglevel)
     fh.setFormatter(formatter)
+
+    root.addHandler(fh)
     l.addHandler(fh)
 
     return l
+
 log = log_it()
 # log.setLevel(logging.INFO)
 
@@ -133,7 +141,7 @@ def write_out_csv(csv_file,fieldnames=id_fields,values=[]):
         raise e
 
 
-def write_csv_headers(base_filename='node_data_file', field_list=[]):
+def write_csv_headers(base_filename='node_data_file', fieldnames=[]):
     """init other csv files (invalid, unsaved, etc) with fieldname headers"""
     err_file_appends = ['_unsaved_records.csv',
                         '_invalid_records.csv',
@@ -142,7 +150,7 @@ def write_csv_headers(base_filename='node_data_file', field_list=[]):
                         ]
     [ write_out_csv(
         base_filename+suff,
-        fieldnames=field_list)
+        fieldnames=fieldnames)
         for suff in err_file_appends
         if not os.path.exists(base_filename+suff) ]
 
@@ -152,7 +160,7 @@ def values_to_node_dict(values=[],keynames=id_fields):
        This converts to list of dicts
     """
     from collections import OrderedDict
-    log.info('In values_to_node_dict')
+    log.debug('In values_to_node_dict')
     final_list = []
 
     key_dict = OrderedDict()
@@ -195,7 +203,7 @@ def get_parent_node_id(id_file_name, node_type, parent_id):
     except Exception, e:
         raise e
 
-# @dump_args
+
 def get_child_node_ids(id_file_name, node_type, parent_id):
     """ read node ids from csv tracking file
         yield "child" node ids matching node_type
@@ -212,7 +220,39 @@ def get_child_node_ids(id_file_name, node_type, parent_id):
         raise e
 
 
-# @dump_args
+def load_node(internal_id, search_field, node_type, node_load_func):
+    """search and load nodes, as specified in arguments, else create new"""
+
+    # node-specific variables:
+    NodeType = importlib.import_module('cutlass.'+node_type)
+    NodeTypeName = getattr(NodeType, node_type)
+    NodeLoadFunc = getattr(NodeTypeName, node_load_func)
+    NodeSearch = getattr(NodeTypeName, 'search')
+
+    log.info('In load(%s, %s) using node(%s, %s)',
+             internal_id, search_field, NodeTypeName, NodeLoadFunc)
+
+    try:
+        query = format_query(internal_id, field=search_field)
+        results = NodeSearch(query)
+        log.debug('results: %s', results)
+        for node in results:
+            getattr_search_field = \
+                    format_query(getattr(node, search_field),
+                                 field=search_field)
+            # log.debug('getattr: %s', getattr(node, search_field))
+            log.debug('getattr: %s', getattr_search_field)
+            # if internal_id == getattr(node, search_field):
+            if query == getattr_search_field:
+                log.debug('found node: %s', getattr_search_field)
+                return NodeLoadFunc(node)
+        # no match, return new, empty node:
+        node = NodeTypeName()
+        return node
+    except Exception, e:
+        raise e
+
+
 def format_query(strng, patt='[-. ]', field='rand_subj_id', mode='&&'):
     """format OQL query by removing characterset (e.g. '[-\.]')
            1) Split 'strng' on 'patt';

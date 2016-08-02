@@ -11,6 +11,12 @@
         PROJ_Joriginal_Jlibrary_Tn_Bn_0000_SeqType_TissueSource_CollabID_RunID
 """
 
+"""
+File: dcc_submission_file_name_change.py
+Author: Benjamin Leopold
+Date: 2016-06-15T09:35:41
+"""
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Imports ~~~~~
 import sys
 import os
@@ -118,6 +124,32 @@ def checksums(filename):
 
     return (md5_str, sha256_str)
 
+def generate_tar(file_prefix="", outfile='list.log.csv'):
+    """generate tar.bz2 archives, run md5sum and sha256sum
+       then write file_name, file_size, md5sum, sha256sum values to csv outfile
+    """
+    fields = ['local_file','size','md5','sha256']
+    try:
+        if os.path.exists(outfile) and os.path.getsize(outfile) >= 0:
+            tar_file = file_prefix + '.raw.fastq.tar
+            tar_cmd = ['tar', 'cf', tar_file, file_prefix+'*fastq*']
+            tar_stat = get_output(tar_cmd)
+
+            (md5_str, sha_str) = checksums(tar_file)
+
+            tar_size = os.stat(tar_file).st_size
+            values = [{'local_file':tar_file,'size':tar_size,
+                       'md5':md5_str,'sha256':sha_str}]
+            write_out_csv(outfile, fields, values)
+            log.info('Archive file created: '+tar_file)
+
+        else:
+            write_out_csv(outfile, fields) #write headers
+
+    except Exception, e:
+        log.error('Uh-Oh... %s', e)
+        raise e  # (or?) continue with log to show error
+
 def generate_tarbz(file_prefix="", outfile='list.log.csv'):
     """generate tar.bz2 archives, run md5sum and sha256sum
        then write file_name, file_size, md5sum, sha256sum values to csv outfile
@@ -193,6 +225,7 @@ def archive_fastq_files(args):
     """
 
     map_file = args.mapping_file
+    checksum_file = args.checksum_list_file
 
     archived = 0
     errored = 0
@@ -202,7 +235,7 @@ def archive_fastq_files(args):
         if row['dcc_file_base'] != '': #row is not empty
             dest = row['dcc_file_base']
             try:
-                tar_status = generate_tarbz(dest)
+                tar_status = generate_tar(dest, outfile=checksum_file)
                 archived += 1
 
             except Exception, e:
@@ -331,6 +364,6 @@ if __name__ == '__main__':
         checksum_list_file = '/data/HMP2/20160622-checksums.csv'
 
     # write_checksum_list(args)
+    # dir_checksum(args)
+    rename_files(args)
     # archive_fastq_files(args)
-    dir_checksum(args)
-    # rename_files(args)
