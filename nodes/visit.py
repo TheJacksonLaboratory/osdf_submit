@@ -10,7 +10,7 @@ import settings
 from cutlass_utils import \
         load_data, get_parent_node_id, list_tags, format_query, \
         write_csv_headers, values_to_node_dict, write_out_csv, \
-        get_field_header, dump_args, log_it
+        load_node, get_field_header, dump_args, log_it
 
 filename=os.path.basename(__file__)
 log = log_it(filename)
@@ -30,27 +30,14 @@ class node_values:
     tags = ['rand_subject_id: ','sub_study: ','study: ']
 
 
-def load(internal_id, search_field, parent_id):
+def load(internal_id, search_field):
     """search for existing node to update, else create new"""
 
     # node-specific variables:
-    NodeTypeName = Visit
-    NodeLoadFunc = NodeTypeName.load
+    NodeTypeName = 'Visit'
+    NodeLoadFunc = 'load'
 
-    log.debug('In load(%s, %s) using node (%s, %s)',
-              internal_id, search_field, NodeTypeName, NodeLoadFunc)
-
-    try:
-        query = format_query(internal_id, field=search_field)
-        results = NodeTypeName.search(query)
-        for node in results:
-            if internal_id == getattr(node, search_field):
-                return NodeLoadFunc(node)
-        # no match, return new, empty node:
-        node = NodeTypeName()
-        return node
-    except Exception, e:
-        raise e
+    return load_node(internal_id, search_field, NodeTypeName, NodeLoadFunc)
 
 
 def validate_record(parent_id, node, record, data_file_name=node_type):
@@ -117,7 +104,7 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                 # grand_parent_id = get_parent_node_id(
                     # id_tracking_file, grand_parent_type, grand_parent_internal_id)
 
-                node = load(internal_id, load_search_field, parent_id)
+                node = load(internal_id, load_search_field)
                 if not getattr(node, load_search_field):
                     log.debug('loaded node newbie...')
 

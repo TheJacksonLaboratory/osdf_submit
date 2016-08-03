@@ -178,8 +178,8 @@ def load(internal_id, search_field):
     """search for existing node to update, else create new"""
 
     # node-specific variables:
-    NodeTypeName = WgsDnaPrep
-    NodeLoadFunc = NodeTypeName.load_wgsDnaPrep
+    NodeTypeName = 'WgsDnaPrep'
+    NodeLoadFunc = 'load_wgsDnaPrep'
 
     return load_node(internal_id, search_field, NodeTypeName, NodeLoadFunc)
 

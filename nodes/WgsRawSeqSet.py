@@ -58,8 +58,8 @@ def load(internal_id, search_field):
     """search for existing node to update, else create new"""
 
     # node-specific variables:
-    NodeTypeName = WgsRawSeqSet
-    NodeLoadFunc = NodeTypeName.load_wgsRawSeqSet
+    NodeTypeName = 'WgsRawSeqSet'
+    NodeLoadFunc = 'load_wgsRawSeqSet'
 
     return load_node(internal_id, search_field, NodeTypeName, NodeLoadFunc)
 

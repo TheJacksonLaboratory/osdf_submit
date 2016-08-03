@@ -97,7 +97,7 @@ def main():
     # wgs_raw_nodes = WgsRawSeqSet.submit(settings.NodeDataFiles['WgsRawSeqs'])
 
     """ WGS Assembled Sequence Set node """
-    # from nodes import WgsAsseembledSeqSet
+    # from nodes import WgsAssembledSeqSet
     # wgs_asseembled_nodes = WgsAsseembledSeqSet.submit(settings.NodeDataFiles['WgsAssembledSeqs'])
 
 

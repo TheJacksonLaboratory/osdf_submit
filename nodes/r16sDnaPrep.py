@@ -10,7 +10,7 @@ import settings
 from cutlass_utils import \
         load_data, get_parent_node_id, list_tags, format_query, \
         write_csv_headers, values_to_node_dict, write_out_csv, \
-        get_field_header, dump_args, log_it
+        load_node, get_field_header, dump_args, log_it
 
 filename = os.path.basename(__file__)
 log = log_it(filename)
@@ -177,27 +177,10 @@ def load(internal_id, search_field):
     """search for existing node to update, else create new"""
 
     # node-specific variables:
-    NodeTypeName = SixteenSDnaPrep
-    NodeLoadFunc = NodeTypeName.load_sixteenSDnaPrep
+    NodeTypeName = 'SixteenSDnaPrep'
+    NodeLoadFunc = 'load_sixteenSDnaPrep'
 
-    log.info('In load(%s, %s) using node (%s, %s)',
-              internal_id, search_field, NodeTypeName, NodeLoadFunc)
-
-    try:
-        query = format_query(internal_id, field=search_field)
-        results = NodeTypeName.search(query)
-        log.debug('results: %s', results)
-        for node in results:
-            log.debug('getattr: %s', getattr(node, search_field))
-            if internal_id == getattr(node, search_field):
-                log.debug('found node: %s', getattr(node, search_field))
-                return NodeLoadFunc(node)
-        # no match, return new, empty node:
-        node = NodeTypeName()
-        log.debug('new node: %s', getattr(node, search_field))
-        return node
-    except Exception, e:
-        raise e
+    return load_node(internal_id, search_field, NodeTypeName, NodeLoadFunc)
 
 
 # @dump_args
