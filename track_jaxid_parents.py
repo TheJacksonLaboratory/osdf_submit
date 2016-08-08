@@ -220,16 +220,19 @@ def which_parent_type(id_type):
 
 
 def get_received_id(idrow):
-    """use get_parent_id to track recursively"""
-    parent_id = idrow['parent_id']
-    if parent_id = 'received':
-        return parent_id
-    elif parent_id in settings.id_ref_map:
-        return get_received_id(idrow)
-    else:
-        return ''
+    """use get_parent_id to track recursively to original sample received"""
+    # fieldnames = ['jaxid', 'parent_id']
+    try:
+        parent_id = idrow['parent_id']
+        if parent_id == 'received':
+            return idrow['jaxid']
+        elif parent_id in settings.id_ref_map:
+            return get_received_id(settings.id_ref_map[parent_id])
+        else:
+            return ''
 
-
+    except Exception, e:
+        raise e
 
 
 def track_library_parents(library_csv, outfile):
@@ -253,9 +256,9 @@ def track_library_parents(library_csv, outfile):
             try:
                 jaxid = row['jaxid']
                 row['jaxid_parent'] = get_received_id(idrow)
-                write_out_csv(outfile, outfields, [row])
             except Exception, e:
                 raise e
+        write_out_csv(outfile, outfields, [row])
 
     return True
 
