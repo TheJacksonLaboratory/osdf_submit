@@ -256,7 +256,7 @@ def track_library_parents(library_csv, outfile):
     """
     log.debug("in function: %s", 'track_library_parents')
     jaxid_lib = settings.jaxid_lib_fieldname
-    outfile = sample_list_in+'_merged.csv'
+    outfile = library_csv+'_merged.csv'
     outfields = get_field_header(library_csv)
     outfields.insert(outfields.index(
                      settings.jaxid_lib_fieldname)+1,
