@@ -8,11 +8,12 @@ Description: Tracks parents and children within jaxid hierarchy.
              Matches all sequence prep (dna, rna, 16s) with samples via jaxids.
 
 Usage:
-    track_jaxid_parents -l <jaxid_libaries.csv> -o outfile(stdout)
+    merge_samples_jaxids_preps -l <jaxid_libaries.csv> -o outfile(stdout)
 
 """
 
 # TODO: move from reference spreadsheet usage to direct jaxid_db checking
+# TODO: troubleshoot use of OrderedDict's for columns in resulting spreadsheets
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Imports ~~~~~
 from __future__ import print_function
@@ -62,7 +63,7 @@ def log_it(logname=os.path.basename(__file__)):
     logger.addHandler(fh)
     return logger
 
-log = log_it('track_jaxid_parents')
+log = log_it()
 
 
 def get_field_header(csv_file):
@@ -118,7 +119,20 @@ def write_out_csv(csv_file,fieldnames,values=[]):
                 writer.writeheader()
     except IOError, e:
         func_name = 'write_out_csv'
-        raise '{}: {}'.format(func_name, str(e))
+        log.exception('{}: {}'.format(func_name, str(e)))
+        raise e
+
+
+def merge_ordered_dicts(*dicts):
+    """function to traverse items() of each dict as passed, in order.
+       Then gather all from iterator into single var to return.
+    """
+    from itertools import chain
+    chunk = {}
+    for (k,v) in chain.from_iterable([d.items() for d in dicts]):
+        chunk[k] = v
+    return chunk
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   Local Functions   ~~~~~
 
@@ -141,7 +155,8 @@ def get_parent_node_id(ref_map, jaxid, parent_id):
                 # log.debug('--> no match node row: '+ str(node_type))
     except Exception, e:
         func_name = 'get_parent_node_id'
-        raise '{}: {}'.format(func_name, str(e))
+        log.exception('{}: {}'.format(func_name, str(e)))
+        raise e
 
 
 def get_child_node_ids(id_file_name, node_type, parent_id):
@@ -159,7 +174,8 @@ def get_child_node_ids(id_file_name, node_type, parent_id):
                     return row['osdf_node_id']
     except Exception, e:
         func_name = 'get_child_node_id'
-        raise '{}: {}'.format(func_name, str(e))
+        log.exception('{}: {}'.format(func_name, str(e)))
+        raise e
 
 
 def build_id_ref_map(ref_in):
@@ -232,7 +248,7 @@ def which_parent_type(id_type):
 
 def get_received_id(idrow):
     """use get_parent_id to track recursively to original sample received"""
-    log.debug("in function: %s", 'get_received_id')
+    # log.debug("in function: %s", 'get_received_id')
     # fieldnames = ['jaxid', 'parent_id']
     try:
         parent_id = idrow['parent_id']
@@ -245,7 +261,8 @@ def get_received_id(idrow):
 
     except Exception, e:
         func_name = 'get_received_id'
-        raise '{}: {}'.format(func_name, str(e))
+        log.exception('{}: {}'.format(func_name, str(e)))
+        raise e
 
 
 def track_library_parents(library_csv, outfile):
@@ -276,15 +293,16 @@ def track_library_parents(library_csv, outfile):
                     row['jaxid_parent'] = get_received_id(idrow)
                 except Exception, e:
                     raise e
+            write_out_csv(outfile, outfields, [row])
+            if row['jaxid_parent'] in parent_id_map:
+                parent_id_map[row['jaxid_parent']].append(row)
+            else:
+                parent_id_map[row['jaxid_parent']] = [row]
         except Exception, e:
             func_name = 'track_library_parents'
-            raise '{}: {}'.format(func_name, str(e))
-        write_out_csv(outfile, outfields, [row])
-        parent_id_map[row['jaxid_parent']] = row
-        # log.debug("parent_id_map row: ")
-        # log.debug(row)
+            log.exception('{}: {}'.format(func_name, str(e)))
+            raise e
 
-    # log.debug('parent_id_map: %s', str(parent_id_map))
     log.debug("done function: %s", 'track_library_parents')
     return parent_id_map
 
@@ -305,8 +323,9 @@ def merge_library_prep_ids_w_sample_list(sample_list_in,
     #           str(outfields))
     # outfields.extend(get_field_header(args.library_csv))
     pv = parent_id_map.itervalues()
-    outfields.extend(pv.next())
-    log.debug("func: %s, fieldnames: %s", 'merge_library_prep...',
+    outfields.extend(pv.next()[0].keys())
+    log.debug("func: %s, fieldnames: %s",
+              'merge_library_prep...',
               str(outfields))
     write_out_csv(outfile, outfields) # field headers
 
@@ -320,22 +339,25 @@ def merge_library_prep_ids_w_sample_list(sample_list_in,
                           'merge_library_prep...',
                           jaxid_sample)
                 if jaxid_sample in parent_id_map:
-                    log.debug('function: %s, items: %s',
-                              'merge_library_prep...',
-                              parent_id_map[jaxid_sample])
-                    sampleidvals = srow.update(
-                                               dict(parent_id_map[jaxid_sample]))
-                    log.debug('function: %s, idvals: %s',
-                              'merge_library_prep...',
-                              str(sampleidvals)
-                             )
-                    write_out_csv(outfile, outfields, [sampleidvals])
+                    for libidrow in [row for row in
+                            parent_id_map[jaxid_sample][:]]:
+                        log.debug('function: %s, items: %s',
+                                  'merge_library_prep...',
+                                  str(libidrow))
+                        sampleidvals = merge_ordered_dicts(srow, libidrow)
+                        log.debug('function: %s, idvals: %s',
+                                  'merge_library_prep...',
+                                  str(sampleidvals)
+                                  # parent_id_map[jaxid_sample].items()
+                                 )
+                        write_out_csv(outfile, outfields, [sampleidvals])
             else:
                 write_out_csv(outfile, outfields, [srow])
 
         except Exception, e:
             func_name = 'merge_library_prep_ids_w_sample_list'
-            raise '{}: {}'.format(func_name, str(e))
+            log.exception('{}: {}'.format(func_name, str(e)))
+            raise e
 
     log.debug("done function: %s", 'merge_library_prep_ids_w_sample_list')
     return True
