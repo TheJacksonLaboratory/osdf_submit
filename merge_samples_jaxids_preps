@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-File: track_jaxid_parents.py
+File: merge_samples_jaxids_preps
 Author: Benjamin Leopold
 Date: 2016-08-05T12:59:11
 Description: Tracks parents and children within jaxid hierarchy.
+             Matches all sequence prep (dna, rna, 16s) with samples via jaxids.
 
 Usage:
     track_jaxid_parents -l <jaxid_libaries.csv> -o outfile(stdout)
@@ -23,6 +24,7 @@ import json
 import yaml
 import logging
 import argparse
+from collections import OrderedDict
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Constants ~~~~~
 COOLNESS = True
@@ -31,6 +33,10 @@ class settings():
     """default values for  settings"""
     jaxid_ref_file = 'jaxid_database_export_20160801.csv'
     id_ref_map = None
+    jaxid_sample_fieldname = 'jaxid_sample'
+    jaxid_lib_fieldname = 'jaxid_library'
+    parent_outfile = 'merged_parent_ids.csv'
+    sample_outfile = 'merged_samples.csv'
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Functional ~~~~~
 
@@ -61,10 +67,12 @@ log = log_it('track_jaxid_parents')
 
 def get_field_header(csv_file):
     """returns first row of csv file as list of fieldnames"""
-    log.info('Loading fields from {}'.format(csv_file))
+    log.info('Loading fieldnames from {}'.format(csv_file))
     with open(csv_file) as csvfh:
         try:
             reader = csv.DictReader(csvfh)
+            log.debug("func: %s, fieldnames: %s", 'get_field_header',
+                      str(reader.fieldnames))
             return reader.fieldnames
         except csv.Error as e:
             log.exception('Trying to read CSV file %s, line %d: %s',
@@ -100,7 +108,7 @@ def write_out_csv(csv_file,fieldnames,values=[]):
                 try:
                     for row in values:
                         if isinstance(row, dict):
-                            log.debug(row)
+                            log.debug('writerow: %s', str(row))
                             writer.writerow(row)
                 except Exception, e:
                     log.exception('Writing CSV file %s, %s', csv_file, str(e))
@@ -221,6 +229,7 @@ def which_parent_type(id_type):
 
 def get_received_id(idrow):
     """use get_parent_id to track recursively to original sample received"""
+    log.debug("in function: %s", 'get_received_id')
     # fieldnames = ['jaxid', 'parent_id']
     try:
         parent_id = idrow['parent_id']
@@ -239,27 +248,96 @@ def track_library_parents(library_csv, outfile):
     """Incoming: csv file with library jaxids
        Outgoing: csv outfile with new column 'jaxid_parent'
        Uses the 'settings.jaxid_ref_file' as mapping source.
-       Return: highest-level jaxid, either parent=received or
-               id_type=specimen.
+       Return: parent_id_map of all updated rows, for later use
     """
     log.debug("in function: %s", 'track_library_parents')
+    jaxid_lib = settings.jaxid_lib_fieldname
     outfields = get_field_header(library_csv)
-    outfields.insert(outfields.index('jaxid')+1, 'jaxid_parent')
+    outfields.insert(outfields.index(
+                     settings.jaxid_lib_fieldname)+1,
+                     'jaxid_parent')
     write_out_csv(outfile, outfields) # field headers
 
+    parent_id_map = {}
     for row in load_data(library_csv):
-        if row['jaxid'] in settings.id_ref_map:
-            idrow = (settings.id_ref_map[row['jaxid']])
-            idtype = which_id_type(idrow)
-            if not idtype:  # just in case there are not fields in that idrow
-                idtype = 'library'
-            try:
-                jaxid = row['jaxid']
-                row['jaxid_parent'] = get_received_id(idrow)
-            except Exception, e:
-                raise e
+        try:
+            row['jaxid_parent'] = ''
+            if row[jaxid_lib] in settings.id_ref_map:
+                idrow = settings.id_ref_map.get(row[jaxid_lib])
+                idtype = which_id_type(idrow)
+                if not idtype:  # just in case there are not fields in idrow
+                    idtype = 'library'
+                try:
+                    row['jaxid_parent'] = get_received_id(idrow)
+                except Exception, e:
+                    raise e
+        except Exception, e:
+            func_name = 'track_library_parents'
+            raise '{}: {}'.format(func_name, str(e))
         write_out_csv(outfile, outfields, [row])
+        parent_id_map[row['jaxid_parent']] = row
+        # log.debug("parent_id_map row: ")
+        # log.debug(row)
 
+    # log.debug('parent_id_map: %s', str(parent_id_map))
+    log.debug("done function: %s", 'track_library_parents')
+    return parent_id_map
+
+
+def merge_library_prep_ids_w_sample_list(sample_list_in,
+                                         parent_outfile,
+                                         parent_id_map):
+    """Usage: for seqprep rows with library jaxids matching to received ids
+              with the list of samples nodes.
+       Intent: create sheets of [dr]naprep node metadata.
+       Tactic: Use double-for loop in each of samples and parent_id_map
+    """
+    log.debug("Begin function: %s", 'merge_library_prep_ids_w_sample_list')
+    jaxid_sample_fieldname = settings.jaxid_sample_fieldname
+    sample_outfile = sample_list_in+'_merged.csv'
+    sample_outfields = get_field_header(sample_list_in)
+    # log.debug("func: %s, fieldnames: %s", 'merge_library_prep...'
+    #           str(sample_outfields))
+    # sample_outfields.extend(get_field_header(args.library_csv))
+    pv = parent_id_map.itervalues()
+    sample_outfields.extend(pv.next())
+    log.debug("func: %s, fieldnames: %s", 'merge_library_prep...',
+              str(sample_outfields))
+    write_out_csv(sample_outfile, sample_outfields) # field headers
+
+    # sample_id_map = {}
+    for srow in load_data(sample_list_in):
+        # log.debug("in function: %s, row: %s", 'merge_library_prep...', srow)
+        try:
+            jaxid_sample = srow.get(jaxid_sample_fieldname)
+            if jaxid_sample:
+                log.debug("function: %s, jaxid_sample: %s",
+                          'merge_library_prep...',
+                          jaxid_sample)
+                if jaxid_sample in parent_id_map:
+                    log.debug('function: %s, items: %s',
+                              'merge_library_prep...',
+                              parent_id_map[jaxid_sample])
+                    sampleidvals = srow.update(
+                                               dict(parent_id_map[jaxid_sample]))
+                    log.debug('function: %s, idvals: %s',
+                              'merge_library_prep...',
+                              str(sampleidvals)
+                             )
+                    write_out_csv(sample_outfile,
+                                  sample_outfields,
+                                  [sampleidvals]
+                                 )
+            else:
+                write_out_csv(sample_outfile,
+                              sample_outfields,
+                              [srow]
+                             )
+
+        except Exception, e:
+            raise e
+
+    log.debug("done function: %s", 'merge_library_prep_ids_w_sample_list')
     return True
 
 
@@ -271,14 +349,21 @@ def parse_args(args):
     parser = argparse.ArgumentParser()
     add = parser.add_argument
 
+    # add('-j', '--jaxid_lib_fieldname',
+    #     metavar='JAXID_LIB_FIELDNAME', default=settings,jaxid_lib_fieldname,
+    #     help="field name of beginning jaxid column {}".format(
+    #           settings.jaxid_lib_fieldname))
     add('-l', '--library_csv',
         metavar='LIBRARY_CSV', default=None,
-        help="CSV File containing column 'jaxid'")
+        help="CSV File containing column {}".format(settings.jaxid_lib_fieldname))
+    add('-s', '--sample_sheet',  ## requires library_csv!!
+        metavar='SAMPLE_CSV', default=None,
+        help="CSV File containing column {}".format(settings.jaxid_sample_fieldname))
     add('-o', '--outfile',
-        metavar='OUTFILE', default='parent_ids.csv',
+        metavar='OUTFILE', default=settings.parent_outfile,
         # type=argparse.FileType('a'),
         help='File to store output') # (default stdout)')
-    add("-j", "--jaxid_ref_file",
+    add("-r", "--jaxid_ref_file",
         metavar='JAXID_REF_FILE',
         default=settings.jaxid_ref_file,
         dest='ref_file',
@@ -293,26 +378,38 @@ def parse_args(args):
 def main(args):
     """get it done!"""
     success = False
-    if args.verbose:
-        log.setLevel(logging.DEBUG)
+    try:
+        if args.verbose:
+            log.setLevel(logging.DEBUG)
 
-    # ref_file = settings.jaxid_ref_file
-    if os.access(args.ref_file, os.R_OK):
-        settings.id_ref_map = build_id_ref_map(args.ref_file)
-    else:
-        log.error("JAXid reference file is not readable or does not exist!")
-        return False
+        # ref_file = settings.jaxid_ref_file
+        if os.access(args.ref_file, os.R_OK):
+            settings.id_ref_map = build_id_ref_map(args.ref_file)
+        else:
+            log.error("JAXid reference file is not readable or doesn't exist!")
+            return False
 
+        if args.library_csv:
+            parent_id_map = track_library_parents(args.library_csv,
+                                                   args.outfile)
+            success = True
 
-    if (args.library_csv):
-        success = track_library_parents(args.library_csv, args.outfile)
+            if args.sample_sheet:
+                success = merge_library_prep_ids_w_sample_list(
+                                    args.sample_sheet,
+                                    args.outfile,
+                                    parent_id_map)
 
+    except Exception, e:
+        raise e
 
     return success
 
 
 if __name__ == '__main__':
     import sys
-    args = parse_args('-v -l test_jaxid_libs.csv'.split())
-    # args = parse_args(sys.argv)
+    # args = parse_args('-v -l test_jaxid_libs.csv'.split())
+    args = parse_args(sys.argv[1:])
     sys.exit(main(args))
+
+#  vim: set ft=python ts=4 sw=4 tw=79 et :
