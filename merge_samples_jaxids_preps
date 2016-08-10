@@ -33,7 +33,7 @@ COOLNESS = True
 class settings():
     """default values for  settings"""
     jaxid_ref_file = 'jaxid_database_export_20160801.csv'
-    id_ref_map = None
+    id_ref_map = OrderedDict()
     jaxid_sample_fieldname = 'jaxid_sample'
     jaxid_lib_fieldname = 'jaxid_library'
     parent_outfile = 'merged_parent_ids.csv'
@@ -50,8 +50,8 @@ def log_it(logname=os.path.basename(__file__)):
     logfile = '{}_{}.log'.format(curtime, logname)
 
     loglevel = logging.INFO
-    # logFormat="%(asctime)s %(levelname)5s: %(funcName)15s: %(message)s"
-    logFormat="%(asctime)s %(levelname)5s: %(message)s"
+    logFormat="%(asctime)s %(levelname)5s: %(funcName)15s: %(message)s"
+    # logFormat="%(asctime)s %(levelname)5s: %(message)s"
 
     logging.basicConfig(format=logFormat)
     logger = logging.getLogger(logname)
@@ -72,8 +72,7 @@ def get_field_header(csv_file):
     with open(csv_file) as csvfh:
         try:
             reader = csv.DictReader(csvfh)
-            log.debug("func: %s, fieldnames: %s", 'get_field_header',
-                      str(reader.fieldnames))
+            log.debug("fieldnames: %s", str(reader.fieldnames))
             return reader.fieldnames
         except csv.Error as e:
             log.exception('Trying to read CSV file %s, line %d: %s',
@@ -118,8 +117,7 @@ def write_out_csv(csv_file,fieldnames,values=[]):
                 log.info('Writing header of fieldnames to {}'.format(csv_file))
                 writer.writeheader()
     except IOError, e:
-        func_name = 'write_out_csv'
-        log.exception('{}: {}'.format(func_name, str(e)))
+        log.exception(str(e)))
         raise e
 
 
@@ -128,7 +126,7 @@ def merge_ordered_dicts(*dicts):
        Then gather all from iterator into single var to return.
     """
     from itertools import chain
-    chunk = {}
+    chunk = OrderedDict()
     for (k,v) in chain.from_iterable([d.items() for d in dicts]):
         chunk[k] = v
     return chunk
@@ -140,7 +138,7 @@ def get_parent_node_id(ref_map, jaxid, parent_id):
     """ read node ids from csv tracking file
         return first "parent" node matching node_type
     """
-    log.debug("in function: %s", 'get_parent_node_id')
+    log.debug("begin function")
     log.debug('--> args: '+ id_file_name +','+ node_type +','+ parent_id)
     try:
         pass
@@ -154,8 +152,7 @@ def get_parent_node_id(ref_map, jaxid, parent_id):
             # else:
                 # log.debug('--> no match node row: '+ str(node_type))
     except Exception, e:
-        func_name = 'get_parent_node_id'
-        log.exception('{}: {}'.format(func_name, str(e)))
+        log.exception(str(e))
         raise e
 
 
@@ -163,7 +160,7 @@ def get_child_node_ids(id_file_name, node_type, parent_id):
     """ read node ids from csv tracking file
         yield "child" node ids matching node_type
     """
-    log.debug("in function: %s", 'get_child_node_id')
+    log.debug("begin function")
     try:
         for row in load_data(id_file_name):
             if re.match(node_type,row['node_type']):
@@ -173,24 +170,22 @@ def get_child_node_ids(id_file_name, node_type, parent_id):
                         node_type,str(row['osdf_node_id'])))
                     return row['osdf_node_id']
     except Exception, e:
-        func_name = 'get_child_node_id'
-        log.exception('{}: {}'.format(func_name, str(e)))
+        log.exception(str(e))
         raise e
 
 
 def build_id_ref_map(ref_in):
     """construct reference mapping dict of ids from csv file"""
-    log.debug("in function: %s", 'build_id_ref_map')
+    log.debug("begin function")
     ref_map = {}
     for row in load_data(ref_in):
         ref_map[row['jaxid']] = row
-    log.debug("finished function: %s", 'build_id_ref_map')
+    log.debug("finished function")
     return ref_map
 
 
 def which_id_type(record_dict):
     """determine which id type is being parsed"""
-    # log.debug("in function: %s", 'which_id_type')
     # spreadsheet logic:
     #   =IF(NOT(ISERROR(search("pool",D73))),"pool",
     #       IF(AND(F73="Z",G73="Z",H73="Z"),"NULL",
@@ -200,7 +195,7 @@ def which_id_type(record_dict):
     #           )
     #         )
     #      )
-    # log.debug("in function: %s", 'which_id_type')
+    # log.debug("begin function")
     try:
         idtype = ''
 
@@ -219,11 +214,11 @@ def which_id_type(record_dict):
             idtype = 'extraction'
         else:
             idtype = 'library'
-        # log.debug("function: %s, idtype==%s", 'which_id_type', idtype)
+        # log.debug("idtype==%s", idtype)
         return idtype
     except Exception, e:
         # raise e
-        # log.error("function: %s, idtype==%s", 'which_id_type', idtype)
+        # log.exception("idtype==%s", idtype)
         return ''
 
 
@@ -231,7 +226,7 @@ def which_parent_type(id_type):
     """Goes up the hierarchical list of types
        returning the direct parent type.
     """
-    log.debug("in function: %s", 'which_parent_type')
+    log.debug("begin function")
     id_list = [
                 None,
                 'specimen',
@@ -248,7 +243,7 @@ def which_parent_type(id_type):
 
 def get_received_id(idrow):
     """use get_parent_id to track recursively to original sample received"""
-    # log.debug("in function: %s", 'get_received_id')
+    log.debug("begin function")
     # fieldnames = ['jaxid', 'parent_id']
     try:
         parent_id = idrow['parent_id']
@@ -260,8 +255,7 @@ def get_received_id(idrow):
             return ''
 
     except Exception, e:
-        func_name = 'get_received_id'
-        log.exception('{}: {}'.format(func_name, str(e)))
+        log.exception(str(e))
         raise e
 
 
@@ -271,14 +265,14 @@ def track_library_parents(library_csv, outfile):
        Uses the 'settings.jaxid_ref_file' as mapping source.
        Return: parent_id_map of all updated rows, for later use
     """
-    log.debug("in function: %s", 'track_library_parents')
+    log.debug("begin function")
     jaxid_lib = settings.jaxid_lib_fieldname
-    outfile = library_csv+'_merged.csv'
+    outfile = library_csv[:-4]+'_merged.csv'
     outfields = get_field_header(library_csv)
     outfields.insert(outfields.index(
                      settings.jaxid_lib_fieldname)+1,
                      'jaxid_parent')
-    write_out_csv(outfile, outfields) # field headers
+    write_out_csv(outfile, outfields) # write column headers
 
     parent_id_map = {}
     for row in load_data(library_csv):
@@ -299,12 +293,16 @@ def track_library_parents(library_csv, outfile):
             else:
                 parent_id_map[row['jaxid_parent']] = [row]
         except Exception, e:
-            func_name = 'track_library_parents'
-            log.exception('{}: {}'.format(func_name, str(e)))
+            log.exception(str(e))
             raise e
 
-    log.debug("done function: %s", 'track_library_parents')
+    log.debug("finished function")
     return parent_id_map
+
+
+def concat_prep_id(*pieces):
+    """concat the group of args with '_'s into one "prep_id" field"""
+    return '_'.join(pieces)
 
 
 def merge_library_prep_ids_w_sample_list(sample_list_in,
@@ -315,51 +313,84 @@ def merge_library_prep_ids_w_sample_list(sample_list_in,
        Intent: create sheets of [dr]naprep node metadata.
        Tactic: Use double-for loop in each of samples and parent_id_map
     """
-    log.debug("Begin function: %s", 'merge_library_prep_ids_w_sample_list')
+    log.debug("begin function")
     jaxid_sample_fieldname = settings.jaxid_sample_fieldname
-    outfile = sample_list_in+'_merged.csv'
+    outfile = sample_list_in[:-4]+'_merged.csv'
+
+    # initiate and extend outfields names
     outfields = get_field_header(sample_list_in)
-    # log.debug("func: %s, fieldnames: %s", 'merge_library_prep...'
-    #           str(outfields))
-    # outfields.extend(get_field_header(args.library_csv))
+    outfields.extend(['prep_id'])
     pv = parent_id_map.itervalues()
     outfields.extend(pv.next()[0].keys())
     log.debug("func: %s, fieldnames: %s",
               'merge_library_prep...',
               str(outfields))
-    write_out_csv(outfile, outfields) # field headers
+    write_out_csv(outfile, outfields) # write column headers
+    noprep_outfile = sample_list_in[:-4]+'_nopreps.csv'
+    write_out_csv(noprep_outfile, outfields) # write column headers
 
     # sample_id_map = {}
     for srow in load_data(sample_list_in):
-        # log.debug("in function: %s, row: %s", 'merge_library_prep...', srow)
+        # log.debug("row: %s", srow)
         try:
             jaxid_sample = srow.get(jaxid_sample_fieldname)
             if jaxid_sample:
-                log.debug("function: %s, jaxid_sample: %s",
-                          'merge_library_prep...',
-                          jaxid_sample)
+                log.debug("jaxid_sample: %s", jaxid_sample)
                 if jaxid_sample in parent_id_map:
                     for libidrow in [row for row in
                             parent_id_map[jaxid_sample][:]]:
-                        log.debug('function: %s, items: %s',
-                                  'merge_library_prep...',
-                                  str(libidrow))
+                        # log.debug('items: %s', str(libidrow))
+
+                        # check if 'flags' field includes the 'publicized' tag,
+                        # then format it to be 4 chars if not
+                        if int(libidrow['flags']) < 120:
+                            flags = int(libidrow['flags'])
+                            flags += 120
+                            # log.debug('flags: %s', flags)
+                            libidrow['flags'] = '{:04d}'.format(flags)
+
+                        srow['prep_id'] = concat_prep_id(
+                                                srow['Project Code'],
+                                                srow['jaxid_sample'],
+                                                libidrow['jaxid_library'],
+                                                libidrow['seq_type'],
+                                                libidrow['sample_type_code'],
+                                                libidrow['tech_rep'],
+                                                libidrow['bio_rep'],
+                                                libidrow['flags'],
+                                                srow['visit_id'],
+                                                libidrow['run_id']
+                                                )
+
+                        # gather all values together
+                        sampleidvals = OrderedDict()
                         sampleidvals = merge_ordered_dicts(srow, libidrow)
-                        log.debug('function: %s, idvals: %s',
-                                  'merge_library_prep...',
-                                  str(sampleidvals)
-                                  # parent_id_map[jaxid_sample].items()
-                                 )
+                        log.debug('idvals: %s', str(sampleidvals)
                         write_out_csv(outfile, outfields, [sampleidvals])
             else:
-                write_out_csv(outfile, outfields, [srow])
+                write_out_csv(noprep_outfile, outfields, [srow])
 
         except Exception, e:
-            func_name = 'merge_library_prep_ids_w_sample_list'
-            log.exception('{}: {}'.format(func_name, str(e)))
+            log.exception(str(e))
             raise e
 
-    log.debug("done function: %s", 'merge_library_prep_ids_w_sample_list')
+    log.debug("finished function")
+    return True
+
+
+def match_base_filenames_prepids(filename_list, sample_sheet_merged):
+    """Incoming: list of file paths and notes;
+                 sample sheet merged w/ prep_ids (prev merged)
+       Return: write_out_csv list to use with 'dcc_submission_file_name_change'
+               Fields: dcc_file_base,dir,original_file_base,second_file_base,
+                       final_sample_name,rand_subject_id,flag_meanings
+    """
+    log.debug("begin function")
+    try:
+    except Exception, e:
+        log.exception(str(e))
+        raise e
+    log.debug("finished function")
     return True
 
 
@@ -381,6 +412,9 @@ def parse_args(args):
     add('-s', '--sample_sheet',  ## requires library_csv!!
         metavar='SAMPLE_CSV', default=None,
         help="CSV File containing column {}".format(settings.jaxid_sample_fieldname))
+    add('-r', '--file_name_changes',
+        metavar='FILE_NAME_CHANGES', default=None,
+        help="CSV File list of raw file names to match with prep_ids')
     add('-o', '--outfile',
         metavar='OUTFILE', default=settings.parent_outfile,
         # type=argparse.FileType('a'),
@@ -398,11 +432,18 @@ def parse_args(args):
 
 
 def main(args):
-    """get it done!"""
+    """get it done!
+       Use several times, sequentially...
+           1) get source data and format spreadsheets
+           2) sync dna prep and run info with master sample list
+           3) match file names for external name changes (other script)
+    """
     success = False
     try:
         if args.verbose:
             log.setLevel(logging.DEBUG)
+        else:
+            log.setLevel(logging.INFO)
 
         # ref_file = settings.jaxid_ref_file
         if os.access(args.ref_file, os.R_OK):
@@ -421,6 +462,11 @@ def main(args):
                                     args.sample_sheet,
                                     args.outfile,
                                     parent_id_map)
+
+        if args.file_name_changes and args.sample_sheet:
+            success = match_base_filenames_prepids(
+                        args.file_name_changes,
+                        arfs.sample_sheet)
 
     except Exception, e:
         raise e
