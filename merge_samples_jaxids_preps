@@ -7,7 +7,7 @@ Date: 2016-08-05T12:59:11
 Description: Tracks parents and children within jaxid hierarchy.
              Matches all sequence prep (dna, rna, 16s) with samples via jaxids.
 
-Usage:
+Usage Example:
     merge_samples_jaxids_preps -l <jaxid_libaries.csv> -o outfile(stdout)
 
 """
@@ -27,6 +27,8 @@ import logging
 import argparse
 from collections import OrderedDict
 
+from cutlass_utils import log_it, load_data, get_field_header, write_out_csv
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Constants ~~~~~
 COOLNESS = True
 
@@ -40,86 +42,10 @@ class settings():
     sample_outfile = 'merged_samples.csv'
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Functional ~~~~~
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  Utility Functions  ~~~~~
 # Log It!
-def log_it(logname=os.path.basename(__file__)):
-    import time
-    """log_it setup"""
-    curtime = time.strftime("%Y%m%d-%H%M")
-    logfile = '{}_{}.log'.format(curtime, logname)
-
-    loglevel = logging.INFO
-    logFormat="%(asctime)s %(levelname)5s: %(funcName)15s: %(message)s"
-    # logFormat="%(asctime)s %(levelname)5s: %(message)s"
-
-    logging.basicConfig(format=logFormat)
-    logger = logging.getLogger(logname)
-    logger.setLevel(loglevel)
-
-    fh = logging.FileHandler(logfile, mode='a')
-    formatter = logging.Formatter(logFormat)
-    fh.setFormatter(formatter)
-    logger.addHandler(fh)
-    return logger
-
 log = log_it()
 
-
-def get_field_header(csv_file):
-    """returns first row of csv file as list of fieldnames"""
-    log.info('Loading fieldnames from {}'.format(csv_file))
-    with open(csv_file) as csvfh:
-        try:
-            reader = csv.DictReader(csvfh)
-            log.debug("fieldnames: %s", str(reader.fieldnames))
-            return reader.fieldnames
-        except csv.Error as e:
-            log.exception('Trying to read CSV file %s, line %d: %s',
-                    csv_file, reader.line_num, e)
-
-
-def load_data(csv_file):
-    """yield row dicts from csv_file using DictReader
-    """
-    log.info('Loading rows from {}'.format(csv_file))
-    with open(csv_file) as csvfh:
-        reader = csv.DictReader(csvfh)
-        # log.debug('csv dictreader opened')
-        try:
-            for row in reader:
-                # log.debug(row)
-                yield row
-        except csv.Error as e:
-            log.exception('Reading CSV file %s, line %d: %s',
-                    csv_file, reader.line_num, e)
-
-
-def write_out_csv(csv_file,fieldnames,values=[]):
-    """write all values in csv format to outfile.
-    Values is list of dicts w/ keys matching fieldnames.
-    To write header to file, omit `values`
-    """
-    log.info('Writing CSV to {}'.format(csv_file))
-    try:
-        with open(csv_file, 'a') as csvout:
-            writer = csv.DictWriter(csvout, fieldnames)
-            if values:
-                try:
-                    for row in values:
-                        if isinstance(row, dict):
-                            log.debug('writerow: %s', str(row))
-                            writer.writerow(row)
-                except Exception, e:
-                    log.exception('Writing CSV file %s, %s', csv_file, str(e))
-                    raise e
-            else:
-                log.info('Writing header of fieldnames to {}'.format(csv_file))
-                writer.writeheader()
-    except IOError, e:
-        log.exception(str(e)))
-        raise e
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   Local Functions   ~~~~~
 
 def merge_ordered_dicts(*dicts):
     """function to traverse items() of each dict as passed, in order.
@@ -131,8 +57,6 @@ def merge_ordered_dicts(*dicts):
         chunk[k] = v
     return chunk
 
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   Local Functions   ~~~~~
 
 def get_parent_node_id(ref_map, jaxid, parent_id):
     """ read node ids from csv tracking file
@@ -380,7 +304,7 @@ def merge_library_prep_ids_w_sample_list(sample_list_in,
 
 def match_base_filenames_prepids(filename_list, sample_sheet_merged):
     """Incoming: list of file paths and notes;
-                 sample sheet merged w/ prep_ids (prev merged)
+                 sample sheet merged w/ prep_ids (previously merged)
        Return: write_out_csv list to use with 'dcc_submission_file_name_change'
                Fields: dcc_file_base,dir,original_file_base,second_file_base,
                        final_sample_name,rand_subject_id,flag_meanings
