@@ -13,6 +13,9 @@ class auth():
     dcc_user = load_string_from_file('auth/username.txt')
     dcc_pass = load_string_from_file('auth/password.txt')
 
+class consented_users():
+    list_of_consented_participants = load_string_from_file('auth/CONSENTED_MAP.sec')
+
 class data_node_ids():
         project = ''
         study = ''
@@ -22,7 +25,7 @@ class data_node_ids():
         sample = []
 
 class node_id_tracking:
-    path = 'prediabetes_node_id_tracking.csv'
+    path = './data_files/prediabetes_node_id_tracking.csv'
     id_fields = ['node_type', 'internal_id', 'osdf_node_id',
                  'parent_node_type', 'parent_id', 'parent_node_id']
 
@@ -46,6 +49,10 @@ NodeDataFiles = {
         'WgsDnaPrep':   './data_files/2016...wgs_dna_prep...csv',
         'WgsRawSeqs':   './data_files/2016...wgs_raw_seq_set...csv',
         #
+        'metabolome':   './data_files/metabolome.csv',
+        'hostTranscriptomicsRawSeqSet':   './data_files/host_transcriptome_raw_seq_set.csv',
+        'hostSeqPrep' : './data_files/host_seq_prep.csv',
+
         }
 
 
@@ -70,6 +77,9 @@ class node_hierarchy:
                     'wgsRawSeqSet',[
                       'wgsAssembledSeqSet', ] ] ],
               ['hostAssay', 'etc',],
+              ['metabolome', 'etc',],
+              ['hostTranscriptomicsRawSeqSet', 'etc',],
+              ['hostSeqPrep','etc',],
             ]
           ]
         ]

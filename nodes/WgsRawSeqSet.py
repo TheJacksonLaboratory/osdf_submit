@@ -16,7 +16,7 @@ filename = os.path.basename(__file__)
 log = log_it(filename)
 
 # the Higher-Ups
-node_type          = 'WgsRawSeqSet
+node_type          = 'WgsRawSeqSet'
 parent_type        = 'WgsDnaPrep'
 grand_parent_type  = 'Sample'
 great_parent_type  = 'Visit'
