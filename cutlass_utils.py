@@ -18,7 +18,7 @@ import settings
 def log_it(logname=os.path.basename(__file__)):
     """log_it setup"""
     curtime = time.strftime("%Y%m%d-%H%M")
-    logfile = curtime + logname + '.log'
+    logfile = '.'.join([curtime, logname,'log'])
 
     loglevel = logging.DEBUG
     logFormat = \
