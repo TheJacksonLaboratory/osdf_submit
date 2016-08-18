@@ -175,7 +175,7 @@ def SixteenSTrimmedSearch():
         dprint('local_files: ',[ x.local_file for x in s])
         dprint('node ids: ',[ x.id for x in s])
 # SixteenSTrimmedSearch()
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def SixteenSRawSearch():
     print('\n____16S RawSeq Search____') # {{{

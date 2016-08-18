@@ -49,17 +49,11 @@ def log_it(logname=os.path.basename(__file__)):
     logger.setLevel(loglevel)
 
     formatter = logging.Formatter(logFormat)
-
-    # ch = logging.StreamHandler()
-    # ch.setLevel(loglevel)
-    # ch.setFormatter(formatter)
-    # logger.addHandler(ch)
-
     fh = logging.FileHandler(logfile, mode='a')
-    fh.setLevel(loglevel)
     fh.setFormatter(formatter)
     logger.addHandler(fh)
     return logger
+
 log = log_it('dcc_submission_file_name_change')
 
 
