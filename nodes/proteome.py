@@ -4,7 +4,7 @@
 import os
 import re
 
-from cutlass.HostSeqPrep import HostSeqPrep
+from cutlass.Proteome import Proteome
 
 import settings
 from cutlass_utils import \
@@ -16,7 +16,7 @@ filename = os.path.basename(__file__)
 log = log_it(filename)
 
 # the Higher-Ups
-node_type          = 'HostSeqPrep'
+node_type          = 'Proteome'
 parent_type        = 'Sample'
 grand_parent_type  = 'Visit'
 great_parent_type  = 'Subject'
@@ -45,7 +45,7 @@ def load(internal_id, search_field):
 
     # node-specific variables:
     NodeTypeName = node_type
-    NodeLoadFunc = 'load_host_seq_prep'
+    NodeLoadFunc = 'load_proteome'
 
     return load_node(internal_id, search_field, NodeTypeName, NodeLoadFunc)
 
