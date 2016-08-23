@@ -64,6 +64,7 @@ def query_all_oql(session, namespace, node_type, query):
 def query_all_samples(query):
     """use oql_query_all_pages for complete sets of results"""
     #TODO: refactor without presuming pre-existing session
+    from cutlass.Sample import Sample
     sn = session
     ns = Sample.namespace
     nt = 'sample'
@@ -73,11 +74,13 @@ def query_all_samples(query):
 def query_all_visits(query):
     """use oql_query_all_pages for complete sets of results"""
     #TODO: refactor without presuming pre-existing session
+    from cutlass.Visit import Visit
     return query_all_oql(session, Visit.namespace, 'visit')
 
 def query_all_wgsdna(query):
     """use oql_query_all_pages for complete sets of results"""
     #TODO: refactor without presuming pre-existing session
+    from cutlass.WgsDnaPrep import WgsDnaPrep
     return query_all_oql(session, WgsDnaPrep.namespace, 'wgsdnaprep')
 
 def dprint(*args):
@@ -151,7 +154,7 @@ def WgsDnaSearch():
         dprint('~~~~~wgsDnaPreps~~~~~~~')
         dprint('query: ',q)
         dprint('count: ',c)
-# WgsDnaSearch()
+WgsDnaSearch()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def SixteenSTrimmedSearch():
