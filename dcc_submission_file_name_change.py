@@ -118,31 +118,21 @@ def checksums(filename):
 
     return (md5_str, sha256_str)
 
-def generate_tar(file_prefix="", outfile='list.log.csv'):
-    """generate tar.bz2 archives, run md5sum and sha256sum
-       then write file_name, file_size, md5sum, sha256sum values to csv outfile
+def generate_tar(file_prefix=""):
+    """generate tar archives, return file name
     """
-    fields = ['local_file','size','md5','sha256']
+    # TODO: debug this, as it always says: 'command returned non-zero exit status 1'
     try:
-        if os.path.exists(outfile) and os.path.getsize(outfile) >= 0:
-            tar_file = file_prefix + '.raw.fastq.tar
-            tar_cmd = ['tar', 'cf', tar_file, file_prefix+'*fastq*']
-            tar_stat = get_output(tar_cmd)
-
-            (md5_str, sha_str) = checksums(tar_file)
-
-            tar_size = os.stat(tar_file).st_size
-            values = [{'local_file':tar_file,'size':tar_size,
-                       'md5':md5_str,'sha256':sha_str}]
-            write_out_csv(outfile, fields, values)
-            log.info('Archive file created: '+tar_file)
-
-        else:
-            write_out_csv(outfile, fields) #write headers
+        tar_file = file_prefix + '.raw.fastq.tar'
+        tar_cmd = ['tar', 'cf', tar_file, file_prefix+'*']
+        tar_stat = get_output(tar_cmd)
+        
+        log.info('Archive file created: '+tar_file)
+        return tar_file
 
     except Exception, e:
-        log.error('Uh-Oh... %s', e)
-        raise e  # (or?) continue with log to show error
+        log.error('Uh-Oh (generate_tar)... %s', e)
+        raise e
 
 def generate_tarbz(file_prefix="", outfile='list.log.csv'):
     """generate tar.bz2 archives, run md5sum and sha256sum
@@ -175,6 +165,8 @@ def write_checksum_list(file_name="", outfile='checksum_file_list.csv'):
        then write file_name, file_size, md5sum, sha256sum values to csv outfile
     """
     fields = ['local_file','size','format','md5','sha256']
+    if not os.path.exists(outfile) and os.path.getsize(outfile) >= 0:
+        write_out_csv(outfile, fields) #write headers
     try:
         if os.path.exists(file_name) and os.path.getsize(file_name) >= 0:
             (md5_str, sha_str) = checksums(file_name)
@@ -183,14 +175,21 @@ def write_checksum_list(file_name="", outfile='checksum_file_list.csv'):
             file_path = os.path.abspath(file_name)
             # format = re.split('.',file_name)[-1]
             # log.debug(format)
-            format = 'fastq'                                #TODO: code file format basename discovery!
 
-            values = [{'local_file':file_path,'size':file_size,'format':format,
-                        'md5':md5_str,'sha256':sha_str}]
+            file_formats = ['fastq', 'fasta', 'csv', 'what_else']
+            for type in file_formats:
+                if re.search(type, file_name):
+                    format = type
+                else:
+                    format = 'other'
+
+            values = [{'local_file':file_path,
+                       'size':file_size,
+                       'format':format,
+                       'md5':md5_str,
+                       'sha256':sha_str
+                      }]
             write_out_csv(outfile, fields, values)
-
-        else:
-            write_out_csv(outfile, fields) #write headers
 
     except Exception, e:
         log.error('Uh-Oh with writing list %s... %s', file_name, e)
@@ -220,16 +219,19 @@ def archive_fastq_files(args):
 
     map_file = args.mapping_file
     checksum_file = args.checksum_list_file
+    renamed_path = args.renamed_path
 
     archived = 0
     errored = 0
     errfiles = []
-    # generate_tarbz() #write 'outfile' headers
     for row in yield_csv_data(map_file):
         if row['dcc_file_base'] != '': #row is not empty
             dest = row['dcc_file_base']
+            path = row['dir']
             try:
-                tar_status = generate_tar(dest, outfile=checksum_file)
+                file_path = os.path.join(renamed_path, path, dest)
+                log.debug('(%s)... file_path: %s', 'archive', file_path)
+                tar_file = generate_tar(file_path)
                 archived += 1
 
             except Exception, e:
@@ -274,7 +276,7 @@ def dir_checksum(args):
 
 
 def rename_files(args):
-    """loop through mapping_file, subloop through files in curdir,
+    """loop through mapping_file, subloop through files in curdir+row-subdir,
        rename matching filenames, convert compression formats, log
        checksums and file name/size to checksum_file
     """
@@ -282,7 +284,7 @@ def rename_files(args):
 
     map_file = args.mapping_file
     checksum_file = args.checksum_list_file
-    renamed_path = 'renamed'
+    renamed_path = args.renamed_path
 
     class summary:
         renamed = 0
@@ -301,25 +303,30 @@ def rename_files(args):
             dest = row['dcc_file_base']
             # log.debug('__srce:'+srce+', dest:'+dest)
             try:
-                for file in os.listdir(os.curdir):
+                # for file in os.listdir(os.curdir):
+                curpath = os.path.join(os.curdir, row['dir'])
+                for file in os.listdir(curpath):
                     # log.debug('__ file='+file)
                     if re.match(srce, file):
+                        file = os.path.join(curpath, file)
                         repl = re.sub(srce, dest, file)
-                        repl_path = os.path.abspath(os.path.dirname(repl))
-                        repl_file = os.path.join(repl_path, renamed_path, repl)
-                        # log.debug('repl_path: ' +repl_path)
-                        # repl = os.path.pathsep.join()
-                        # log.debug('__ file='+file+', repl='+repl)
+                        # repl_path = os.path.abspath(os.path.dirname(repl))
+                        repl_file = os.path.join(renamed_path, repl)
                         log.info('Moving "%s" to "%s"', file, repl)
-                        os.rename(file, repl)
-                        if os.stat(repl).st_size > 0:
+                        os.renames(file, repl_file)
+                        # if re.search('raw', row['dir']):
+                        #     #WARN: presumes illumina 'L'ane and 'R'ead numbers!
+                        #     repl_glob = re.sub('[-_][LRS][0-9]*[-_].*',
+                        #                        '', repl_file)
+                        #     tar_file = generate_tar(repl_glob)
+                        #     repl_file = tar_file
+                        if re.search('raw', row['dir']):
+                            continue # pending archive pre-checksumming
+                        if os.stat(repl_file).st_size > 0:
                             summary.renamed += 1
                             write_checksum_list(repl_file,
-                                                outfile=checksum_file)
-                        # if os.path.basename(repl).endswith('.gz'):
-                        #     repl = convert_gz_to_bz2(repl)
-                        #     summary.converted += 1
-                    # else:
+                                    outfile=checksum_file)
+                            # else:
                     #     log.info('___Not Moving "%s"', file)
                     #     summary.pending += 1
                     #     summary.pending_files.append(file)
@@ -340,7 +347,7 @@ def rename_files(args):
     log.error('-> Errors found when processing: %4s', str(summary.errored))
     if summary.errored:
         log.error('  -> For specifics on these files that errored, '
-                  'please see the logfile.')
+                'please see the logfile.')
         log.error('  -> Files: %s', str(summary.errfiles))
 
 
@@ -352,12 +359,14 @@ if __name__ == '__main__':
     """
 
     class args:
+        renamed_path = 'renamed'
         mapping_file = '20160616-HMP2_metadata-filename_changes.csv'
-
         mapping_file = '/data/HMP2/20160616-HMP2-filename_changes.csv'
-        checksum_list_file = '/data/HMP2/20160622-checksums.csv'
+
+        mapping_file = '/Volumes/helix_data-weinstock/projects/HMP2/submissions/data/data_files.fof_ready.ZOZOW1T_mwgs_raw.csv'
+        checksum_list_file = '/Users/bleopold/JAXGM/projects/HMP2/submission/20160819-checksums.csv'
 
     # write_checksum_list(args)
     # dir_checksum(args)
-    rename_files(args)
-    # archive_fastq_files(args)
+    # rename_files(arg)
+    archive_fastq_files(args)
