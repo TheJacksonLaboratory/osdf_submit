@@ -25,18 +25,6 @@ great_great2_type  = 'Study'
 
 node_tracking_file = settings.node_id_tracking.path
 
-TAG_pri_D5 = ['AATGATACGGCGACCACCGAGATCTACAC',
-              'ACACTCTTTCCCTACACGACGCTCTTCCGATCT']
-PCR_fwd_D5 = 'AGAGTTTGATCCTGGCTCAG'
-TAG_pri_D7 = ['GATCGGAAGAGCACACGTCTGAACTCCAGTCAC',
-              'ATCTCGTATGCCGTCTTCTGCTTG']
-PCR_rev_D7 = 'ATTACCGCGGCTGCTGG'
-
-TAG_pri_A5 = [ ]
-PCR_fwd_A5 = 'AGAGTTTGATCCTGGCTCAG'
-TAG_pri_A7 = [ ]
-PCR_rev_A7 = 'ATTACCGCGGCTGCTGG'
-
 
 class node_values:
     study = ''
@@ -49,9 +37,8 @@ class node_values:
     local_file = ''
     checksums = ''
     size = ''
-    study = ''
-    urls = []
     tags = []
+    urls = []
 
 
 def load(internal_id, search_field):

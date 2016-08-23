@@ -112,17 +112,21 @@ def concat_tag(index_type,index_seq):
 
 def generate_mims(row):
     try:
+        # body_site specifics:
+        gsc_package = 'human-gut' \
+                if re.match('stool', row['body_site']) \
+                else 'human-associated'
         mims = {
             # seq specifics:
             'adapters': ','.join([concat_tag(index_code, index_seq)
                                  for index_code, index_seq in
-                                 [(row['IndexCode1'], row['IndexSeq1']),
-                                  (row['IndexCode2'], row['IndexSeq2']) ]
+                                 [(row['index1_id'], row['index1_seq']),
+                                  (row['index2_id'], row['index2_seq']) ]
                                  ]),
-            'findex': row['IndexSeq2'] \
-                    if re.match('D5', row['IndexCode2']) else '',
-            'rindex': row['IndexSeq1'] \
-                    if re.match('D7', row['IndexCode1']) else '',
+            'findex': row['index2_seq'] \
+                    if re.match('D5', row['index2_id']) else '',
+            'rindex': row['index1_seq'] \
+                    if re.match('D7', row['index1_id']) else '',
             # generics:
             'annot_source': 'N/A',
             'assembly': 'N/A',
@@ -135,12 +139,12 @@ def generate_mims(row):
             'finishing_strategy': 'draft genome',
             'geo_loc_name': 'Palo Alto, CA, USA',
             'investigation_type': 'metagenome',
-            'isol_growth_condt': 'N/A',
             'lat_lon': '37.441883, -122.143019',
             'lib_const_meth': '?????',
             'lib_reads_seqd': 'N/A',
             'lib_size': 700,
             'lib_vector': 'N/A',
+            'lib_screen': 'N/A',
             'nucl_acid_amp': 'N/A',
             'nucl_acid_ext': 'Nucleic Acid Extraction [OBI:0666667]',
             'project_name': 'iHMP',
@@ -152,10 +156,6 @@ def generate_mims(row):
             'seq_meth': 'nextgen',
             'submitted_to_insdc': False,
             'url': [],
-            # body_site specifics:
-            gsc_package = 'human-gut' \
-                    if re.match('stool', row['body_site'])\
-                    else 'human-associated',
             'experimental_factor': gsc_package,
             'env_package': gsc_package,
             'material': 'feces(ENVO:00002003)' \
@@ -215,9 +215,8 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
             'subject id: ' +record['rand_subject_id'],
             'study: ' +'prediabetes',
             'sub_study: ' +record['sub_study'],
-            'visit type: ' +record['visit_type']
+            'visit type: ' +record['visit_type'],
             'dna_prep_id: '+ record['prep_id'],
-            'raw_file_id: '+ record['raw_file_id'],
            )
     parent_link = {'prepared_from':[parent_id]}
     log.debug('parent_id: '+str(parent_link))

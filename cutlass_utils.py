@@ -15,10 +15,10 @@ import settings
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Functional ~~~~~
 # Log It!
-def log_it(filename=os.path.basename(__file__)):
+def log_it(logname=os.path.basename(__file__)):
     """log_it setup"""
     curtime = time.strftime("%Y%m%d-%H%M")
-    logfile = curtime + '_osdf_submit.log'
+    logfile = '.'.join([curtime, logname,'log'])
 
     loglevel = logging.DEBUG
     logFormat = \
@@ -26,7 +26,7 @@ def log_it(filename=os.path.basename(__file__)):
     formatter = logging.Formatter(logFormat)
 
     logging.basicConfig(format=logFormat)
-    l = logging.getLogger(filename)
+    l = logging.getLogger(logname)
     l.setLevel(loglevel)
 
     root = logging.getLogger()
