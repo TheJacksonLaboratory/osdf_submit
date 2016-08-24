@@ -14,7 +14,11 @@ class auth():
     dcc_pass = load_string_from_file('auth/password.txt')
 
 class consented_users():
-    list_of_consented_participants = load_string_from_file('auth/CONSENTED_MAP.sec')
+    try:
+        list_of_consented_participants = load_string_from_file('auth/CONSENTED_MAP.sec')
+    except Exception, e:
+        list_of_consented_participants = ""
+    
 
 class data_node_ids():
         project = ''
