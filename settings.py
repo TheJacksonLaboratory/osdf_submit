@@ -53,7 +53,7 @@ NodeDataFiles = {
         'Sample':       './data_files/HMP2_metadata-MasterSampleSheet_0801_new_jaxids-visits_20160804.csv',
         #
         'WgsDnaPrep':   './data_files/dnaPrep_mwgs_0801_20160808_merged_ZOZOW1T.csv',
-        'WgsRawSeqs':   './data_files/2016...wgs_raw_seq_set...csv',
+        'WgsRawSeqs':   './data_files/20160824_mwgs_raw_ready.csv',
         #
         'metabolome':   './data_files/metabolome.csv',
         'hostTranscriptomicsRawSeqSet':   './data_files/host_transcriptome_raw_seq_set.csv',

@@ -344,6 +344,29 @@ def match_base_filenames_prepids(filename_list, sample_sheet_merged):
     return True
 
 
+def match_file_checksums(fof, checksum_list, outfile):
+    """match filenames to the checksum list via prep_id matching filename"""
+    log.debug("begin function")
+    spec_fieldnames = get_field_header(checksum_list)
+    spec_fieldnames.extend(get_field_header(fof))
+    write_out_csv(outfile, spec_fieldnames) # write column headers
+    try:
+        for filespec in load_data(checksum_list):
+            filebase = os.path.basename(filespec['local_file'])
+            specfields = filespec
+            for fileprep in load_data(fof):
+                prep_id = fileprep.get('prep_id')
+                if re.search(prep_id,filebase):
+                    specfields.update(fileprep)
+                    write_out_csv(outfile, spec_fieldnames, [specfields])
+    except Exception, e:
+        log.exception(str(e.message))
+        raise e
+
+    log.debug("finished function")
+    return True
+
+
 def create_filename_change_csv_format(filename):
     """modify format to match expected column names"""
     fieldnames = get_field_header(filename)
@@ -377,6 +400,12 @@ def parse_args(args):
     add('-f', '--file_name_changes',
         metavar='FILE_NAME_CHANGES', default=None,
         help="CSV File list of raw file names to match with prep_ids")
+    add('-p', '--fof_pre_match_checksums',
+        metavar='FOF_PRE_MATCH_CHECKSUMS', default=None,
+        help="CSV File list of file names to match with checksums")
+    add('-c', '--file_checksums',
+        metavar='FILE_CHECKSUMS', default=None,
+        help="CSV File list of raw file names with checksums and size")
     add('-o', '--outfile',
         metavar='OUTFILE', default=settings.parent_outfile,
         # type=argparse.FileType('a'),
@@ -435,6 +464,14 @@ def main(args):
         # Do THIS in bash or vim instead!
         # if args.file_name_changes and args.create_namechange_format:
         #     success = True
+
+        # prepare sheet for raw/etc file upload including path, size, checksums
+        if args.fof_pre_match_checksums and args.file_checksums:
+            match_file_checksums(
+                    args.fof_pre_match_checksums,
+                    args.file_checksums,
+                    args.outfile
+                    )
 
     except Exception, e:
         raise e

@@ -70,19 +70,19 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.local_file    = record['local_file']
     node.checksums     = {'md5':record['md5'], 'sha256':record['sha256']}
     node.size          = int(record['size'])
+    filename           = os.path.basename(record['local_file'])
     node.tags = list_tags(node.tags,
-                          # 'test', # for debug!!
-                          'jaxid (sample): '+record['jaxid_sample'],
-                          'jaxid (library): '+record['jaxid_library'] \
-                                          if record['jaxid_library'] \
-                                          else 'jaxid (library): unknown',
-                          'sample name: '+record['visit_id'],
-                          'body site: '+record['body_site'],
-                          'visit id: '+record['visit_id'],
-                          'subject id: '+record['rand_subject_id'],
-                          'study: prediabetes',
-                          'file prefix: '+ record['prep_id'],
-                          'file name: '+ record['local_file'],
+                          'sequence type: '   + 'mWGS',
+                          'jaxid (sample): '  + record['jaxid_sample'],
+                          'jaxid (library): ' + record['jaxid_library'],
+                          'sample name: '     + record['sample_name_id'],
+                          'body site: '       + record['body_site'],
+                          'visit id: '        + record['visit_id'],
+                          'subject id: '      + record['rand_subject_id'],
+                          'study: '           + 'prediabetes',
+                          'file prefix: '     + record['prep_id'],
+                          # 'file name: '       + record['local_file'],
+                          'file name: '       + filename,
                          )
     parent_link = {'sequenced_from':[parent_id]}
     log.debug('parent_id: '+str(parent_link))
@@ -95,7 +95,6 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
         invalidities = node.validate()
         err_str = "Invalid {}!\n\t{}".format(node_type, str(invalidities))
         log.error(err_str)
-        # raise Exception(err_str)
     elif node.save():
         write_out_csv(data_file_name+'_submitted.csv',
                       fieldnames=csv_fieldnames, values=[record,])

@@ -170,18 +170,17 @@ def write_checksum_list(file_name="", outfile='checksum_file_list.csv'):
     try:
         if os.path.exists(file_name) and os.path.getsize(file_name) >= 0:
             (md5_str, sha_str) = checksums(file_name)
-            log.info('checksums for file created: %s'+file_name)
+            log.info('checksums for file created: %s', file_name)
             file_size = os.stat(file_name).st_size
             file_path = os.path.abspath(file_name)
             # format = re.split('.',file_name)[-1]
             # log.debug(format)
 
             file_formats = ['fastq', 'fasta', 'csv', 'what_else']
+            format = 'other'
             for type in file_formats:
                 if re.search(type, file_name):
                     format = type
-                else:
-                    format = 'other'
 
             values = [{'local_file':file_path,
                        'size':file_size,
@@ -263,7 +262,7 @@ def dir_checksum(args):
     except Exception, e:
         log.error('Error in "%s"!!!   %s', 'convert_and_checksum', e)
         errored += 1
-        errfiles.append(srce)
+        errfiles.append(file)
         # continue to next, instead of `raise e`
 
     # summarize:
@@ -364,9 +363,9 @@ if __name__ == '__main__':
         mapping_file = '/data/HMP2/20160616-HMP2-filename_changes.csv'
 
         mapping_file = '/Volumes/helix_data-weinstock/projects/HMP2/submissions/data/data_files.fof_ready.ZOZOW1T_mwgs_raw.csv'
-        checksum_list_file = '/Users/bleopold/JAXGM/projects/HMP2/submission/20160819-checksums.csv'
+        checksum_list_file = '/Users/bleopold/JAXGM/projects/HMP2/submission/20160824-checksums.csv'
 
     # write_checksum_list(args)
-    # dir_checksum(args)
+    dir_checksum(args)
     # rename_files(arg)
-    archive_fastq_files(args)
+    # archive_fastq_files(args)
