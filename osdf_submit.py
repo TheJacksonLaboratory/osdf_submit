@@ -71,6 +71,13 @@ def main():
     # sample_nodes = sample.submit(settings.NodeDataFiles['Sample'])
     # -> 630 submitted and linked successfully
 
+    """ HostTranscriptomicsRawSeqSet node """
+    # from nodes import host_wgs_raw_seq_set
+    # host_wgs_raw_seq_set_nodes = host_wgs_raw_seq_set.submit(settings.NodeDataFiles['hostTranscriptomicsRawSeqSet'])
+
+    """ HostSeqPrep node """
+    from nodes import host_Seq_Prep
+    host_seq_prep_nodes = host_Seq_Prep.submit(settings.NodeDataFiles['hostSeqPrep'])
 
     """ 16S DNA Prep node """
     # from nodes import r16sDnaPrep
@@ -87,7 +94,6 @@ def main():
     # trim_nodes = r16sTrimSeqSet.submit(settings.NodeDataFiles['r16sTrimSeqs'])
     # -> 219 submitted and linked successfully
 
-
     """ WGS DNA Prep node """
     # from nodes import WgsDnaPrep
     # wgs_dna_nodes = WgsDnaPrep.submit(settings.NodeDataFiles['WgsDnaPrep'])
@@ -101,11 +107,9 @@ def main():
     # from nodes import WgsAssembledSeqSet
     # wgs_asseembled_nodes = WgsAsseembledSeqSet.submit(settings.NodeDataFiles['WgsAssembledSeqs'])
 
-
     """ RNASeq DNA Prep node """
     # from nodes import ?????????
     # rna_prep_nodes = ?????????.submit(settings.NodeDataFiles['WgsDnaPrep'])
-
 
 if __name__ == '__main__':
     # imclude Cutlass Library logging:
