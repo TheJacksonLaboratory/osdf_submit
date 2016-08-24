@@ -67,8 +67,8 @@ def main():
     #    (30 extra visit nodes unable to delete! Sent email to Victor.)
 
     """ Sample node """
-    from nodes import sample
-    sample_nodes = sample.submit(settings.NodeDataFiles['Sample'])
+    # from nodes import sample
+    # sample_nodes = sample.submit(settings.NodeDataFiles['Sample'])
     # -> 630 submitted and linked successfully
 
 
@@ -91,10 +91,11 @@ def main():
     """ WGS DNA Prep node """
     # from nodes import WgsDnaPrep
     # wgs_dna_nodes = WgsDnaPrep.submit(settings.NodeDataFiles['WgsDnaPrep'])
+    # -> 69 submitted and linked successfully
 
     """ WGS Raw Sequence Set node """
-    # from nodes import WgsRawSeqSet
-    # wgs_raw_nodes = WgsRawSeqSet.submit(settings.NodeDataFiles['WgsRawSeqs'])
+    from nodes import WgsRawSeqSet
+    wgs_raw_nodes = WgsRawSeqSet.submit(settings.NodeDataFiles['WgsRawSeqs'])
 
     """ WGS Assembled Sequence Set node """
     # from nodes import WgsAssembledSeqSet

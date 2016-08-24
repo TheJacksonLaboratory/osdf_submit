@@ -56,10 +56,16 @@ def query_all_oql(session, namespace, node_type, query):
     #TODO: append to cutlass_utils and/or to osdf_python
     cumulative = session.get_osdf().oql_query_all_pages(namespace, query)
     results = cumulative['results']
+    # ids = [ r['id'] for r in results
+             # if r['node_type'] == node_type ]
     meta = [ r['meta'] for r in results
              if r['node_type'] == node_type ]
-    count = len(meta)
-    return (meta, count)
+    nodes = {r['id']:r['meta']
+             for r in results
+             if r['node_type'] == node_type}
+    count = len(nodes)
+    # return (meta, count)
+    return (nodes, count)
 
 def query_all_samples(query):
     """use oql_query_all_pages for complete sets of results"""
@@ -75,13 +81,13 @@ def query_all_visits(query):
     """use oql_query_all_pages for complete sets of results"""
     #TODO: refactor without presuming pre-existing session
     from cutlass.Visit import Visit
-    return query_all_oql(session, Visit.namespace, 'visit')
+    return query_all_oql(session, Visit.namespace, 'visit', query)
 
 def query_all_wgsdna(query):
     """use oql_query_all_pages for complete sets of results"""
     #TODO: refactor without presuming pre-existing session
     from cutlass.WgsDnaPrep import WgsDnaPrep
-    return query_all_oql(session, WgsDnaPrep.namespace, 'wgsdnaprep')
+    return query_all_oql(session, WgsDnaPrep.namespace, 'wgsdnaprep', query)
 
 def dprint(*args):
     """dprint is print with a prefix"""
@@ -116,17 +122,6 @@ def format_query(strng, patt='[-. ]', field='rand_subj_id', mode='&&'):
     return strng.lower()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# # Cutlass logging: # {{{
-# root = logging.getLogger()
-# root.setLevel(logging.DEBUG)
-# ch = logging.StreamHandler(sys.stdout)
-# ch.setLevel(logging.DEBUG)
-# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-# ch.setFormatter(formatter)
-# root.addHandler(ch)
-# }}}
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def WgsDnaSearch():
     """search for node info in the iHMPSession"""
     print('\n____WGS DNA Search____') 
@@ -154,11 +149,11 @@ def WgsDnaSearch():
         dprint('~~~~~wgsDnaPreps~~~~~~~')
         dprint('query: ',q)
         dprint('count: ',c)
-WgsDnaSearch()
+# WgsDnaSearch()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def SixteenSTrimmedSearch():
-    print('\n____16S TrimSeq Search____') # {{{
+    print('\n____16S TrimSeq Search____')
     from cutlass.SixteenSTrimmedSeqSet import SixteenSTrimmedSeqSet
     q = format_query("prediabetes", field="tags")
     # q = format_query("raw.fastq", '\.', field="local_file")
@@ -181,7 +176,7 @@ def SixteenSTrimmedSearch():
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def SixteenSRawSearch():
-    print('\n____16S RawSeq Search____') # {{{
+    print('\n____16S RawSeq Search____')
     from cutlass.SixteenSRawSeqSet import SixteenSRawSeqSet
     q = format_query("prediabetes", field="tags")
     # q = format_query("raw.fastq", field="comment")
@@ -206,7 +201,7 @@ def SixteenSRawSearch():
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def SixteenSDnaSearch():
-    print('\n____16S DNA Search____') # {{{
+    print('\n____16S DNA Search____')
     from cutlass.SixteenSDnaPrep import SixteenSDnaPrep
     q = format_query("ZOZOW1T", field="name")
     q = format_query("prediabetes", field="tags")
@@ -229,7 +224,7 @@ def SixteenSDnaSearch():
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def SampleSearch():
-    print('\n____Sample Search____') # {{{
+    print('\n____Sample Search____')
     from cutlass.Sample import Sample
     q = format_query("prediabetes", field="tags")
     # q = '"vaginal"[body_site]'
@@ -246,7 +241,7 @@ def SampleSearch():
         # dprint('tags: ',s[0].tags)
         # dprint('body_site''s: ',[ x.body_site for x in s])
         dprint('names: ',[ x.name for x in s])
-        dprint('node ids: ',[ x.id for x in s])
+        # dprint('node ids: ',[ x.id for x in s])
     dprint('count: ',len(s))
 
     # deletion
@@ -256,16 +251,18 @@ def SampleSearch():
     q = '"prediabetes"[tags]'
     (s,c) = query_all_samples(q)
     if len(s):
-        dprint('~~~~~samples~~~~~~~')
+        dprint('~~~~~all~~~~~samples~~~~~~~')
         dprint('query: ',q)
         # dprint('results: ',s)
         # dprint('body_site''s: ',[ x.body_site for x in s])
         dprint('count: ',c)
-# SampleSearch()
+        print([n['id'] for n in s])
+        # print('names: '+ [n['id']['name'] for n in s])
+SampleSearch()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def VisitSearch():
-    print('\n____Visit Search____') # {{{
+    print('\n____Visit Search____')
     from cutlass.Visit import Visit
     q = format_query("prediabetes", field="tags")
     # q = format_query("ZOZOW1T-1010", field="visit_id")
@@ -298,7 +295,7 @@ def VisitSearch():
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def SubjectSearch():
-    print('\n____Subject Search____') # {{{
+    print('\n____Subject Search____')
     from cutlass.Subject import Subject
     q = format_query("prediabetes", field="tags")
     # q = format_query('ZOZOW1T','','rand_subject_id')
@@ -326,4 +323,4 @@ def SubjectSearch():
 if __name__ == '__main__':
     pass
 
-#  vim: set ts=4 sw=4 tw=79 et fdm=expr :
+#  vim: set ts=4 sw=4 tw=79 et :

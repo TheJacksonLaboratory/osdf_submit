@@ -38,12 +38,14 @@ NodeDataFiles = {
         #
         'Visit':        './data_files/20160708_HMP2_metadata-visits_jaxgm.csv',
         #
-        'Sample':       './data_files/20160802-HMP2_metadata-MasterSampleSheet_0713_new-samples.csv',
-        'r16sDnaPrep':  './data_files/20160708_HMP2_metadata-r16sDnaPrep_1st6_next_set.csv',
+        'Sample':       './data_files/20160711_HMP2_metadata-r16sSamples_13J_seqd.csv',
+        'r16sDnaPrep':  './data_files/20160708_HMP2_metadata-r16sDnaPrep_1st6.csv',
         'r16sRawSeqs':  './data_files/20160708_HMP2_metadata-r16sRaw_1st6.csv',
         'r16sTrimSeqs': './data_files/20160708_HMP2_metadata-r16sTrim_1st6.csv',
         #
-        'WgsDnaPrep':   './data_files/2016...wgs_dna_prep...csv',
+        'Sample':       './data_files/HMP2_metadata-MasterSampleSheet_0801_new_jaxids-visits_20160804.csv',
+        #
+        'WgsDnaPrep':   './data_files/dnaPrep_mwgs_0801_20160808_merged_ZOZOW1T.csv',
         'WgsRawSeqs':   './data_files/2016...wgs_raw_seq_set...csv',
         #
         }
