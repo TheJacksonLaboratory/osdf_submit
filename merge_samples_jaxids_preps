@@ -292,7 +292,7 @@ def match_base_filenames_prepids(filename_list, sample_sheet_merged):
                  'flag_meanings']
     write_out_csv(outfile, outfields) # write column headers
 
-    outnolibs = filename_list[:-4]+'_no_lib_jaxid.csv
+    outnolibs = filename_list[:-4]+'_no_lib_jaxid.csv'
     write_out_csv(outnolibs, outfields) # write column headers
 
     sample_prep_map = build_sample_prep_map(sample_sheet_merged)
