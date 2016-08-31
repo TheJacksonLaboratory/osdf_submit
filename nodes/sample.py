@@ -100,15 +100,12 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
 
     node.name = record['sample_name_id']
     node.body_site = record['body_site'].lower()
-    fma_body_site = \
-        'FMA:64183'  if record['body_site'].lower() == 'stool' else \
-        'FMA:276108' if record['body_site'].lower() == 'nasal' else \
-        '' # missing body_site?!  (uh-oh!)
+    fma_body_site = record['fma_body_site']
     node.fma_body_site = fma_body_site
     node.mixs = generate_mixs(record)
     node.tags = list_tags(node.tags,
             # 'test', # for debug!!
-            'jaxid (sample): ' +record['jaxid_sample'],
+            'stanford_id (sample): ' +record['stanfordid_sample'],
             'sample type: ' +record['material_received'],
             'visit id: ' +record['visit_id'],
             'subject id: ' +record['rand_subject_id'],

@@ -59,15 +59,21 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     csv_fieldnames = get_field_header(data_file_name)
     write_csv_headers(data_file_name,fieldnames=csv_fieldnames)
 
+    print("Calculating md5sum.")
+    md5sum = hashlib.md5()
+        with open(record['local_url'], 'rb') as f:
+        for chunk in iter(lambda: f.read(1024*1024), ''):
+            md5sum.update(chunk)
+
     node.study         = 'prediabetes'
-    node.comment       = record['local_uri']
+    node.comment       = record['local_url']
     node.prepared_by   = record['sequencing_contact']
     node.sequence_type = 'nucleotide'
     node.format        = 'fastq'
     node.format_doc    = 'https://en.wikipedia.org/wiki/'
     node.exp_length    = 0 #record['exp_length']
-    node.local_file    = [record['local_uri']]
-#    node.checksums     = {'md5':record['md5'], 'sha256':record['sha256']}
+    node.local_file    = record['local_url']
+#    node.checksums     = {'md5': md5sum.hexdigest(), 'sha256':record['sha256']}
 #    node.size          = int(record['size'])
     node.tags = list_tags(node.tags,
                           # 'test', # for debug!!
@@ -76,7 +82,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
                           'subject id: '+record['rand_subject_id'],
                           'study: prediabetes',
                           'file prefix: '+ record['prep_id'],
-                          'file name: '+ record['local_uri'],
+                          'file name: '+ record['local_url'],
                          )
     node.lib_layout     = record['lib_layout']
     node.lib_selection  = record['lib_selection']

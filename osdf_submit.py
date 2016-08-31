@@ -67,8 +67,8 @@ def main():
     #    (30 extra visit nodes unable to delete! Sent email to Victor.)
 
     """ Sample node """
-    # from nodes import sample
-    # sample_nodes = sample.submit(settings.NodeDataFiles['Sample'])
+    from nodes import sample
+    sample_nodes = sample.submit(settings.NodeDataFiles['wgs_samples'])
     # -> 630 submitted and linked successfully
 
     """ HostTranscriptomicsRawSeqSet node """
@@ -100,8 +100,8 @@ def main():
     # -> 69 submitted and linked successfully
 
     """ WGS Raw Sequence Set node """
-    from nodes import WgsRawSeqSet
-    wgs_raw_nodes = WgsRawSeqSet.submit(settings.NodeDataFiles['WgsRawSeqs'])
+    #from nodes import WgsRawSeqSet
+    #wgs_raw_nodes = WgsRawSeqSet.submit(settings.NodeDataFiles['WgsRawSeqs'])
 
     """ WGS Assembled Sequence Set node """
     # from nodes import WgsAssembledSeqSet
