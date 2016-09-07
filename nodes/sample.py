@@ -105,8 +105,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.mixs = generate_mixs(record)
     node.tags = list_tags(node.tags,
             # 'test', # for debug!!
-            'stanford_id (sample): ' +record['stanfordid_sample'],
-            'sample type: ' +record['material_received'],
+            'stanford_id (sample): ' +record['sample_name_id'],
             'visit id: ' +record['visit_id'],
             'subject id: ' +record['rand_subject_id'],
             'study: ' +'prediabetes',
@@ -144,8 +143,7 @@ def submit(data_file, id_tracking_file=node_tracking_file):
     write_csv_headers(data_file, fieldnames=csv_fieldnames)
     for record in load_data(data_file):
         # check not 'unknown' jaxid, not missing visit info
-        if re.match('J[0-9]', record['jaxid_sample']) \
-        and len(record['visit_id']) > 0:
+        if len(record['visit_id']) > 0:
             log.debug('\n...next record...')
             try:
                 log.debug('data record: '+str(record))

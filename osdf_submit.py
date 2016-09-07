@@ -22,9 +22,6 @@ dcc_pass = settings.auth.dcc_pass
 session = iHMPSession(dcc_user, dcc_pass)
 log.info('Loaded session: {}'.format(session.get_session()))
 
-
-
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Main Actions ~~~~~
 
 def main():
@@ -67,8 +64,8 @@ def main():
     #    (30 extra visit nodes unable to delete! Sent email to Victor.)
 
     """ Sample node """
-    from nodes import sample
-    sample_nodes = sample.submit(settings.NodeDataFiles['wgs_samples'])
+    from nodes import host_Seq_Prep_Sample
+    sample_nodes = host_Seq_Prep_Sample.submit(settings.NodeDataFiles['WgsSample'])
     # -> 630 submitted and linked successfully
 
     """ HostTranscriptomicsRawSeqSet node """
