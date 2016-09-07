@@ -129,7 +129,7 @@ def submit(data_file, id_tracking_file=node_tracking_file):
 
             parent_id = get_parent_node_id(
                 id_tracking_file, parent_type, parent_internal_id)
-
+            
             node = load(internal_id, load_search_field)
             if not getattr(node, load_search_field):
                 log.debug('loaded node newbie...')
