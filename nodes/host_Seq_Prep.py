@@ -59,11 +59,11 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     csv_fieldnames = get_field_header(data_file_name)
     write_csv_headers(data_file_name,fieldnames=csv_fieldnames)
 
-    print("Calculating md5sum.")
-    md5sum = hashlib.md5()
-        with open(record['local_url'], 'rb') as f:
-        for chunk in iter(lambda: f.read(1024*1024), ''):
-            md5sum.update(chunk)
+    #print("Calculating md5sum.")
+    #md5sum = hashlib.md5()
+    #    with open(record['local_url'], 'rb') as f:
+    #    for chunk in iter(lambda: f.read(1024*1024), ''):
+    #        md5sum.update(chunk)
 
     node.study         = 'prediabetes'
     node.comment       = record['local_url']
@@ -129,7 +129,7 @@ def submit(data_file, id_tracking_file=node_tracking_file):
 
             parent_id = get_parent_node_id(
                 id_tracking_file, parent_type, parent_internal_id)
-            
+
             node = load(internal_id, load_search_field)
             if not getattr(node, load_search_field):
                 log.debug('loaded node newbie...')
