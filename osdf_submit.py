@@ -64,16 +64,16 @@ def main():
     #    (30 extra visit nodes unable to delete! Sent email to Victor.)
 
     """ WGS HOST Sample node """
-    from nodes import host_Seq_Prep_Sample
-    sample_nodes = host_Seq_Prep_Sample.submit(settings.NodeDataFiles['WgsSample'])
+    # from nodes import host_Seq_Prep_Sample
+    # sample_nodes = host_Seq_Prep_Sample.submit(settings.NodeDataFiles['WgsSample'])
 
     """ HostTranscriptomicsRawSeqSet node """
     # from nodes import host_wgs_raw_seq_set
     # host_wgs_raw_seq_set_nodes = host_wgs_raw_seq_set.submit(settings.NodeDataFiles['hostTranscriptomicsRawSeqSet'])
 
     """ HostSeqPrep node """
-    #from nodes import host_Seq_Prep
-    #host_seq_prep_nodes = host_Seq_Prep.submit(settings.NodeDataFiles['hostSeqPrep'])
+    from nodes import host_Seq_Prep
+    host_seq_prep_nodes = host_Seq_Prep.submit(settings.NodeDataFiles['hostSeqPrep'])
 
     """ 16S DNA Prep node """
     # from nodes import r16sDnaPrep
