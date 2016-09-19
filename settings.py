@@ -82,7 +82,9 @@ class node_hierarchy:
                        'r16sTrimSeqSet',] ] ],
               [ 'wgsDnaPrep', [
                     'wgsRawSeqSet',[
-                      'wgsAssembledSeqSet', ] ] ],
+                      'wgsAssembledSeqSet', ]
+                    'MicrobTranscriptomicsRawSeqSet'
+                    ] ],
               ['hostAssay', 'etc',],
               ['metabolome', 'etc',],
               ['hostTranscriptomicsRawSeqSet', 'etc',],
