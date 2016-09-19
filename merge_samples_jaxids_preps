@@ -147,18 +147,17 @@ def get_received_id(idrow):
         raise e
 
 
-def track_library_parents(library_csv, outfile):
+def track_library_parents(library_csv, id_ref_map, jaxid_lib_field, outfile):
     """Incoming: csv file with library jaxids
        Outgoing: csv outfile with new column 'jaxid_parent'
        Uses the 'settings.jaxid_ref_file' as mapping source.
        Return: parent_id_map of all updated rows, for later use
     """
     log.debug("begin function")
-    jaxid_lib = settings.jaxid_lib_fieldname
     outfile = library_csv[:-4]+'_merged.csv'
     outfields = get_field_header(library_csv)
     outfields.insert(outfields.index(
-                     settings.jaxid_lib_fieldname)+1,
+                     jaxid_lib_field)+1,
                      'jaxid_parent')
     write_out_csv(outfile, outfields) # write column headers
 
@@ -166,8 +165,8 @@ def track_library_parents(library_csv, outfile):
     for row in load_data(library_csv):
         try:
             row['jaxid_parent'] = ''
-            if row[jaxid_lib] in settings.id_ref_map:
-                idrow = settings.id_ref_map.get(row[jaxid_lib])
+            if row[jaxid_lib_field] in id_ref_map:
+                idrow = id_ref_map.get(row[jaxid_lib_field])
                 idtype = which_id_type(idrow)
                 if not idtype:  # just in case there are not fields in idrow
                     idtype = 'library'
@@ -225,6 +224,7 @@ def merge_library_prep_ids_w_sample_list(sample_list_in,
             if jaxid_sample:
                 log.debug("jaxid_sample: %s", jaxid_sample)
                 if jaxid_sample in parent_id_map:
+                    rand_sample_name = srow['rand_sample_name']
                     for libidrow in [row for row in
                             parent_id_map[jaxid_sample][:]]:
                         # log.debug('items: %s', str(libidrow))
@@ -246,7 +246,7 @@ def merge_library_prep_ids_w_sample_list(sample_list_in,
                                                 libidrow['tech_rep'],
                                                 libidrow['bio_rep'],
                                                 libidrow['flags'],
-                                                srow['visit_id'],
+                                                rand_sample_name,
                                                 libidrow['run_id']
                                                 )
 
@@ -255,8 +255,8 @@ def merge_library_prep_ids_w_sample_list(sample_list_in,
                         sampleidvals = merge_ordered_dicts(srow, libidrow)
                         log.debug('idvals: %s', str(sampleidvals))
                         write_out_csv(outfile, outfields, [sampleidvals])
-            else:
-                write_out_csv(noprep_outfile, outfields, [srow])
+                else:
+                    write_out_csv(noprep_outfile, outfields, [srow])
 
         except Exception, e:
             log.exception(str(e))
@@ -429,6 +429,8 @@ def main(args):
            2) sync dna prep and run info with master sample list
            3) match file names for external name changes (other script)
     """
+    log.info('command line run: "%s"', ' '.join(sys.argv))
+
     success = False
     try:
         if args.verbose:
@@ -445,7 +447,9 @@ def main(args):
 
         if args.library_csv:
             parent_id_map = track_library_parents(args.library_csv,
-                                                   args.outfile)
+                                                  settings.id_ref_map,
+                                                  settings.jaxid_lib_fieldname,
+                                                  args.outfile)
             success = True
 
             if args.sample_sheet:
