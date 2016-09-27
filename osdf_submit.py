@@ -68,12 +68,12 @@ def main():
     # sample_nodes = host_Seq_Prep_Sample.submit(settings.NodeDataFiles['WgsSample'])
 
     """ HostTranscriptomicsRawSeqSet node """
-    # from nodes import host_wgs_raw_seq_set
-    # host_wgs_raw_seq_set_nodes = host_wgs_raw_seq_set.submit(settings.NodeDataFiles['hostTranscriptomicsRawSeqSet'])
+    from nodes import host_wgs_raw_seq_set   
+    host_wgs_raw_seq_set_nodes = host_wgs_raw_seq_set.submit(settings.NodeDataFiles['hostRawSeqPrep'])
 
     """ HostSeqPrep node """
-    from nodes import host_Seq_Prep
-    host_seq_prep_nodes = host_Seq_Prep.submit(settings.NodeDataFiles['hostSeqPrep'])
+    # from nodes import host_Seq_Prep
+    # host_seq_prep_nodes = host_Seq_Prep.submit(settings.NodeDataFiles['hostSeqPrep'])
 
     """ 16S DNA Prep node """
     # from nodes import r16sDnaPrep
