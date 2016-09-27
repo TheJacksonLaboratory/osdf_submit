@@ -4,7 +4,7 @@
 import os
 import re
 
-from cutlass.HostTranscriptomicsRawSeqSet import HostTranscriptomicsRawSeqSet
+from cutlass.WgsRawSeqSet import WgsRawSeqSet
 
 import settings
 from cutlass_utils import \
@@ -16,7 +16,7 @@ filename = os.path.basename(__file__)
 log = log_it(filename)
 
 # the Higher-Ups
-node_type          = 'HostTranscriptomicsRawSeqSet'
+node_type          = 'WgsRawSeqSet'
 parent_type        = 'Sample'
 grand_parent_type  = 'Visit'
 great_parent_type  = 'Subject'

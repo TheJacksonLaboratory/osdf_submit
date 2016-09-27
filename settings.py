@@ -59,7 +59,8 @@ NodeDataFiles = {
         'hostTranscriptomicsRawSeqSet':   './data_files/host_transcriptome_raw_seq_set.csv',
         'hostSeqPrep' : './data_files/host_seq_prep.csv',
         'proteome' :    './data_files/proteome.csv',
-        'WgsSample':  './data_files/wgs_samples.csv',
+        'hostWgsSample':  './data_files/wgs_samples.csv',
+        'hostRawSeqPrep' : './data_files/host_seq_prep.csv',
         }
 
 
