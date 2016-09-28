@@ -2,7 +2,6 @@
 """
 
 import os
-import sys
 import csv
 import re
 import logging
@@ -15,10 +14,11 @@ import settings
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Functional ~~~~~
 # Log It!
-def log_it(logname=os.path.basename(__file__)):
+def log_it(logname=os.path.basename(__file__), logdir="logs"):
     """log_it setup"""
     curtime = time.strftime("%Y%m%d-%H%M")
     logfile = '.'.join([curtime, logname,'log'])
+    logfile = os.path.join(logdir, logfile)
 
     loglevel = logging.DEBUG
     logFormat = \
@@ -42,7 +42,7 @@ def log_it(logname=os.path.basename(__file__)):
     fh.setLevel(loglevel)
     fh.setFormatter(formatter)
 
-    root.addHandler(fh)
+    # root.addHandler(fh)
     l.addHandler(fh)
 
     return l
@@ -109,7 +109,7 @@ def csv_type_sniff(csv_file):
         with open(csv_file, 'rb') as f:
             dialect = csv.Sniffer().sniff(f.read(1024))
             return dialect
-    except Exception, e:
+    except Exception as e:
         raise e
 
 
@@ -131,13 +131,13 @@ def write_out_csv(csv_file,fieldnames=id_fields,values=[]):
                         if isinstance(row, dict):
                             log.debug(row)
                             writer.writerow(row)
-                except Exception, e:
+                except Exception as e:
                     log.exception('Writing CSV file %s, %s', csv_file, str(e))
                     raise e
             else:
                 log.info('Writing header of fieldnames to {}'.format(csv_file))
                 writer.writeheader()
-    except IOError, e:
+    except IOError as e:
         raise e
 
 
@@ -189,6 +189,7 @@ def get_parent_node_id(id_file_name, node_type, parent_id):
     log.debug('--> args: '+ id_file_name +','+ node_type +','+ parent_id)
     try:
         for row in load_data(id_file_name):
+            # log.debug('--> checking node row: '+ str(row))
             if re.match(node_type.lower(),row['node_type']):
                 # node_ids.append(row.parent_id)
                 if re.match(parent_id,row['internal_id']):
@@ -200,7 +201,7 @@ def get_parent_node_id(id_file_name, node_type, parent_id):
                     # log.debug('--> no match node row for: '+ str(parent_id))
             # else:
                 # log.debug('--> no match node row: '+ str(node_type))
-    except Exception, e:
+    except Exception as e:
         raise e
 
 
@@ -216,9 +217,11 @@ def get_child_node_ids(id_file_name, node_type, parent_id):
                     log.debug('parent type: {}, osdf_node_id: {}'.format(
                         node_type,str(row['osdf_node_id'])))
                     return row['osdf_node_id']
-    except Exception, e:
+    except Exception as e:
         raise e
 
+#TODO: mod node calls to cutlass_utils.load_node; do not need node_load_func
+# node = load_node(internal_id, load_search_field, node_type)
 
 def load_node(internal_id, search_field, node_type, node_load_func):
     """search and load nodes, as specified in arguments, else create new"""
@@ -245,11 +248,11 @@ def load_node(internal_id, search_field, node_type, node_load_func):
             # if internal_id == getattr(node, search_field):
             if query == getattr_search_field:
                 log.debug('found node: %s', getattr_search_field)
-                return NodeLoadFunc(node)
+                return node
         # no match, return new, empty node:
         node = NodeTypeName()
         return node
-    except Exception, e:
+    except Exception as e:
         raise e
 
 
