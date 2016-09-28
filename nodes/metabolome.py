@@ -113,9 +113,11 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                 parent_id = get_parent_node_id(
                     id_tracking_file, parent_type, parent_internal_id)
 
+                node_is_new = False # set to True if newbie
                 node = load(internal_id, load_search_field)
-                if getattr(node, load_search_field) != '':
+                if not getattr(node, load_search_field):
                     log.debug('loaded node newbie...')
+                    node_is_new = True
 
                 saved = validate_record(parent_id, node, record,
                                         data_file_name=data_file)
@@ -127,10 +129,10 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                             header
                             )
                     nodes.append(vals)
-                    # write out to node id tracking file
-                    write_out_csv(id_tracking_file,
-                                  fieldnames=get_field_header(id_tracking_file),
-                                  values=vals)
+                    if node_is_new:
+                        write_out_csv(id_tracking_file,
+                              fieldnames=get_field_header(id_tracking_file),
+                              values=vals)
 
         except Exception, e:
             log.exception(e)

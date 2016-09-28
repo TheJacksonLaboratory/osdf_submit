@@ -96,16 +96,20 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     """
     log.info("in validate/save: "+node_type)
     csv_fieldnames = get_field_header(data_file_name)
-    write_csv_headers(data_file_name, fieldnames=csv_fieldnames)
 
     node.name = record['sample_name_id']
     node.body_site = record['body_site'].lower()
-    fma_body_site = record['fma_body_site']
+    # fma_body_site = record['fma_body_site']
+    fma_body_site = \
+        'FMA:64183'  if record['body_site'].lower() == 'stool' else \
+        'FMA:276108' if record['body_site'].lower() == 'nasal' else \
+        record['fma_body_site']
+        # '' # missing body_site?!  (uh-oh!)
     node.fma_body_site = fma_body_site
     node.mixs = generate_mixs(record)
     node.tags = list_tags(node.tags,
             # 'test', # for debug!!
-            'stanford_id (sample): ' +record['sample_name_id'],
+            'sample id: ' +record['sample_name_id'],
             'visit id: ' +record['visit_id'],
             'subject id: ' +record['rand_subject_id'],
             'study: ' +'prediabetes',
@@ -118,21 +122,26 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     log.debug('parent_id: '+str(parent_link))
     node.links = parent_link
 
-    csv_fieldnames = get_field_header(data_file_name)
     if not node.is_valid():
-        write_out_csv(data_file_name+'_invalid_records.csv',
-                      fieldnames=csv_fieldnames, values=[record,])
+        invalids = data_file_name+'_invalid_records.csv'
+        write_csv_headers(invalids, fieldnames=csv_fieldnames)
+        write_out_csv(invalids, fieldnames=csv_fieldnames,
+                      values=[record,])
         invalidities = node.validate()
         err_str = "Invalid {}!\n\t{}".format(node_type, str(invalidities))
         log.error(err_str)
         # raise Exception(err_str)
     elif node.save():
-        write_out_csv(data_file_name+'_submitted.csv',
-                      fieldnames=csv_fieldnames, values=[record,])
+        submitted = data_file_name+'_submitted.csv'
+        write_csv_headers(submitted, fieldnames=csv_fieldnames)
+        write_out_csv(submitted, fieldnames=csv_fieldnames,
+                      values=[record,])
         return node
     else:
-        write_out_csv(data_file_name+'_unsaved_records.csv',
-                      fieldnames=csv_fieldnames, values=[record,])
+        unsaved = data_file_name+'_unsaved.csv'
+        write_csv_headers(unsaved, fieldnames=csv_fieldnames)
+        write_out_csv(unsaved, fieldnames=csv_fieldnames,
+                      values=[record,])
         return False
 
 
@@ -140,7 +149,6 @@ def submit(data_file, id_tracking_file=node_tracking_file):
     log.info('Starting submission of %ss.', node_type)
     nodes = []
     csv_fieldnames = get_field_header(data_file)
-    write_csv_headers(data_file, fieldnames=csv_fieldnames)
     for record in load_data(data_file):
         # check not 'unknown' jaxid, not missing visit info
         if len(record['visit_id']) > 0:
@@ -157,9 +165,11 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                 parent_id = get_parent_node_id(
                     id_tracking_file, parent_type, parent_internal_id)
 
+                node_is_new = False # set to True if newbie
                 node = load(internal_id, load_search_field)
                 if not getattr(node, load_search_field):
                     log.info('loaded node newbie...')
+                    node_is_new = True
 
                 saved = validate_record(parent_id, node, record,
                                         data_file_name=data_file)
@@ -173,9 +183,10 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                         )
                     nodes.append(vals)
                     # write out to node id tracking file
-                    write_out_csv(id_tracking_file,
-                                  fieldnames=get_field_header(id_tracking_file),
-                                  values=vals)
+                    if node_is_new:
+                        write_out_csv(id_tracking_file,
+                              fieldnames=get_field_header(id_tracking_file),
+                              values=vals)
 
             except Exception, e:
                 log.exception(e)

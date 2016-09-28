@@ -16,8 +16,8 @@ filename = os.path.basename(__file__)
 log = log_it(filename)
 
 # the Higher-Ups
-node_type          = 'MicrobTranscriptomicsRawSeqSet'
-parent_type        = '?!?!? HostSeq ?!?!?'
+node_type          = 'MicrobTranscriptRawSeqs'
+parent_type        = 'WgsDnaPrep'
 grand_parent_type  = 'Sample'
 great_parent_type  = 'Visit'
 great_great1_type  = 'Subject'
@@ -71,18 +71,15 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.checksums     = {'md5':record['md5'], 'sha256':record['sha256']}
     node.size          = int(record['size'])
     node.tags = list_tags(node.tags,
-                          # 'test', # for debug!!
-                          'jaxid (sample): '+record['jaxid_sample'],
-                          'jaxid (library): '+record['jaxid_library'] \
-                                          if record['jaxid_library'] \
-                                          else 'jaxid (library): unknown',
-                          'sample name: '+record['visit_id'],
-                          'body site: '+record['body_site'],
-                          'visit id: '+record['visit_id'],
-                          'subject id: '+record['rand_subject_id'],
-                          'study: prediabetes',
-                          'file prefix: '+ record['prep_id'],
-                          'file name: '+ record['local_file'],
+                          'jaxid (sample): '  + record['jaxid_sample'],
+                          'jaxid (library): ' + record['jaxid_library'],
+                          'sample name: '     + record['visit_id'],
+                          'body site: '       + record['body_site'],
+                          'visit id: '        + record['visit_id'],
+                          'subject id: '      + record['rand_subject_id'],
+                          'study: '           + 'prediabetes',
+                          'file prefix: '     + record['prep_id'],
+                          'file name: '       + record['local_file'],
                          )
     parent_link = {'sequenced_from':[parent_id]}
     log.debug('parent_id: '+str(parent_link))
@@ -125,9 +122,11 @@ def submit(data_file, id_tracking_file=node_tracking_file):
             parent_id = get_parent_node_id(
                 id_tracking_file, parent_type, parent_internal_id)
 
+            node_is_new = False # set to True if newbie
             node = load(internal_id, load_search_field)
             if not getattr(node, load_search_field):
                 log.debug('loaded node newbie...')
+                node_is_new = True
 
             saved = validate_record(parent_id, node, record,
                                     data_file_name=data_file)
@@ -140,9 +139,10 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                     header
                     )
                 nodes.append(vals)
-                write_out_csv(id_tracking_file,
-                              fieldnames=get_field_header(id_tracking_file),
-                              values=vals)
+                if node_is_new:
+                    write_out_csv(id_tracking_file,
+                          fieldnames=get_field_header(id_tracking_file),
+                          values=vals)
 
         except Exception, e:
             log.exception(e)

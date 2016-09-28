@@ -28,9 +28,7 @@ TAG_pri_D5 = ['AATGATACGGCGACCACCGAGATCTACAC',
               'ACACTCTTTCCCTACACGACGCTCTTCCGATCT']
 TAG_pri_D7 = ['GATCGGAAGAGCACACGTCTGAACTCCAGTCAC',
               'ATCTCGTATGCCGTCTTCTGCTTG']
-
-TAG_pri_A5 = []
-TAG_pri_A7 = []
+TAG_A = ['AGATCGGAAGAGCACACGTCTGAAC', 'AGATCGGAAGAGCGTCGTGTAGGGA']
 
 
 class node_values:
@@ -100,12 +98,12 @@ def concat_tag(index_type,index_seq):
     elif re.match('D7', index_type):
         tag_pre = TAG_pri_D7[0]
         tag_post = TAG_pri_D7[1]
-    # elif re.match('A0', index_type):
-        # tag_pre = TAG_pri_A0[0]
-        # tag_post = TAG_pri_A0[1]
+    elif re.match('A', index_type):
+        tag_pre = TAG_A[0]
+        tag_post = TAG_A[1]
     else:
-        tag_pre = TAG_pri_D7[0]
-        tag_post = TAG_pri_D7[1]
+        tag_pre = '' # for single read runs
+        tag_post = ''
 
     return tag_pre + index_seq + tag_post
 
@@ -127,6 +125,8 @@ def generate_mims(row):
                     if re.match('D5', row['index2_id']) else '',
             'rindex': row['index1_seq'] \
                     if re.match('D7', row['index1_id']) else '',
+            'findex': row['index1_seq'] \
+                    if re.match('A', row['index1_id']) else '',
             # generics:
             'annot_source': 'N/A',
             'assembly': 'N/A',
@@ -151,8 +151,9 @@ def generate_mims(row):
             'rel_to_oxygen': 'N/A',
             'samp_size': 'N/A',
             'sop': [],
-            'source_mat_id': [ 'deoxyribonucleic acid CHEBI:16991',
-                               'DNA extract OBI:0001051' ],
+            'source_mat_id': ['ribonucleic acid CHEBI:33697',
+                              'RNA extract OBI:0000845',
+                              'nucleic acid extract OBI:0001010'],
             'seq_meth': 'nextgen',
             'submitted_to_insdc': False,
             'url': [],
@@ -259,9 +260,11 @@ def submit(data_file, id_tracking_file=node_tracking_file):
             parent_id = get_parent_node_id(
                 id_tracking_file, parent_type, parent_internal_id)
 
+            node_is_new = False # set to True if newbie
             node = load(internal_id, load_search_field)
             if not getattr(node, load_search_field):
                 log.debug('loaded node newbie...')
+                node_is_new = True
 
             saved = validate_record(parent_id, node, record,
                                     data_file_name=data_file)
@@ -274,9 +277,10 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                     header
                     )
                 nodes.append(vals)
-                write_out_csv(id_tracking_file,
-                              fieldnames=get_field_header(id_tracking_file),
-                              values=vals)
+                if node_is_new:
+                    write_out_csv(id_tracking_file,
+                          fieldnames=get_field_header(id_tracking_file),
+                          values=vals)
 
         except Exception, e:
             log.exception(e)
