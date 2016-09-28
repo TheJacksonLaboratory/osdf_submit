@@ -91,7 +91,7 @@ def load_data(csv_file):
     """yield row dicts from csv_file using DictReader
     """
     log.info('Loading rows from {}'.format(csv_file))
-    with open(csv_file) as csvfh:
+    with open(csv_file, 'rb') as csvfh:
         reader = csv.DictReader(csvfh)
         # log.debug('csv dictreader opened')
         try:
@@ -225,7 +225,6 @@ def get_child_node_ids(id_file_name, node_type, parent_id):
 
 def load_node(internal_id, search_field, node_type, node_load_func):
     """search and load nodes, as specified in arguments, else create new"""
-
     # node-specific variables:
     NodeType = importlib.import_module('cutlass.'+node_type)
     NodeTypeName = getattr(NodeType, node_type)

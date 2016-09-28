@@ -59,20 +59,23 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     csv_fieldnames = get_field_header(data_file_name)
     write_csv_headers(data_file_name,fieldnames=csv_fieldnames)
 
-    print("Calculating md5sum.")
-    md5sum = hashlib.md5()
-        with open(record['local_url'], 'rb') as f:
-        for chunk in iter(lambda: f.read(1024*1024), ''):
-            md5sum.update(chunk)
+    #print("Calculating md5sum.")
+    #md5sum = hashlib.md5()
+    #    with open(record['local_url'], 'rb') as f:
+    #    for chunk in iter(lambda: f.read(1024*1024), ''):
+    #        md5sum.update(chunk)
 
     node.study         = 'prediabetes'
     node.comment       = record['local_url']
     node.prepared_by   = record['sequencing_contact']
+    node.sequencing_contact = record['sequencing_contact']
+    node.sequencing_center = record['sequencing_center']
     node.sequence_type = 'nucleotide'
     node.format        = 'fastq'
     node.format_doc    = 'https://en.wikipedia.org/wiki/' + str(node.format)
     node.exp_length    = 0 #record['exp_length']
     node.local_file    = record['local_url']
+    node.storage_duration = int(record['storage_duration'])
 #    node.checksums     = {'md5': md5sum.hexdigest(), 'sha256':record['sha256']}
 #    node.size          = int(record['size'])
     node.tags = list_tags(node.tags,
@@ -89,7 +92,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.ncbi_taxon_id  = record['ncbi_taxon_id']
     node.prep_id        = record['prep_id']
 
-    parent_link = {'sequenced_from':[parent_id]}
+    parent_link = {'prepared_from':[parent_id]}
     log.debug('parent_id: '+str(parent_link))
     node.links = parent_link
 
@@ -129,7 +132,7 @@ def submit(data_file, id_tracking_file=node_tracking_file):
 
             parent_id = get_parent_node_id(
                 id_tracking_file, parent_type, parent_internal_id)
-            
+
             node_is_new = False # set to True if newbie
             node = load(internal_id, load_search_field)
             if not getattr(node, load_search_field):

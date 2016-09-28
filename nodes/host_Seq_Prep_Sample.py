@@ -51,23 +51,17 @@ def generate_mixs(row):
     """ create dict of all variables for the mixs variable """
     try:
         mixs = {
-            'biome': 'terrestrial biome [ENVO:00000446]',
+            'biome': 'blood [ENVO:02000020]',
             'body_product': row['body_site'],
             'collection_date': ('2112-12-21'), #not allowed by IRB!
-            'env_package': 'human-gut' \
-                    if re.match('stool', row['body_site']) \
-                    else 'human-associated',
+            'env_package': 'human-gut',
             'feature': 'N/A',
             'geo_loc_name': 'Palo Alto, CA, USA',
             'lat_lon': '37.441883, -122.143019',
-            'material': 'feces(ENVO:00002003)' \
-                    if re.match('stool', row['body_site']) \
-                    else 'oronasal secretion(ENVO:02000035)',
+            'material': 'blood(ENVO:02000020)',
             'project_name': 'iHMP',
             'rel_to_oxygen': 'N/A',
-            'samp_collect_device': 'self-sample' \
-                    if re.match('stool', row['body_site']) \
-                    else 'self-swab',
+            'samp_collect_device': 'N/A',
             'samp_mat_process': 'N/A',
             'samp_size': 'N/A',
             'source_mat_id': [],
@@ -105,7 +99,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.mixs = generate_mixs(record)
     node.tags = list_tags(node.tags,
             # 'test', # for debug!!
-            'stanford_id (sample): ' + record['sample_name_id'],
+            'stanford_id: ' + record['sample_name_id'],
             'visit id: ' +record['visit_id'],
             'subject id: ' +record['rand_subject_id'],
             'study: ' +'prediabetes',
@@ -115,7 +109,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     # node._attribs = record['attributes']
 
     parent_link = {'collected_during':[parent_id]}
-    log.debug('parent_id: '+str(parent_link))
+    log.debug('parent_id: '+str(parent_id))
     node.links = parent_link
 
     csv_fieldnames = get_field_header(data_file_name)
