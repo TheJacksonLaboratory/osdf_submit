@@ -69,7 +69,6 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.local_file    = record['local_file']
     node.checksums     = {'md5':record['md5'], 'sha256':record['sha256']}
     node.size          = int(record['size'])
-    #node.urls          = [str(record['urls'])]
     node.tags = list_tags(node.tags,
                           # 'test', # for debug!!
                           'sample name: '+record['visit_id'],
@@ -113,18 +112,15 @@ def submit(data_file, id_tracking_file=node_tracking_file):
             # node-specific variables:
             load_search_field = 'comment'
             internal_id = os.path.basename(record['prepared_from'])
-            parent_internal_id = record['prep_id']
+            parent_internal_id = record['prepared_from']
             grand_parent_internal_id = record['visit_id']
 
             parent_id = get_parent_node_id(
                 id_tracking_file, parent_type, parent_internal_id)
 
-<<<<<<< HEAD
 	    node = load(internal_id, load_search_field)
-=======
             node_is_new = False # set to True if newbie
             node = load(internal_id, load_search_field)
->>>>>>> 0c6c675605652844e9ee03eaadabead80b620f43
             if not getattr(node, load_search_field):
                 log.debug('loaded node newbie...')
                 node_is_new = True

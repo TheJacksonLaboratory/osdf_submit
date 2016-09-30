@@ -201,12 +201,7 @@ def get_parent_node_id(id_file_name, node_type, parent_id):
                     # log.debug('--> no match node row for: '+ str(parent_id))
             # else:
                 # log.debug('--> no match node row: '+ str(node_type))
-<<<<<<< HEAD
-        import pdb ; pdb.set_trace()
-    except Exception, e:
-=======
     except Exception as e:
->>>>>>> 0c6c675605652844e9ee03eaadabead80b620f43
         raise e
 
 
