@@ -196,7 +196,7 @@ def get_parent_node_id(id_file_name, node_type, parent_id):
                     log.debug('--> matching node row: '+ str(row))
                     log.debug('parent type: {}, osdf_node_id: {}'.format(
                         node_type,str(row['osdf_node_id'])))
-                    return row['osdf_node_id']
+		    return row['osdf_node_id']
                 # else:
                     # log.debug('--> no match node row for: '+ str(parent_id))
             # else:

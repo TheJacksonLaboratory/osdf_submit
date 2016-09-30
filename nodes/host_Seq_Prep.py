@@ -66,7 +66,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     #        md5sum.update(chunk)
 
     node.study         = 'prediabetes'
-    node.comment       = record['local_url']
+    node.comment       = str(record['sample_name_id']) + '.hostseqprep'
     node.prepared_by   = record['sequencing_contact']
     node.sequencing_contact = record['sequencing_contact']
     node.sequencing_center = record['sequencing_center']
@@ -74,7 +74,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.format        = 'fastq'
     node.format_doc    = 'https://en.wikipedia.org/wiki/' + str(node.format)
     node.exp_length    = 0 #record['exp_length']
-    node.local_file    = record['local_url']
+    node.local_file    = str(record['sample_name_id']) + '.hostseqprep'
     node.storage_duration = int(record['storage_duration'])
 #    node.checksums     = {'md5': md5sum.hexdigest(), 'sha256':record['sha256']}
 #    node.size          = int(record['size'])
@@ -85,7 +85,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
                           'subject id: '+record['rand_subject_id'],
                           'study: prediabetes',
                           'file prefix: '+ record['prep_id'],
-                          'file name: '+ record['local_url'],
+                          'file name: '+ str(record['sample_name_id']) + '.hostseqprep',
                          )
     node.lib_layout     = record['lib_layout']
     node.lib_selection  = record['lib_selection']
@@ -126,7 +126,7 @@ def submit(data_file, id_tracking_file=node_tracking_file):
 
             # node-specific variables:
             load_search_field = 'comment'
-            internal_id = os.path.basename(record['local_url'])
+            internal_id = os.path.basename(record['local_file'])
             parent_internal_id = record['prep_id']
             grand_parent_internal_id = record['visit_id']
 

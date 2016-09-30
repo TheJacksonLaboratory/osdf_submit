@@ -17,10 +17,10 @@ log = log_it(filename)
 
 # the Higher-Ups
 node_type          = 'WgsRawSeqSet'
-parent_type        = 'Sample'
-grand_parent_type  = 'Visit'
-great_parent_type  = 'Subject'
-great_great1_type  = 'Study'
+parent_type        = 'HostSeqPrep'
+grand_parent_type  = 'Sample'
+great_parent_type  = 'Visit'
+great_great1_type  = 'Subject'
 
 node_tracking_file = settings.node_id_tracking.path
 
@@ -61,19 +61,17 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
 
     node.study         = 'prediabetes'
     node.comment       = record['local_file']
-    node.sequence_type = 'nucleotide'
+    #node.sequence_type = 'nucleotide'
     node.seq_model     = record['seq_model']
     node.format        = 'fastq'
     node.format_doc    = 'https://en.wikipedia.org/wiki/FASTQ_format'
     node.exp_length    = 0 #record['exp_length']
     node.local_file    = record['local_file']
-    node.checksums     = 'md5: ' + record['md5']
+    node.checksums     = {'md5':record['md5'], 'sha256':record['sha256']}
     node.size          = int(record['size'])
-    node.urls          = [record['urls']]
     node.tags = list_tags(node.tags,
                           # 'test', # for debug!!
                           'sample name: '+record['visit_id'],
-                          'body site: '+record['body_site'],
                           'visit id: '+record['visit_id'],
                           'subject id: '+record['rand_subject_id'],
                           'file prefix: '+ record['prep_id'],
@@ -112,21 +110,23 @@ def submit(data_file, id_tracking_file=node_tracking_file):
             log.debug('data record: '+str(record))
 
             # node-specific variables:
-            load_search_field = 'prepared_from'
+            load_search_field = 'comment'
             internal_id = os.path.basename(record['prepared_from'])
-            parent_internal_id = record['prep_id']
+            parent_internal_id = record['prepared_from']
             grand_parent_internal_id = record['visit_id']
 
             parent_id = get_parent_node_id(
                 id_tracking_file, parent_type, parent_internal_id)
 
+	    node = load(internal_id, load_search_field)
             node_is_new = False # set to True if newbie
             node = load(internal_id, load_search_field)
             if not getattr(node, load_search_field):
                 log.debug('loaded node newbie...')
                 node_is_new = True
 
-            saved = validate_record(parent_id, node, record,
+            import pdb ; pdb.set_trace()
+	    saved = validate_record(parent_id, node, record,
                                     data_file_name=data_file)
             if saved:
                 header = settings.node_id_tracking.id_fields
