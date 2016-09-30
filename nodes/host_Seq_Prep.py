@@ -66,7 +66,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     #        md5sum.update(chunk)
 
     node.study         = 'prediabetes'
-    node.comment       = record['sample_name_id']
+    node.comment       = str(record['sample_name_id']) + '.hostseqprep'
     node.prepared_by   = record['sequencing_contact']
     node.sequencing_contact = record['sequencing_contact']
     node.sequencing_center = record['sequencing_center']
@@ -74,7 +74,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.format        = 'fastq'
     node.format_doc    = 'https://en.wikipedia.org/wiki/' + str(node.format)
     node.exp_length    = 0 #record['exp_length']
-    node.local_file    = record['sample_name_id']
+    node.local_file    = str(record['sample_name_id']) + '.hostseqprep'
     node.storage_duration = int(record['storage_duration'])
 #    node.checksums     = {'md5': md5sum.hexdigest(), 'sha256':record['sha256']}
 #    node.size          = int(record['size'])
@@ -85,7 +85,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
                           'subject id: '+record['rand_subject_id'],
                           'study: prediabetes',
                           'file prefix: '+ record['prep_id'],
-                          'file name: '+ record['sample_name_id'],
+                          'file name: '+ str(record['sample_name_id']) + '.hostseqprep',
                          )
     node.lib_layout     = record['lib_layout']
     node.lib_selection  = record['lib_selection']

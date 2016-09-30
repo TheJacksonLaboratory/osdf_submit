@@ -69,7 +69,7 @@ def main():
     # from nodes import host_Seq_Prep_Sample
     # sample_nodes = host_Seq_Prep_Sample.submit(settings.NodeDataFiles['WgsSample'])
 
-    """ HostTranscriptomicsRawSeqSet node """
+    """ HostWgsRawSeqSet node """
     from nodes import host_WgsRawSeqSet   
     host_wgsrawseqset_nodes = host_WgsRawSeqSet.submit(settings.NodeDataFiles['hostRawSeqPrep'])
 
