@@ -20,14 +20,14 @@ def log_it(logname=os.path.basename(__file__)):
     l = logging.getLogger(logname)
     l.setLevel(loglevel)
 
-    root = logging.getLogger()
-    root.setLevel(loglevel)
+    # root = logging.getLogger()
+    # root.setLevel(loglevel)
 
-    fh = logging.FileHandler(logfile, mode='a')
-    fh.setFormatter(formatter)
+    # fh = logging.FileHandler(logfile, mode='a')
+    # fh.setFormatter(formatter)
 
-    root.addHandler(fh)
-    l.addHandler(fh)
+    # root.addHandler(fh)
+    # l.addHandler(fh)
 
     return l
 
@@ -38,6 +38,15 @@ def load_string_from_file(filename):
 class auth():
     username = load_string_from_file('auth/username.txt')
     password = load_string_from_file('auth/password.txt')
+
+def dprint(*args):
+    """dprint is print with a prefix"""
+    pref='  -> '
+    print(pref,
+          ' '.join([str(arg) for arg in args])
+         )
+
+import re
 
 try:
     log = log_it()
@@ -89,16 +98,7 @@ def query_all_wgsdna(query):
     from cutlass.WgsDnaPrep import WgsDnaPrep
     return query_all_oql(session, WgsDnaPrep.namespace, 'wgsdnaprep', query)
 
-def dprint(*args):
-    """dprint is print with a prefix"""
-    pref='  -> '
-    print(pref,
-          ' '.join([str(arg) for arg in args])
-         )
-
-import re
-
-def format_query(strng, patt='[-. ]', field='rand_subj_id', mode='&&'):
+def format_query(query, patt='[-. ]', field='rand_subj_id', mode='&&'):
     """format OQL query by removing characterset (e.g. '[-\.]')
            1) Split 'strng' on 'patt';
            2) append 'field' text to each piece;
@@ -106,25 +106,25 @@ def format_query(strng, patt='[-. ]', field='rand_subj_id', mode='&&'):
            4) return lowercased strng
     """
     mode = ' '+mode.strip()+' ' # spaces between and/or's and strng splits
-    strngs = re.split(patt,strng)
-    if len(strngs) > 1:
-        strngs = ['"{}"[{}]'.format(s,field) for s in strngs]
-        #TODO: insert () around first two strngs, plus third, then...
-        if len(strngs) > 2:
-            strng = "("+mode.join(strngs[0:2])+")"
-            for piece in strngs[2:]:
+    qbits = re.split(patt,query)
+    if len(qbits) > 1:
+        qbits = ['"{}"[{}]'.format(s,field) for s in qbits]
+        #TODO: insert () around first two qbits, plus third, then...
+        if len(qbits) > 2:
+            strng = "("+mode.join(qbits[0:2])+")"
+            for piece in qbits[2:]:
                 strng = "("+mode.join([strng,piece])+")"
         else:
-            strng = "("+mode.join(strngs)+")"
+            strng = "("+mode.join(qbits)+")"
     else:
-        strng = '("{}"[{}])'.format(strng,field)
+        strng = '("{}"[{}])'.format(query,field)
     # log.debug('formatted query: '+ strng.lower())
     return strng.lower()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def WgsDnaSearch():
     """search for node info in the iHMPSession"""
-    print('\n____WGS DNA Search____') 
+    print('\n____WGS DNA Search____')
     from cutlass.WgsDnaPrep import WgsDnaPrep
     q = format_query("ZOZOW1T", field="name")
     q = format_query("prediabetes", field="tags")
@@ -205,117 +205,114 @@ def SixteenSDnaSearch():
     from cutlass.SixteenSDnaPrep import SixteenSDnaPrep
     q = format_query("ZOZOW1T", field="name")
     q = format_query("prediabetes", field="tags")
+
+    q = format_query("prediabetes", field="tags")
+    # nodeid = 'c22b9238b5b9beec7a9a1fc7c33eca0f'
+    # q = format_query(nodeid, field="_id")
     s = SixteenSDnaPrep.search(q)
-    dprint('count: ',len(s))
-
-    # deletion
-    # success = [n.delete() for n in s]
-    # dprint('-> deleted: ',success)
-
     if len(s):
-        dprint('count:', s)
-        # dprint('first record fields:')
-        # dprint('name: ',s[0].prep_id)
+        dprint('count:', len(s))
+        dprint('name,id: ', [[n.prep_id, n._id] for n in s])
         # dprint('tags: ',s[0].tags)
         # dprint('body_site''s: ',[ x.body_site for x in s])
-        dprint('prep_ids: ',[ x.prep_id for x in s])
-        dprint('node ids: ',[ x.id for x in s])
-# SixteenSDnaSearch():
+        # dprint('prep_ids: ',[ s[k]['prep_id'] for k in s])
+        # dprint('node ids: ', s.keys())
+
+        # deletion
+        # success = [n.delete() for n in s]
+        # dprint('-> deleted: ',success)
+SixteenSDnaSearch()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def SampleSearch():
     print('\n____Sample Search____')
     from cutlass.Sample import Sample
+
     q = format_query("prediabetes", field="tags")
-    # q = '"vaginal"[body_site]'
-    # q = format_query('ZL9BTWF-1023-AL1','-','name')
-    # q = format_query("ZLGD9M0-10", field="name")
-    # q = format_query("ZOZOW1T-1010", field="name")
-    # q = format_query("ZOZOW1T", field="name")
-    s = Sample.search(q)
-    if len(s):
-        dprint(q+': ',s)
-        # dprint('first record fields:')
-        # dprint('name: ',s[0].name)
-        # dprint('body_site: ',s[0].body_site)
-        # dprint('tags: ',s[0].tags)
-        # dprint('body_site''s: ',[ x.body_site for x in s])
-        dprint('names: ',[ x.name for x in s])
-        # dprint('node ids: ',[ x.id for x in s])
-    dprint('count: ',len(s))
-
-    # deletion
-    # success = [n.delete() for n in s]
-    # dprint('deleted: ',success)
-
-    q = '"prediabetes"[tags]'
     (s,c) = query_all_samples(q)
+    dprint('count: ',c)
     if len(s):
-        dprint('~~~~~all~~~~~samples~~~~~~~')
         dprint('query: ',q)
         # dprint('results: ',s)
-        # dprint('body_site''s: ',[ x.body_site for x in s])
-        dprint('count: ',c)
-        print([n['id'] for n in s])
-        # print('names: '+ [n['id']['name'] for n in s])
+        dprint('name''s: ',[ s[k]['name'] for k in s ])
+        dprint('node ids: ', s.keys())
+        dprint('name,id: ',[ ','.join([s[k]['name'],k]) for k in s ])
+
+    # node_ids = [
+    #     '932d8fbc70ae8f856028b3f67c8d94b4', '932d8fbc70ae8f856028b3f67c8dae55', '932d8fbc70ae8f856028b3f67c8d7c96', '932d8fbc70ae8f856028b3f67c8d726e', 
+    #     ]
+    # nodeid = ','.join(node_ids)
+    # q = format_query(nodeid, patt=",", field="_id", mode="||")
+    # s = Sample.search(q)
+    # dprint('results to delete: ',s)
+    # success = [n.delete() for n in s]
+    # dprint('deleted: ', success.count(True),
+    #        ', erred: ', success.count(False))
+
 SampleSearch()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def VisitSearch():
     print('\n____Visit Search____')
     from cutlass.Visit import Visit
+
     q = format_query("prediabetes", field="tags")
-    # q = format_query("ZOZOW1T-1010", field="visit_id")
-    # q = format_query("ZOZOW1T-E11.1A", field="visit_id")
-    s = '' #Visit.search(q)
-    dprint('count: ',len(s))
-
-    if len(s):
-        dprint(q+': ',s)
-        # dprint('first record fields:')
-        # dprint('id: ',s[0].id)
-        # dprint('tags: ',s[0].tags)
-        # dprint('samples: ',s[0].samples)
-        dprint('visit_id''s: ',[ x.visit_id for x in s])
-        dprint('node ids: ',[ x.id for x in s])
-
-    # deletion
-    # success = [n.delete() for n in s]
-    # dprint('-> deleted: ',success)
-
-    q = '"prediabetes"[tags]'
+    # q = format_query("ZOZOW1T-7024.2_198_1305",
+    #                  field="visit_id", patt='[-.]')
+    # dprint('query: ',q)
+    # node_id = '932d8fbc70ae8f856028b3f67c327c1f'
+    # q = format_query(node_id, field="_id")
     (s,c) = query_all_visits(q)
+    dprint('query: ',q)
     if len(s):
-        dprint('~~~~~visits~~~~~~~')
-        dprint('query: ',q)
-        # dprint('results: ',s)
-        # dprint('body_site''s: ',[ x.body_site for x in s])
+        # dprint('query: ',q)
         dprint('count: ',c)
+        # dprint('results: ',s)
+        dprint('visit_id''s: ',[ s[k]['visit_id'] for k in s ])
+        dprint('name,id: ',[ ','.join([s[k]['visit_id'],k]) for k in s ])
+
+    # node_ids = [
+    #     '932d8fbc70ae8f856028b3f67c30cab6', '932d8fbc70ae8f856028b3f67c30cec3', '932d8fbc70ae8f856028b3f67c30d38c', '932d8fbc70ae8f856028b3f67c30dffa', '932d8fbc70ae8f856028b3f67c30e765', 
+    #     ]
+    # nodeid = ','.join(node_ids)
+    # q = format_query(nodeid, patt=",", field="_id", mode="||")
+    # s = Visit.search(q)
+    # dprint('results to delete: ',s)
+    # success = [n.delete() for n in s]
+    # dprint('deleted: ', success.count(True),
+    #        ', erred: ', success.count(False))
+
 # VisitSearch()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def SubjectSearch():
     print('\n____Subject Search____')
     from cutlass.Subject import Subject
-    q = format_query("prediabetes", field="tags")
     # q = format_query('ZOZOW1T','','rand_subject_id')
-    # q = '"ZOZOW1T"[rand_subject_id]'
     # q = '"zozow1t"[rand_subject_id]'
-    # q = format_query("ZOZOW1T", field="rand_subject_id")
+    q = format_query("prediabetes", field="tags")
     s = Subject.search(q)
-    dprint('count: ',len(s))
 
     # deletion
     # success = [n.delete() for n in s]
     # dprint('deleted: ',success)
 
     if len(s):
-        dprint('results ',q+': ',s)
-        # dprint('subject_id: ',s[0].rand_subject_id)
-        # dprint('id: ',s[0].id)
-        # dprint('tags: ',s[0].tags)
-        dprint('subject_id''s: ',[ x.rand_subject_id for x in s])
-        dprint('node ids: ',[ x.id for x in s])
+        dprint('query: ',q)
+        dprint('count: ',len(s))
+        # dprint('results: ',s)
+        dprint('name,id: ',[ ','.join([k.rand_subject_id,k._id]) for k in s ])
+
+    # for nodeid in [
+    #     '932d8fbc70ae8f856028b3f67c2ed53a', '932d8fbc70ae8f856028b3f67c2ed9e6', '932d8fbc70ae8f856028b3f67c2ee2c4', 
+    #     q = format_query(nodeid, field="_id")
+    #     s = Subject.search(q)
+    #     dprint('results: ',s)
+    #     success = [n.delete() for n in s]
+    #     dprint('deleted: ', success.count(True),
+    #            ', erred: ', success.count(False))
+
+
 # SubjectSearch()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
