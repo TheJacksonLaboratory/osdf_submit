@@ -51,19 +51,21 @@ def main():
     # values = values_to_node_dict(study_row)
     # write_out_csv(node_tracking_file,values=values)
 
-    """ Subject node """
+    # """ Subject node """
     # from nodes import subject
     # subject_nodes = subject.submit(study_name, study_node_id,
-            # settings.NodeDataFiles['Subject'])
-    # -> 124 Submitted successfully
-
-    """ Visit node """
+    #         settings.NodeDataFiles['Subject'])
+    # """ Visit node """
     # from nodes import visit
     # visit_nodes = visit.submit(settings.NodeDataFiles['Visit'])
-    # -> 721 submitted and linked successfully
     #    (30 extra visit nodes unable to delete! Sent email to Victor.)
 
-    """ WGS HOST Sample node """
+    # """ Sample node """
+    # from nodes import sample
+    # sample_nodes = sample.submit(
+    #         settings.NodeDataFiles['Sample'])
+
+    # """ WGS HOST Sample node """
     # from nodes import host_Seq_Prep_Sample
     # sample_nodes = host_Seq_Prep_Sample.submit(settings.NodeDataFiles['WgsSample'])
 
@@ -103,9 +105,40 @@ def main():
     # from nodes import WgsAssembledSeqSet
     # wgs_asseembled_nodes = WgsAsseembledSeqSet.submit(settings.NodeDataFiles['WgsAssembledSeqs'])
 
-    """ RNASeq DNA Prep node """
-    # from nodes import ?????????
-    # rna_prep_nodes = ?????????.submit(settings.NodeDataFiles['WgsDnaPrep'])
+
+
+    """ Visit node """
+    # from nodes import visit
+    # visit_nodes = visit.submit(
+    #         settings.NodeDataFiles['Visit'])
+    """ Sample node """
+    # from nodes import sample
+    # sample_nodes = sample.submit(
+    #         settings.NodeDataFiles['Sample'])
+
+    """ 16S DNA Prep node """
+    # from nodes import r16sDnaPrep
+    # r16_dna_nodes = r16sDnaPrep.submit(
+    #         settings.NodeDataFiles['r16sDnaPrep'])
+    """ 16S Raw Sequence Set node """
+    # from nodes import r16sRawSeqSet
+    # raw_seq_nodes = r16sRawSeqSet.submit(
+    #         settings.NodeDataFiles['r16sRawSeqs'])
+    """ 16S Trimmed Sequence Set node """
+    # from nodes import r16sTrimSeqSet
+    # trim_nodes = r16sTrimSeqSet.submit(
+    #         settings.NodeDataFiles['r16sTrimSeqs'])
+
+    """ RNA Prep node """
+    # from nodes import WgsDnaPrep
+    # wgs_dna_nodes = WgsDnaPrep.submit(
+    #         settings.NodeDataFiles['RnaPrep'])
+
+    """ RNASeq Raw Sequence Set node """
+    # from nodes import MicrobTranscriptomicsRaw
+    # rnaseq_nodes = MicrobTranscriptomicsRaw.submit(
+    #         settings.NodeDataFiles['MicrobRnaRaw'])
+
 
 if __name__ == '__main__':
     # imclude Cutlass Library logging:

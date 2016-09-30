@@ -18,7 +18,7 @@ class consented_users():
         list_of_consented_participants = load_string_from_file('auth/CONSENTED_MAP.sec')
     except Exception, e:
         list_of_consented_participants = ""
-    
+
 
 class data_node_ids():
         project = ''
@@ -35,25 +35,38 @@ class node_id_tracking:
 
 # data file names
 NodeDataFiles = {
-        'Project':      './data_files/project_info.yaml',
-        'Study':        './data_files/study_info.yaml',
-        'Subject':      './data_files/20160608-HMP2_metadata-subjects.csv',
+        # 'Project':      './data_files/project_info.yaml',
+        # 'Study':        './data_files/study_info.yaml',
+        # 'Subject':      './data_files/20160608-HMP2_metadata-subjects.csv',
         # 'Visit':        './data_files/20160609-HMP2_metadata-visits_jaxgm.csv',
         # 'Sample':       './data_files/20160610-HMP2_metadata-samples-final.csv',
         # 'Visit':        './data_files/20160623-HMP2_metadata-visits-ZOZOW1T.csv',
         # 'Sample':       './data_files/20160623-HMP2_metadata-samples-ZOZOW1T.csv',
+        # 'Visit':        './data_files/20160708_HMP2_metadata-visits_jaxgm.csv',
         #
-        'Visit':        './data_files/20160708_HMP2_metadata-visits_jaxgm.csv',
+        # 'Sample':       './data_files/20160711_HMP2_metadata-r16sSamples_13J_seqd.csv',
+        # 'r16sDnaPrep':  './data_files/20160708_HMP2_metadata-r16sDnaPrep_1st6.csv',
+        # 'r16sRawSeqs':  './data_files/20160708_HMP2_metadata-r16sRaw_1st6.csv',
+        # 'r16sTrimSeqs': './data_files/20160708_HMP2_metadata-r16sTrim_1st6.csv',
         #
-        'Sample':       './data_files/20160711_HMP2_metadata-r16sSamples_13J_seqd.csv',
-        'r16sDnaPrep':  './data_files/20160708_HMP2_metadata-r16sDnaPrep_1st6.csv',
-        'r16sRawSeqs':  './data_files/20160708_HMP2_metadata-r16sRaw_1st6.csv',
-        'r16sTrimSeqs': './data_files/20160708_HMP2_metadata-r16sTrim_1st6.csv',
+        # 'Sample':       './data_files/HMP2_metadata-MasterSampleSheet_0801_new_jaxids-visits_20160804.csv',
         #
-        'Sample':       './data_files/HMP2_metadata-MasterSampleSheet_0801_new_jaxids-visits_20160804.csv',
+        # 'WgsDnaPrep':   './data_files/dnaPrep_mwgs_0801_20160808_merged_ZOZOW1T.csv',
+        # 'WgsRawSeqs':   './data_files/20160824_mwgs_raw_ready.csv',
         #
-        'WgsDnaPrep':   './data_files/dnaPrep_mwgs_0801_20160808_merged_ZOZOW1T.csv',
-        'WgsRawSeqs':   './data_files/20160824_mwgs_raw_ready.csv',
+        ## re-submissions/modifications:
+        # 'Subject':      './data_files/20160926-subjects-consented.csv',
+        # 'Visit':        './data_files/20160921-visits_jaxgm_newConsents.csv',
+        # 'Sample':       './data_files/20160921-samples-lot16.csv',
+        'Visit':        './data_files/20160927-HMP2-visits_ALL.csv',
+        'Sample':       './data_files/20160927-HMP2-samples_ALL.csv',
+        #
+        'r16sDnaPrep':  './data_files/20160913-dnaPrep_16S_merged.csv',
+        'r16sRawSeqs':  './data_files/20160920-16S-rawseqs.csv',
+        'r16sTrimSeqs': './data_files/20160920-16S-trimseqs.csv',
+        #
+        'RnaPrep':      './data_files/20160913-metadata-dnaPrep_rna.csv',
+        'MicrobRnaRaw': './data_files/20160920_rnaseq_raw.csv',
         #
         'metabolome':   './data_files/metabolome.csv',
         'hostTranscriptomicsRawSeqSet':   './data_files/host_transcriptome_raw_seq_set.csv',
@@ -83,7 +96,9 @@ class node_hierarchy:
                        'r16sTrimSeqSet',] ] ],
               [ 'wgsDnaPrep', [
                     'wgsRawSeqSet',[
-                      'wgsAssembledSeqSet', ] ] ],
+                      'wgsAssembledSeqSet', ],
+                    'MicrobTranscriptomicsRawSeqSet'
+                    ] ],
               ['hostAssay', 'etc',],
               ['metabolome', 'etc',],
               ['hostTranscriptomicsRawSeqSet', 'etc',],

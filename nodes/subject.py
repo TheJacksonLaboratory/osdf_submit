@@ -99,10 +99,9 @@ def validate_record(parent_id, node, record):
     node.rand_subject_id = record['rand_subject_id']
     node.gender = get_gender(record['gender'])
     node.race = get_race(record['race_code'])
-    node.tags = list_tags(node.tags,
-                'test', # for debug!!
+    node.tags = list_tags( #node.tags,
+                # 'test', # for debug!!
                 'age: '+record['age'] if record['age'] else 'unk',
-                'rand_subject_id: '+record['rand_subject_id'],
                 'study: prediabetes',
                 )
     node.links = {'participates_in':[parent_id]}

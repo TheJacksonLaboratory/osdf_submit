@@ -31,10 +31,9 @@ TAG_pri_D7 = ['GATCGGAAGAGCACACGTCTGAACTCCAGTCAC',
               'ATCTCGTATGCCGTCTTCTGCTTG']
 PCR_rev_D7 = 'ATTACCGCGGCTGCTGG'
 
-TAG_pri_A5 = []
-PCR_fwd_A5 = 'AGAGTTTGATCCTGGCTCAG'
-TAG_pri_A7 = []
-PCR_rev_A7 = 'ATTACCGCGGCTGCTGG'
+PCR_fwd_A = []
+PCR_rev_A = []
+TAG_pri_A = ['AGAGTTTGATCCTGGCTCAG','ATTACCGCGGCTGCTGG']
 
 
 class node_values:
@@ -88,8 +87,8 @@ class mimarks_fields:
 def concat_pcr(index_type):
     if re.match('D5', index_type) or re.match('D7', index_type):
         return ','.join([PCR_fwd_D5, PCR_rev_D7])
-    elif re.match('A0', index_type):
-        return ','.join([PCR_fwd_A5, PCR_rev_A7])
+    # elif re.match('A%', index_type):
+    #     return ','.join([PCR_fwd_A5, PCR_rev_A7])
     else:
         return 'N/A'
 
@@ -101,9 +100,9 @@ def concat_tag(index_type,index_seq):
     elif re.match('D7', index_type):
         tag_pre = TAG_pri_D7[0]
         tag_post = TAG_pri_D7[1]
-    elif re.match('A0', index_type):
-        tag_pre = TAG_pri_A0[0]
-        tag_post = TAG_pri_A0[1]
+    elif re.match('A5', index_type):
+        tag_pre = TAG_pri_A[0]
+        tag_post = TAG_pri_A[1]
     else:
         tag_pre = TAG_pri_D7[0]
         tag_post = TAG_pri_D7[1]
@@ -118,16 +117,16 @@ def generate_mimarks(row):
         mimarks = {
             'adapters': ','.join([concat_tag(index_code, index_seq)
                                  for index_code, index_seq in
-                                 [(row['IndexCode1'], row['IndexSeq1']),
-                                  (row['IndexCode2'], row['IndexSeq2']) ]
+                                 [(row['index1_id'], row['index1_seq']),
+                                  (row['index2_id'], row['index2_seq']) ]
                                  ]),
             'biome': 'terrestrial biome [ENVO:00000446]',
             'collection_date': ('2112-12-21'), #not allowed by IRB!
             'feature': 'N/A',
-            'findex': row['IndexSeq2'] \
-                    if re.match('D5', row['IndexCode2']) else '',
-            'rindex': row['IndexSeq1'] \
-                    if re.match('D7', row['IndexCode1']) else '',
+            'findex': row['index2_seq'] \
+                    if re.match('D5', row['index2_id']) else '',
+            'rindex': row['index2_seq'] \
+                    if re.match('D7', row['index1_id']) else '',
             'geo_loc_name': 'Palo Alto, CA, USA',
             'investigation_type': 'metagenome',
             'isol_growth_condt': 'N/A',
@@ -141,7 +140,7 @@ def generate_mimarks(row):
             'pcr_cond': 'initial denaturation: 95C_2min; '
                 '[denaturation: 95C_20sec; anealing: 56C_30sec; '
                 'extension: 72C_5min]-30 cycles: hold: 4C',
-            'pcr_primers': concat_pcr(row['IndexCode1']),
+            'pcr_primers': concat_pcr(row['index1_id']),
             'project_name': 'iHMP',
             'rel_to_oxygen': 'N/A',
             'samp_size': 'N/A',
@@ -153,7 +152,6 @@ def generate_mimarks(row):
             'target_gene': '16S rRNA',
             'target_subfragment': 'V1-V3',
             'url': [],
-            #
             'experimental_factor': 'human-gut' \
                     if re.match('stool', row['body_site'])\
                     else 'human-associated',
@@ -198,7 +196,8 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.lib_layout = 'paired 301bp'
     node.lib_selection = ''
     node.mimarks = generate_mimarks(record)
-    node.ncbi_taxon_id = '408170' if 'stool' == record['body_site'] \
+    node.ncbi_taxon_id = '408170' \
+            if 'stool' == record['body_site'] \
             else '1131769' # nasal
             # ST: http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=408170
             # NS: http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=1131769
@@ -260,9 +259,11 @@ def submit(data_file, id_tracking_file=node_tracking_file):
             # grand_parent_id = get_parent_node_id(
                 # id_tracking_file, grand_parent_type, grand_parent_internal_id)
 
+            node_is_new = False # set to True if newbie
             node = load(internal_id, load_search_field)
-            if not getattr(node, load_search_field):
-                log.debug('loaded node newbie...')
+            # if not getattr(node, load_search_field):
+                # log.debug('loaded node newbie...')
+                # node_is_new = True
 
             saved = validate_record(parent_id, node, record,
                                     data_file_name=data_file)
@@ -275,9 +276,10 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                     header
                     )
                 nodes.append(vals)
-                write_out_csv(id_tracking_file,
-                              fieldnames=get_field_header(id_tracking_file),
-                              values=vals)
+                if node_is_new:
+                    write_out_csv(id_tracking_file,
+                          fieldnames=get_field_header(id_tracking_file),
+                          values=vals)
 
         except Exception, e:
             log.exception(e)
