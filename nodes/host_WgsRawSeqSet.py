@@ -4,7 +4,7 @@
 import os
 import re
 
-from cutlass.WgsRawSeqSet import WgsRawSeqSet
+from cutlass.HostWgsRawSeqSet import HostWgsRawSeqSet
 
 import settings
 from cutlass_utils import \
@@ -16,7 +16,7 @@ filename = os.path.basename(__file__)
 log = log_it(filename)
 
 # the Higher-Ups
-node_type          = 'WgsRawSeqSet'
+node_type          = 'HostWgsRawSeqSet'
 parent_type        = 'HostSeqPrep'
 grand_parent_type  = 'Sample'
 great_parent_type  = 'Visit'
@@ -45,7 +45,7 @@ def load(internal_id, search_field):
 
     # node-specific variables:
     NodeTypeName = node_type
-    NodeLoadFunc = 'load_wgsRawSeqSet'
+    NodeLoadFunc = 'load_hostWgsRawSeqSet'
 
     return load_node(internal_id, search_field, NodeTypeName, NodeLoadFunc)
 
@@ -61,7 +61,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
 
     node.study         = 'prediabetes'
     node.comment       = record['local_file']
-    #node.sequence_type = 'nucleotide'
+    node.sequence_type = 'nucleotide'
     node.seq_model     = record['seq_model']
     node.format        = 'fastq'
     node.format_doc    = 'https://en.wikipedia.org/wiki/FASTQ_format'
@@ -112,9 +112,8 @@ def submit(data_file, id_tracking_file=node_tracking_file):
             # node-specific variables:
             load_search_field = 'comment'
             internal_id = os.path.basename(record['prepared_from'])
-            parent_internal_id = record['prepared_from']
+	    parent_internal_id = str(record['prepared_from']) + '.hostseqprep'
             grand_parent_internal_id = record['visit_id']
-
             parent_id = get_parent_node_id(
                 id_tracking_file, parent_type, parent_internal_id)
 
@@ -125,7 +124,6 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                 log.debug('loaded node newbie...')
                 node_is_new = True
 
-            import pdb ; pdb.set_trace()
 	    saved = validate_record(parent_id, node, record,
                                     data_file_name=data_file)
             if saved:
