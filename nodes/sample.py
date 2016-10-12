@@ -123,7 +123,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.links = parent_link
 
     if not node.is_valid():
-        invalids = data_file_name+'_invalid_records.csv'
+        invalids = data_file_name[:-4]+'.invalid_records.csv'
         write_csv_headers(invalids, fieldnames=csv_fieldnames)
         write_out_csv(invalids, fieldnames=csv_fieldnames,
                       values=[record,])
@@ -132,13 +132,13 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
         log.error(err_str)
         # raise Exception(err_str)
     elif node.save():
-        submitted = data_file_name+'_submitted.csv'
+        submitted = data_file_name[:-4]+'.submitted.csv'
         write_csv_headers(submitted, fieldnames=csv_fieldnames)
         write_out_csv(submitted, fieldnames=csv_fieldnames,
                       values=[record,])
         return node
     else:
-        unsaved = data_file_name+'_unsaved.csv'
+        unsaved = data_file_name[:-4]+'.unsaved.csv'
         write_csv_headers(unsaved, fieldnames=csv_fieldnames)
         write_out_csv(unsaved, fieldnames=csv_fieldnames,
                       values=[record,])
@@ -164,29 +164,32 @@ def submit(data_file, id_tracking_file=node_tracking_file):
 
                 parent_id = get_parent_node_id(
                     id_tracking_file, parent_type, parent_internal_id)
+                log.debug('matched parent_id: %s', parent_id)
 
-                node_is_new = False # set to True if newbie
-                node = load(internal_id, load_search_field)
-                if not getattr(node, load_search_field):
-                    log.info('loaded node newbie...')
-                    node_is_new = True
+                if parent_id:
+                    node_is_new = False # set to True if newbie
+                    node = load(internal_id, load_search_field)
+                    if not getattr(node, load_search_field):
+                        log.debug('loaded node newbie...')
+                        node_is_new = True
 
-                saved = validate_record(parent_id, node, record,
-                                        data_file_name=data_file)
-                if saved:
-                    header = settings.node_id_tracking.id_fields
-                    saved_name = getattr(saved, load_search_field)
-                    vals = values_to_node_dict(
-                        [[node_type.lower(), saved_name, saved.id,
-                          parent_type.lower(), parent_internal_id, parent_id]],
-                        header
-                        )
-                    nodes.append(vals)
-                    # write out to node id tracking file
-                    if node_is_new:
-                        write_out_csv(id_tracking_file,
-                              fieldnames=get_field_header(id_tracking_file),
-                              values=vals)
+                    saved = validate_record(parent_id, node, record,
+                                            data_file_name=data_file)
+                    if saved:
+                        header = settings.node_id_tracking.id_fields
+                        saved_name = getattr(saved, load_search_field)
+                        vals = values_to_node_dict(
+                            [[node_type.lower(),saved_name,saved.id,
+                              parent_type.lower(),parent_internal_id,parent_id]],
+                            header
+                            )
+                        nodes.append(vals)
+                        if node_is_new:
+                            write_out_csv(id_tracking_file,
+                                  fieldnames=get_field_header(id_tracking_file),
+                                  values=vals)
+                else:
+                    log.error('No parent_id found for %s', parent_internal_id)
 
             except Exception, e:
                 log.exception(e)
