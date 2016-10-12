@@ -127,6 +127,8 @@ def generate_mims(row):
                     if re.match('D5', row['index2_id']) else '',
             'rindex': row['index1_seq'] \
                     if re.match('D7', row['index1_id']) else '',
+            'findex': row['index1_seq'] \
+                    if re.match('A', row['index1_id']) else '',
             # generics:
             'annot_source': 'N/A',
             'assembly': 'N/A',
@@ -151,6 +153,7 @@ def generate_mims(row):
             'rel_to_oxygen': 'N/A',
             'samp_size': 'N/A',
             'sop': [],
+            #TODO: put in place technique to specify RNA vs DNA prep
             # 'source_mat_id': ['ribonucleic acid CHEBI:33697',
             #                   'RNA extract OBI:0000845',
             #                   'nucleic acid extract OBI:0001010'],
@@ -247,7 +250,7 @@ def submit(data_file, id_tracking_file=node_tracking_file):
     log.info('Starting submission of %ss.', node_type)
     nodes = []
     csv_fieldnames = get_field_header(data_file)
-    write_csv_headers(data_file,fieldnames=csv_fieldnames)
+    write_csv_headers(data_file, fieldnames=csv_fieldnames)
     for record in load_data(data_file):
         log.info('...next record...')
         try:
