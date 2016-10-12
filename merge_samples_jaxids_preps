@@ -34,7 +34,7 @@ COOLNESS = True
 
 class settings():
     """default values for  settings"""
-    jaxid_ref_file = 'data_files/jaxid_database_export_20160801.csv'
+    jaxid_ref_file = 'data_files/jaxid_database_export_20160931.csv'
     id_ref_map = OrderedDict()
     jaxid_sample_fieldname = 'jaxid_sample'
     jaxid_lib_fieldname = 'jaxid_library'
@@ -321,7 +321,8 @@ def match_base_filenames_prepids(filename_list, sample_sheet_merged):
                         for sam_prep in sample_prep_map[parent_id][:]:
                             smatch = re.search(parent_id,sam_prep)
                             # log.debug('smatch %s', str(smatch))
-                            if re.search(jaxid_library,sam_prep):
+                            if re.search(jaxid_library,sam_prep) and \
+                                re.search(run_id,sam_prep):
                                 log.info('matching prep_id %s', sam_prep)
                                 row['dcc_file_base'] = sam_prep
                                 # log.debug('prep_id: %s', sam_prep)
@@ -359,6 +360,45 @@ def match_file_checksums(fof, checksum_list, outfile):
                 if re.search(prep_id,filebase):
                     specfields.update(fileprep)
                     write_out_csv(outfile, spec_fieldnames, [specfields])
+    except Exception, e:
+        log.exception(str(e.message))
+        raise e
+
+    log.debug("finished function")
+    return True
+
+
+def match_file_checksums_dnapreps(dnapreps, checksum_list, outfile):
+    """match dna prep metadata fields to the checksum list
+       via prep_id matching filename,
+       write_out_csv list of raw/clean files
+    """
+    log.debug("begin function")
+    spec_fieldnames = get_field_header(dnapreps)
+    spec_fieldnames.extend(get_field_header(checksum_list))
+    write_out_csv(outfile, spec_fieldnames) # write column headers
+    try:
+        for filespec in load_data(checksum_list):
+            filebase = os.path.basename(filespec['local_file'])
+            specfields = filespec
+            matched = False
+            for fileprep in load_data(dnapreps):
+                prep_id = fileprep.get('prep_id')
+                # log.debug('prep_id: %s', prep_id)
+
+                # for value in [prep_id, filebase]:
+                #     value = re.sub('[.-]', '_', value, )
+                prep_id = re.sub('-','_',prep_id)
+                filebase = re.sub('-','_',filebase)
+                # log.debug('prep_id: %s, filebase: %s', prep_id, filebase)
+
+                if re.search(prep_id,filebase):
+                    specfields.update(fileprep)
+                    write_out_csv(outfile, spec_fieldnames, [specfields])
+                    matched = True
+            if not matched:
+                write_out_csv(outfile[:-4]+'_nomatch.csv',
+                              spec_fieldnames, [specfields])
     except Exception, e:
         log.exception(str(e.message))
         raise e
@@ -406,6 +446,9 @@ def parse_args(args):
     add('-c', '--file_checksums',
         metavar='FILE_CHECKSUMS', default=None,
         help="CSV File list of raw file names with checksums and size")
+    add('-d', '--file_dna_prep',
+        metavar='FILE_DNA_PREP', default=None,
+        help="CSV File list of dna library preps")
     add('-o', '--outfile',
         metavar='OUTFILE', default=settings.parent_outfile,
         # type=argparse.FileType('a'),
@@ -428,6 +471,7 @@ def main(args):
            1) get source data and format spreadsheets
            2) sync dna prep and run info with master sample list
            3) match file names for external name changes (other script)
+           4) sync dna prep and file checksum info lists
     """
     log.info('command line run: "%s"', ' '.join(sys.argv))
 
@@ -473,6 +517,15 @@ def main(args):
         if args.fof_pre_match_checksums and args.file_checksums:
             match_file_checksums(
                     args.fof_pre_match_checksums,
+                    args.file_checksums,
+                    args.outfile
+                    )
+
+        # prepare sheet of raw/etc file info including rand_subject, checksum
+        # info, etc, matched via prep_id
+        if args.file_dna_prep and args.file_checksums:
+            match_file_checksums_dnapreps(
+                    args.file_dna_prep,
                     args.file_checksums,
                     args.outfile
                     )
