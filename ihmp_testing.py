@@ -126,30 +126,24 @@ def WgsDnaSearch():
     """search for node info in the iHMPSession"""
     print('\n____WGS DNA Search____')
     from cutlass.WgsDnaPrep import WgsDnaPrep
-    q = format_query("ZOZOW1T", field="name")
     q = format_query("prediabetes", field="tags")
     s = WgsDnaPrep.search(q)
     dprint('count: ',len(s))
 
     if len(s):
-        dprint('count:', s)
-        # dprint('first record fields:')
-        # dprint('name: ',s[0].prep_id)
-        # dprint('tags: ',s[0].tags)
         dprint('prep_ids: ',[ x.prep_id for x in s])
         dprint('node ids: ',[ x.id for x in s])
 
-    # deletion
-    # success = [n.delete() for n in s]
-    # dprint('-> deleted: ',success)
-
+    dprint('~~~~~wgsDnaPreps~~~~~~~')
     q = '"prediabetes"[tags]'
     (s,c) = query_all_wgsdna(q)
+    dprint('query:  ',q)
+    dprint('count:  ',c)
     if len(s):
-        dprint('~~~~~wgsDnaPreps~~~~~~~')
-        dprint('query: ',q)
-        dprint('count: ',c)
-# WgsDnaSearch()
+        dprint('count:  ',c)
+        dprint('result: ',s)
+
+WgsDnaSearch()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def SixteenSTrimmedSearch():
@@ -160,10 +154,6 @@ def SixteenSTrimmedSearch():
     # q = format_query("ZOZOW1T", field="local_file")
     s = SixteenSTrimmedSeqSet.search(q)
 
-    # deletion
-    # success = [n.delete() for n in s]
-    # dprint('deleted: ',success)
-
     dprint('count: ',len(s))
     if len(s):
         dprint(q+': ',s)
@@ -172,31 +162,8 @@ def SixteenSTrimmedSearch():
         # dprint('tags: ',s[0].tags)
         dprint('local_files: ',[ x.local_file for x in s])
         dprint('node ids: ',[ x.id for x in s])
+
 # SixteenSTrimmedSearch()
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-def SixteenSRawSearch():
-    print('\n____16S RawSeq Search____')
-    from cutlass.SixteenSRawSeqSet import SixteenSRawSeqSet
-    q = format_query("prediabetes", field="tags")
-    # q = format_query("raw.fastq", field="comment")
-    # q = format_query("ZOZOW1T", field="local_file")
-    s = SixteenSRawSeqSet.search(q)
-
-    # deletion
-    # success = [n.delete() for n in s]
-    # dprint('deleted: ',success)
-
-    dprint('count: ',len(s))
-    if len(s):
-        dprint(q+': ',s)
-        # dprint('first record fields:')
-        # dprint('name: ',s[0].comment)
-        # dprint('tags: ',s[0].tags)
-        # dprint('body_site''s: ',[ x.body_site for x in s])
-        dprint('local_files: ',[ x.local_file for x in s])
-        dprint('node ids: ',[ x.id for x in s])
-# SixteenSRawSearch():
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -213,15 +180,8 @@ def SixteenSDnaSearch():
     if len(s):
         dprint('count:', len(s))
         dprint('name,id: ', [[n.prep_id, n._id] for n in s])
-        # dprint('tags: ',s[0].tags)
-        # dprint('body_site''s: ',[ x.body_site for x in s])
-        # dprint('prep_ids: ',[ s[k]['prep_id'] for k in s])
-        # dprint('node ids: ', s.keys())
 
-        # deletion
-        # success = [n.delete() for n in s]
-        # dprint('-> deleted: ',success)
-SixteenSDnaSearch()
+# SixteenSDnaSearch()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def SampleSearch():
@@ -237,17 +197,6 @@ def SampleSearch():
         dprint('name''s: ',[ s[k]['name'] for k in s ])
         dprint('node ids: ', s.keys())
         dprint('name,id: ',[ ','.join([s[k]['name'],k]) for k in s ])
-
-    # node_ids = [
-    #     '932d8fbc70ae8f856028b3f67c8d94b4', '932d8fbc70ae8f856028b3f67c8dae55', '932d8fbc70ae8f856028b3f67c8d7c96', '932d8fbc70ae8f856028b3f67c8d726e', 
-    #     ]
-    # nodeid = ','.join(node_ids)
-    # q = format_query(nodeid, patt=",", field="_id", mode="||")
-    # s = Sample.search(q)
-    # dprint('results to delete: ',s)
-    # success = [n.delete() for n in s]
-    # dprint('deleted: ', success.count(True),
-    #        ', erred: ', success.count(False))
 
 SampleSearch()
 
@@ -271,17 +220,6 @@ def VisitSearch():
         dprint('visit_id''s: ',[ s[k]['visit_id'] for k in s ])
         dprint('name,id: ',[ ','.join([s[k]['visit_id'],k]) for k in s ])
 
-    # node_ids = [
-    #     '932d8fbc70ae8f856028b3f67c30cab6', '932d8fbc70ae8f856028b3f67c30cec3', '932d8fbc70ae8f856028b3f67c30d38c', '932d8fbc70ae8f856028b3f67c30dffa', '932d8fbc70ae8f856028b3f67c30e765', 
-    #     ]
-    # nodeid = ','.join(node_ids)
-    # q = format_query(nodeid, patt=",", field="_id", mode="||")
-    # s = Visit.search(q)
-    # dprint('results to delete: ',s)
-    # success = [n.delete() for n in s]
-    # dprint('deleted: ', success.count(True),
-    #        ', erred: ', success.count(False))
-
 # VisitSearch()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -293,29 +231,29 @@ def SubjectSearch():
     q = format_query("prediabetes", field="tags")
     s = Subject.search(q)
 
-    # deletion
-    # success = [n.delete() for n in s]
-    # dprint('deleted: ',success)
-
     if len(s):
         dprint('query: ',q)
         dprint('count: ',len(s))
         # dprint('results: ',s)
         dprint('name,id: ',[ ','.join([k.rand_subject_id,k._id]) for k in s ])
 
-    # for nodeid in [
-    #     '932d8fbc70ae8f856028b3f67c2ed53a', '932d8fbc70ae8f856028b3f67c2ed9e6', '932d8fbc70ae8f856028b3f67c2ee2c4', 
-    #     q = format_query(nodeid, field="_id")
-    #     s = Subject.search(q)
-    #     dprint('results: ',s)
-    #     success = [n.delete() for n in s]
-    #     dprint('deleted: ', success.count(True),
-    #            ', erred: ', success.count(False))
-
-
 # SubjectSearch()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+def delete_nodes():
+    node_ids = [
+        '932d8fbc70ae8f856028b3f67c8d94b4', '932d8fbc70ae8f856028b3f67c8dae55',
+        ]
+    nodeid = ','.join(node_ids)
+    q = format_query(nodeid, patt=",", field="_id", mode="||")
+    s = Sample.search(q)
+    dprint('results to delete: ',s)
+    success = [n.delete() for n in s]
+    dprint('deleted: ', success.count(True),
+           ', erred: ', success.count(False))
+
+# delete_nodes()
+
 
 if __name__ == '__main__':
     pass
