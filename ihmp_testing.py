@@ -143,7 +143,7 @@ def WgsDnaSearch():
         dprint('count:  ',c)
         dprint('result: ',s)
 
-WgsDnaSearch()
+# WgsDnaSearch()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def SixteenSTrimmedSearch():
@@ -198,7 +198,7 @@ def SampleSearch():
         dprint('node ids: ', s.keys())
         dprint('name,id: ',[ ','.join([s[k]['name'],k]) for k in s ])
 
-SampleSearch()
+# SampleSearch()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def VisitSearch():
@@ -242,17 +242,20 @@ def SubjectSearch():
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def delete_nodes():
     node_ids = [
-        '932d8fbc70ae8f856028b3f67c8d94b4', '932d8fbc70ae8f856028b3f67c8dae55',
+        '932d8fbc70ae8f856028b3f67cfd3f64',
         ]
     nodeid = ','.join(node_ids)
     q = format_query(nodeid, patt=",", field="_id", mode="||")
-    s = Sample.search(q)
+
+    from cutlass import SixteenSRawSeqSet
+    s = SixteenSRawSeqSet.search(q)
+
     dprint('results to delete: ',s)
     success = [n.delete() for n in s]
     dprint('deleted: ', success.count(True),
            ', erred: ', success.count(False))
 
-# delete_nodes()
+delete_nodes()
 
 
 if __name__ == '__main__':
