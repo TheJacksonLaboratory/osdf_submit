@@ -198,12 +198,12 @@ def get_parent_node_id(id_file_name, node_type, parent_id):
                     log.debug('parent type: {}, osdf_node_id: {}'.format(
                         node_type,str(row['osdf_node_id'])))
                     return row['osdf_node_id']
-                else:
-                    log.debug('--> no match node row for: '+ str(parent_id))
-                    return None
-            else:
-                log.debug('--> no match node row: '+ str(node_type))
-                return None
+                # else:
+                    # log.debug('--> no match node row for: '+ str(parent_id))
+                    # return None
+            # else:
+                # log.debug('--> no match node row: '+ str(node_type))
+                # return None
     except Exception as e:
         raise e
 
