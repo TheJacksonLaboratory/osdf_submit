@@ -17,38 +17,39 @@ import settings
 def log_it(logname=os.path.basename(__file__), logdir="logs"):
     """log_it setup"""
     curtime = time.strftime("%Y%m%d-%H%M")
-    logfile = '.'.join([curtime, logname,'log'])
+    logfile = '.'.join([curtime, logname, 'log'])
     logfile = os.path.join(logdir, logfile)
 
     loglevel = logging.DEBUG
     logFormat = \
-        "%(asctime)s %(levelname)5s: %(name)15s %(funcName)s: %(message)s"
+        "%(asctime)s %(levelname)5s: %(module)15s %(funcName)10s: %(message)s"
     formatter = logging.Formatter(logFormat)
 
-    logging.basicConfig(format=logFormat)
+    logging.basicConfig(format=logFormat, filename=logfile, level=loglevel)
+    # logging.basicConfig(format=logFormat, level=loglevel)
     l = logging.getLogger(logname)
-    l.setLevel(loglevel)
 
-    root = logging.getLogger()
-    root.setLevel(loglevel)
+    ch = logging.StreamHandler()
+    ch.setLevel(loglevel)
+    ch.setFormatter(formatter)
+    l.addHandler(ch)
 
-    # ch = logging.StreamHandler()
-    # ch.setLevel(loglevel)
-    # ch.setFormatter(formatter)
-    # root.addHandler(ch)
-    # l.addHandler(ch)
+    # fh = logging.FileHandler(logfile, mode='a')
+    # fh.setLevel(loglevel)
+    # fh.setFormatter(formatter)
+    # l.addHandler(fh)
 
-    fh = logging.FileHandler(logfile, mode='a')
-    fh.setLevel(loglevel)
-    fh.setFormatter(formatter)
-
-    # root.addHandler(fh)
-    l.addHandler(fh)
+    # utils = logging.getLogger(logname)
+    # utils.setLevel(loglevel)
+    # utils.addHandler(ch)
+    # utils.addHandler(fh)
 
     return l
 
-log = log_it()
+log = log_it('jaxgm_cutlass_osdf')
 # log.setLevel(logging.INFO)
+# log = logging
+# log = logging.getLogger('utils').addHandler(logging.NullHandler())
 
 # dump_args decorator
 # orig from: https://wiki.python.org/moin/PythonDecoratorLibrary#Easy_Dump_of_Function_Arguments
@@ -196,11 +197,13 @@ def get_parent_node_id(id_file_name, node_type, parent_id):
                     log.debug('--> matching node row: '+ str(row))
                     log.debug('parent type: {}, osdf_node_id: {}'.format(
                         node_type,str(row['osdf_node_id'])))
-		    return row['osdf_node_id']
-                # else:
-                    # log.debug('--> no match node row for: '+ str(parent_id))
-            # else:
-                # log.debug('--> no match node row: '+ str(node_type))
+                    return row['osdf_node_id']
+                else:
+                    log.debug('--> no match node row for: '+ str(parent_id))
+                    return None
+            else:
+                log.debug('--> no match node row: '+ str(node_type))
+                return None
     except Exception as e:
         raise e
 
