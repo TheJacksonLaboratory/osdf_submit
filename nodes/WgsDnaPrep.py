@@ -28,7 +28,9 @@ TAG_pri_D5 = ['AATGATACGGCGACCACCGAGATCTACAC',
               'ACACTCTTTCCCTACACGACGCTCTTCCGATCT']
 TAG_pri_D7 = ['GATCGGAAGAGCACACGTCTGAACTCCAGTCAC',
               'ATCTCGTATGCCGTCTTCTGCTTG']
-TAG_A = ['AGATCGGAAGAGCACACGTCTGAAC', 'AGATCGGAAGAGCGTCGTGTAGGGA']
+
+TAG_A = ['AGATCGGAAGAGCACACGTCTGAAC',
+         'AGATCGGAAGAGCGTCGTGTAGGGA']
 
 
 class node_values:
@@ -99,10 +101,10 @@ def concat_tag(index_type,index_seq):
         tag_pre = TAG_pri_D7[0]
         tag_post = TAG_pri_D7[1]
     elif re.match('A', index_type):
-        tag_pre = TAG_A[0]
-        tag_post = TAG_A[1]
-    else:
-        tag_pre = '' # for single read runs
+        tag_pre = TAG_pri_A[0]
+        tag_post = TAG_pri_A[1]
+    else: # for single-read runs
+        tag_pre = ''
         tag_post = ''
 
     return tag_pre + index_seq + tag_post
@@ -125,8 +127,6 @@ def generate_mims(row):
                     if re.match('D5', row['index2_id']) else '',
             'rindex': row['index1_seq'] \
                     if re.match('D7', row['index1_id']) else '',
-            'findex': row['index1_seq'] \
-                    if re.match('A', row['index1_id']) else '',
             # generics:
             'annot_source': 'N/A',
             'assembly': 'N/A',
@@ -151,9 +151,11 @@ def generate_mims(row):
             'rel_to_oxygen': 'N/A',
             'samp_size': 'N/A',
             'sop': [],
-            'source_mat_id': ['ribonucleic acid CHEBI:33697',
-                              'RNA extract OBI:0000845',
-                              'nucleic acid extract OBI:0001010'],
+            # 'source_mat_id': ['ribonucleic acid CHEBI:33697',
+            #                   'RNA extract OBI:0000845',
+            #                   'nucleic acid extract OBI:0001010'],
+            'source_mat_id': [ 'deoxyribonucleic acid CHEBI:16991',
+                               'DNA extract OBI:0001051' ],
             'seq_meth': 'nextgen',
             'submitted_to_insdc': False,
             'url': [],
@@ -211,7 +213,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.tags = list_tags(node.tags,
             # 'test', # for debug!!
             'jaxid (sample): ' +record['jaxid_sample'],
-            'sample type: ' +record['material_received'],
+            'sample type: ' +record['body_site'],
             'visit id: ' +record['visit_id'],
             'subject id: ' +record['rand_subject_id'],
             'study: ' +'prediabetes',
@@ -245,9 +247,9 @@ def submit(data_file, id_tracking_file=node_tracking_file):
     log.info('Starting submission of %ss.', node_type)
     nodes = []
     csv_fieldnames = get_field_header(data_file)
-    write_csv_headers(data_file, fieldnames=csv_fieldnames)
+    write_csv_headers(data_file,fieldnames=csv_fieldnames)
     for record in load_data(data_file):
-        log.info('\n...next record...')
+        log.info('...next record...')
         try:
             log.debug('data record: '+str(record))
 
@@ -259,28 +261,32 @@ def submit(data_file, id_tracking_file=node_tracking_file):
 
             parent_id = get_parent_node_id(
                 id_tracking_file, parent_type, parent_internal_id)
+            log.debug('matched parent_id: %s', parent_id)
 
-            node_is_new = False # set to True if newbie
-            node = load(internal_id, load_search_field)
-            if not getattr(node, load_search_field):
-                log.debug('loaded node newbie...')
-                node_is_new = True
+            if parent_id:
+                node_is_new = False # set to True if newbie
+                node = load(internal_id, load_search_field)
+                if not getattr(node, load_search_field):
+                    log.debug('loaded node newbie...')
+                    node_is_new = True
 
-            saved = validate_record(parent_id, node, record,
-                                    data_file_name=data_file)
-            if saved:
-                header = settings.node_id_tracking.id_fields
-                saved_name = getattr(saved, load_search_field)
-                vals = values_to_node_dict(
-                    [[node_type.lower(), saved_name, saved.id,
-                      parent_type.lower(), parent_internal_id, parent_id]],
-                    header
-                    )
-                nodes.append(vals)
-                if node_is_new:
-                    write_out_csv(id_tracking_file,
-                          fieldnames=get_field_header(id_tracking_file),
-                          values=vals)
+                saved = validate_record(parent_id, node, record,
+                                        data_file_name=data_file)
+                if saved:
+                    header = settings.node_id_tracking.id_fields
+                    saved_name = getattr(saved, load_search_field)
+                    vals = values_to_node_dict(
+                        [[node_type.lower(),saved_name,saved.id,
+                          parent_type.lower(),parent_internal_id,parent_id]],
+                        header
+                        )
+                    nodes.append(vals)
+                    if node_is_new:
+                        write_out_csv(id_tracking_file,
+                              fieldnames=get_field_header(id_tracking_file),
+                              values=vals)
+            else:
+                log.error('No parent_id found for %s', parent_internal_id)
 
         except Exception, e:
             log.exception(e)
