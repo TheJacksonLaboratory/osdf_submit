@@ -125,7 +125,7 @@ def submit(data_file, id_tracking_file=node_tracking_file):
     csv_fieldnames = get_field_header(data_file)
     write_csv_headers(data_file,fieldnames=csv_fieldnames)
     for record in load_data(data_file):
-        log.info('\n...next record...')
+        log.info('...next record...')
         try:
             log.debug('data record: '+str(record))
 
@@ -137,29 +137,32 @@ def submit(data_file, id_tracking_file=node_tracking_file):
 
             parent_id = get_parent_node_id(
                 id_tracking_file, parent_type, parent_internal_id)
-            log.debug('parent_id: %s', parent_id)
+            log.debug('matched parent_id: %s', parent_id)
 
-            node_is_new = False # set to True if newbie
-            node = load(internal_id, load_search_field)
-            if not getattr(node, load_search_field):
-                log.debug('loaded node newbie...')
-                node_is_new = True
+            if parent_id:
+                node_is_new = False # set to True if newbie
+                node = load(internal_id, load_search_field)
+                if not getattr(node, load_search_field):
+                    log.debug('loaded node newbie...')
+                    node_is_new = True
 
-            saved = validate_record(parent_id, node, record,
-                                    data_file_name=data_file)
-            if saved:
-                header = settings.node_id_tracking.id_fields
-                saved_name = getattr(saved, load_search_field)
-                vals = values_to_node_dict(
-                    [[node_type.lower(),saved_name,saved.id,
-                      parent_type.lower(),parent_internal_id,parent_id]],
-                    header
-                    )
-                nodes.append(vals)
-                if node_is_new:
-                    write_out_csv(id_tracking_file,
-                          fieldnames=get_field_header(id_tracking_file),
-                          values=vals)
+                saved = validate_record(parent_id, node, record,
+                                        data_file_name=data_file)
+                if saved:
+                    header = settings.node_id_tracking.id_fields
+                    saved_name = getattr(saved, load_search_field)
+                    vals = values_to_node_dict(
+                        [[node_type.lower(),saved_name,saved.id,
+                          parent_type.lower(),parent_internal_id,parent_id]],
+                        header
+                        )
+                    nodes.append(vals)
+                    if node_is_new:
+                        write_out_csv(id_tracking_file,
+                              fieldnames=get_field_header(id_tracking_file),
+                              values=vals)
+            else:
+                log.error('No parent_id found for %s', parent_internal_id)
 
         except Exception, e:
             log.exception(e)
