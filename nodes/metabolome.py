@@ -74,7 +74,6 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
 
     csv_fieldnames = get_field_header(data_file_name)
 
-    import pdb ; pdb.set_trace()
     if not node.is_valid():
         write_out_csv(data_file_name+'_invalid_records.csv',
                       fieldnames=csv_fieldnames, values=[record,])
