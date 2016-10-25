@@ -119,6 +119,7 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                                         data_file_name=data_file)
                 if saved:
                     header = settings.node_id_tracking.id_fields
+                    saved_name = getattr(saved, load_search_field)
                     vals = values_to_node_dict(
                             [[node_type.lower(),saved_name,saved.id,
                               parent_type.lower(),parent_internal_id,parent_id]],
