@@ -62,15 +62,27 @@ def main():
     # """ Sample node """
     # from nodes import sample
     # sample_nodes = sample.submit(
-    #         settings.NodeDataFiles['Sample'])
+    #         settings.NodeDataFiles['metabolomeSample'])
+
+    # """ Metabolome HOST Sample node """
+    from nodes import metabolome
+    metabolome_nodes = metabolome.submit(settings.NodeDataFiles['metabolome'])
 
     # """ WGS HOST Sample node """
     # from nodes import host_Seq_Prep_Sample
     # sample_nodes = host_Seq_Prep_Sample.submit(settings.NodeDataFiles['WgsSample'])
 
     """ HostWgsRawSeqSet node """
-    from nodes import host_WgsRawSeqSet   
-    host_wgsrawseqset_nodes = host_WgsRawSeqSet.submit(settings.NodeDataFiles['hostRawSeqPrep'])
+    # from nodes import host_WgsRawSeqSet   
+    # host_wgsrawseqset_nodes = host_WgsRawSeqSet.submit(settings.NodeDataFiles['hostRawSeqPrep'])
+
+    """ HostTranscriptomicRawSeqPrep node """
+    ## from nodes import host_TranscriptomicRawSeqSet
+    ## host_transcriptomic_raw_seq_set_nodes = host_TranscriptomicRawSeqSet.submit(settings.NodeDataFiles['hostTranscriptomicsRawSeqSet'])
+
+    """ HostAssayPrep node """
+    # from nodes import host_Assay_Prep
+    # host_assay_prep_nodes = host_Assay_Prep.submit(settings.NodeDataFiles['hostAssayPrep'])
 
     """ HostSeqPrep node """
     # from nodes import host_Seq_Prep
@@ -99,8 +111,6 @@ def main():
     """ WGS Assembled Sequence Set node """
     # from nodes import WgsAssembledSeqSet
     # wgs_asseembled_nodes = WgsAsseembledSeqSet.submit(settings.NodeDataFiles['WgsAssembledSeqs'])
-
-
 
     """ Visit node """
     # from nodes import visit

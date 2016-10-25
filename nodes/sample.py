@@ -54,24 +54,23 @@ def generate_mixs(row):
             'biome': 'terrestrial biome [ENVO:00000446]',
             'body_product': row['body_site'],
             'collection_date': ('2112-12-21'), #not allowed by IRB!
-            'env_package': 'human-gut' \
-                    if re.match('stool', row['body_site']) \
-                    else 'human-associated',
+            'env_package': 'human-associated',
             'feature': 'N/A',
             'geo_loc_name': 'Palo Alto, CA, USA',
             'lat_lon': '37.441883, -122.143019',
-            'material': 'feces(ENVO:00002003)' \
-                    if re.match('stool', row['body_site']) \
-                    else 'oronasal secretion(ENVO:02000035)',
+            'material': 'urine(ENVO:00002047)' \
+                    if re.match('Urine', row['SAMPLE_FLUID_TYPE']) \
+                    else 'plasma(ENVO:01000798)',
             'project_name': 'iHMP',
             'rel_to_oxygen': 'N/A',
             'samp_collect_device': 'self-sample' \
-                    if re.match('stool', row['body_site']) \
-                    else 'self-swab',
+                    if re.match('Urine', row['SAMPLE_FLUID_TYPE']) \
+                    else 'blood draw',
             'samp_mat_process': 'N/A',
             'samp_size': 'N/A',
-            'source_mat_id': [],
+            'source_mat_id': []
             }
+
         return mixs
     except Exception as e:
         log.warn('Conversion to MIXS format failed?! (SampleName: {}).\n'
@@ -99,22 +98,15 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
 
     node.name = record['sample_name_id']
     node.body_site = record['body_site'].lower()
-    # fma_body_site = record['fma_body_site']
-    fma_body_site = \
-        'FMA:64183'  if record['body_site'].lower() == 'stool' else \
-        'FMA:276108' if record['body_site'].lower() == 'nasal' else \
-        record['fma_body_site']
-        # '' # missing body_site?!  (uh-oh!)
-    node.fma_body_site = fma_body_site
+    node.fma_body_site = record['fma_body_site']
     node.mixs = generate_mixs(record)
     node.tags = list_tags(node.tags,
             # 'test', # for debug!!
-            'sample id: ' +record['sample_name_id'],
-            'visit id: ' +record['visit_id'],
-            'subject id: ' +record['rand_subject_id'],
-            'study: ' +'prediabetes',
-            'sub_study: ' +record['sub_study'],
-            'visit type: ' +record['visit_type']
+            'sample id: ' + record['sample_name_id'],
+            'visit id: ' + record['visit_id'],
+            'subject id: ' + record['rand_subject_id'],
+            'study: prediabetes',
+            'substudy: ' + record['sub-study'],
             )
     # node._attribs = record['attributes']
 

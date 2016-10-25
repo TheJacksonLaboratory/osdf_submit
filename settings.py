@@ -69,6 +69,8 @@ NodeDataFiles = {
         'MicrobRnaRaw': './data_files/20160920_rnaseq_raw.csv',
         #
         'metabolome':   './data_files/metabolome.csv',
+        'metabolomeSample': './data_files/metabolome.csv',
+        'hostAssayPrep':   './data_files/metabolome.csv',
         'hostTranscriptomicsRawSeqSet':   './data_files/host_transcriptome_raw_seq_set.csv',
         'hostSeqPrep' : './data_files/host_seq_prep.csv',
         'proteome' :    './data_files/proteome.csv',
