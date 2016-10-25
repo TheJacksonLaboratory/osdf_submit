@@ -53,21 +53,20 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
 
     node.study         = 'prediabetes'
     node.comment       = record['sample_name_id'] + ".metabolome"
-#    node.format        = record['format'] ## FIX TO HANDLE mzXML files
-#    node.format_doc    = 'https://en.wikipedia.org/wiki/Mass_spectrometry_data_format'
+    node.format        = record['format'] ## FIX TO HANDLE mzXML files
+    node.format_doc    = 'https://en.wikipedia.org/wiki/Mass_spectrometry_data_format'
     node.subtype       = 'host'
-    node.checksums     = {'md5':record['md5']}
-#    node.checksums     = {'md5':record['md5'], 'sha256':record['sha256']}
+    node.checksums     = {'md5':record['md5'], 'sha256':record['sha256']}
     node.local_file    = record['local_file']
-#    node.tags          = list_tags(node.tags,
-#                          'sample name: '+ record['sample_name_id'] + ".metabolome",
-#                          'visit id: '+ record['visit_id'],
-#                          'subject id: '+ record['rand_subject_id'],
-#                          'sample fluid type: ' + record['SAMPLE_FLUID_TYPE'],
-#                          'type: ' + record['Type'],
-#                          'batch: ' + record['BATCH'],
-#                          'mode: ' + record['MODE'],
-#                          )
+    node.tags          = list_tags(node.tags,
+                          'sample name: '+ record['sample_name_id'] + ".metabolome",
+                          'visit id: '+ record['visit_id'],
+                          'subject id: '+ record['rand_subject_id'],
+                          'sample fluid type: ' + record['SAMPLE_FLUID_TYPE'],
+                          'type: ' + record['Type'],
+                          'batch: ' + record['BATCH'],
+                          'mode: ' + record['MODE'],
+                          )
 
     log.debug('parent_id: '+str(parent_id))
     node.links = {'derived_from':[parent_id]}
