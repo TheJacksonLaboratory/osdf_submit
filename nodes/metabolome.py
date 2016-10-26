@@ -102,8 +102,8 @@ def submit(data_file, id_tracking_file=node_tracking_file):
 
             if record['sample_name_id'] != '':
                 load_search_field = 'comment'
-                internal_id = os.path.basename(record['sample_name_id'] + ".metabolome")
-                parent_internal_id = record['sample_name_id']
+                internal_id = os.path.basename(record['sample_name_id'] + '.metabolome')
+                parent_internal_id = record['sample_name_id'] + '.hostassayprep'
                 grand_parent_internal_id = record['prep_id']
 
                 parent_id = get_parent_node_id(
@@ -115,6 +115,7 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                     log.debug('loaded node newbie...')
                     node_is_new = True
 
+                import pdb ; pdb.set_trace()
                 saved = validate_record(parent_id, node, record,
                                         data_file_name=data_file)
                 if saved:

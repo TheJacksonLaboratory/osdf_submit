@@ -66,14 +66,14 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     #        md5sum.update(chunk)
 
     node.study         = 'prediabetes'
-    node.comment       = record['sample_name_id']
+    node.comment       = record['sample_name_id'] + '.hostassayprep'
     node.sample_name   = record['SAMPLE_PARENT_ID']
     node.contact       = record['sequencing_contact']
     node.center        = record['center']
     node.format        = 'mzXML'
     node.format_doc    = 'https://en.wikipedia.org/wiki/Mass_spectrometry_data_format'
     node.exp_length    = 0 #record['exp_length']
-    node.local_file    = record['sample_name_id']
+    node.local_file    = record['FILE_NAME']
     node.experiment_type    = 'Untargeted metabolomics'
     node.title         = record['title']
     node.prep_id       = record['prep_id']
@@ -83,12 +83,10 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.size          = int(record['size'])
     node.tags = list_tags(node.tags,
                           # 'test', # for debug!!
-                          'sample name: '+record['VISIT_ID'],
-                          'visit id: '+record['VISIT_ID'],
+                          'visit id: '+record['visit_id'],
                           'subject id: '+record['rand_subject_id'],
-                          'study: prediabetes',
                           'file prefix: '+ record['prep_id'],
-                          'file name: '+ str(record['sample_name_id']),
+                          'file name: '+ str(record['FILE_NAME']),
                          )
 
     parent_link = {'prepared_from':[parent_id]}
@@ -126,8 +124,8 @@ def submit(data_file, id_tracking_file=node_tracking_file):
             # node-specific variables:
             load_search_field = 'comment'
             internal_id = os.path.basename(record['local_file'])
-            parent_internal_id = record['prep_id']
-            grand_parent_internal_id = record['VISIT_ID']
+            parent_internal_id = record['sample_name_id']
+            grand_parent_internal_id = record['visit_id']
 
             parent_id = get_parent_node_id(
                 id_tracking_file, parent_type, parent_internal_id)
