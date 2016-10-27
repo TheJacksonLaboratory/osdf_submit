@@ -65,8 +65,8 @@ def main():
     #         settings.NodeDataFiles['metabolomeSample'])
 
     # """ Metabolome HOST Sample node """
-    ## from nodes import metabolome
-    ## metabolome_nodes = metabolome.submit(settings.NodeDataFiles['metabolome'])
+    from nodes import metabolome
+    metabolome_nodes = metabolome.submit(settings.NodeDataFiles['metabolome'])
 
     # """ WGS HOST Sample node """
     # from nodes import host_Seq_Prep_Sample
@@ -81,8 +81,8 @@ def main():
     ## host_transcriptomic_raw_seq_set_nodes = host_TranscriptomicRawSeqSet.submit(settings.NodeDataFiles['hostTranscriptomicsRawSeqSet'])
 
     """ HostAssayPrep node """
-    from nodes import host_Assay_Prep
-    host_assay_prep_nodes = host_Assay_Prep.submit(settings.NodeDataFiles['hostAssayPrep'])
+    ## from nodes import host_Assay_Prep
+    ## host_assay_prep_nodes = host_Assay_Prep.submit(settings.NodeDataFiles['hostAssayPrep'])
 
     """ HostSeqPrep node """
     # from nodes import host_Seq_Prep
