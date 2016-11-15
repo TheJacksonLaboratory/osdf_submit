@@ -67,15 +67,14 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
 
     node.study         = 'prediabetes'
     node.comment       = str(record['sample_name_id']) + '.hostseqprep'
-    node.prepared_by   = record['sequencing_contact']
-    node.sequencing_contact = record['sequencing_contact']
-    node.sequencing_center = record['sequencing_center']
-    node.sequence_type = 'nucleotide'
+    node.prepared_by   = 'Varsha Rao and Reza Sailani'
+    node.sequencing_contact = 'Varsha Rao and Reza Sailani'
+    node.sequencing_center = 'Stanford University'
     node.format        = 'fastq'
     node.format_doc    = 'https://en.wikipedia.org/wiki/' + str(node.format)
     node.exp_length    = 0 #record['exp_length']
     node.local_file    = str(record['sample_name_id']) + '.hostseqprep'
-    node.storage_duration = int(record['storage_duration'])
+    node.storage_duration = int('1')
 #    node.checksums     = {'md5': md5sum.hexdigest(), 'sha256':record['sha256']}
 #    node.size          = int(record['size'])
     node.tags = list_tags(node.tags,
@@ -88,7 +87,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
                          )
     node.lib_layout     = record['lib_layout']
     node.lib_selection  = record['lib_selection']
-    node.ncbi_taxon_id  = record['ncbi_taxon_id']
+    node.ncbi_taxon_id  = '9606'
     node.prep_id        = record['prep_id']
 
     parent_link = {'prepared_from':[parent_id]}
@@ -126,7 +125,7 @@ def submit(data_file, id_tracking_file=node_tracking_file):
             # node-specific variables:
             load_search_field = 'comment'
             internal_id = os.path.basename(record['local_file'])
-            parent_internal_id = record['prep_id']
+            parent_internal_id = record['sample_name_id']
             grand_parent_internal_id = record['visit_id']
 
             parent_id = get_parent_node_id(
@@ -140,6 +139,7 @@ def submit(data_file, id_tracking_file=node_tracking_file):
 
             saved = validate_record(parent_id, node, record,
                                     data_file_name=data_file)
+
             if saved:
                 header = settings.node_id_tracking.id_fields
                 saved_name = getattr(saved, load_search_field)

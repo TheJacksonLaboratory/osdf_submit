@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 """ load mWGS Raw Seq Set into OSDF using info from data file """
 
-https://docs.google.com/spreadsheets/d/1HbjTBikMnbN-cCwGt5fdDsWlGA4kf0ugThKsKQE1Pok/edit
-
 import os
 import re
 
@@ -41,7 +39,6 @@ class node_values:
     tags = []
     urls = []
 
-
 def load(internal_id, search_field):
     """search for existing node to update, else create new"""
 
@@ -50,7 +47,6 @@ def load(internal_id, search_field):
     NodeLoadFunc = 'load_host_transcriptomics_raw_set_set'
 
     return load_node(internal_id, search_field, NodeTypeName, NodeLoadFunc)
-
 
 def validate_record(parent_id, node, record, data_file_name=node_type):
     """update record fields
@@ -69,15 +65,16 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.format_doc    = 'https://en.wikipedia.org/wiki/FASTQ_format'
     node.exp_length    = 0 #record['exp_length']
     node.local_file    = record['local_file']
-    node.checksums     = {'md5':record['md5'], 'sha256':record['sha256']}
-    node.size          = int(record['size'])
+    node.checksums     = {'md5':record['MD5SUM'], 'sha256':record['SHA256']}
+    node.size          = int(record['SIZE'])
     node.tags = list_tags(node.tags,
                           'sample name: '     + record['visit_id'],
                           'body site: '       + record['body_site'],
                           'visit id: '        + record['visit_id'],
                           'subject id: '      + record['rand_subject_id'],
-                          'file prefix: '     + record['prep_id'],
+                          'file prefix: '     + record['sample_name_id'] + '.hostseqprep',
                           'file name: '       + record['local_file'],
+                          'sub-group: '       + record['subtype'],
                          )
     parent_link = {'sequenced_from':[parent_id]}
     log.debug('parent_id: '+str(parent_link))
@@ -100,7 +97,6 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
                       fieldnames=csv_fieldnames, values=[record,])
         return False
 
-
 def submit(data_file, id_tracking_file=node_tracking_file):
     log.info('Starting submission of %ss.', node_type)
     nodes = []
@@ -114,8 +110,8 @@ def submit(data_file, id_tracking_file=node_tracking_file):
             # node-specific variables:
             load_search_field = 'local_file'
             internal_id = os.path.basename(record[load_search_field])
-            parent_internal_id = record['prep_id']
-            grand_parent_internal_id = record['visit_id']
+            parent_internal_id = record['sample_name_id'] + '.hostseqprep' ##Link to Host_seq_prep ID
+            grand_parent_internal_id = record['sample_name_id']  ##Link to Sample ID
 
             parent_id = get_parent_node_id(
                 id_tracking_file, parent_type, parent_internal_id)

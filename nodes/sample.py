@@ -58,19 +58,14 @@ def generate_mixs(row):
             'feature': 'N/A',
             'geo_loc_name': 'Palo Alto, CA, USA',
             'lat_lon': '37.441883, -122.143019',
-            'material': 'urine(ENVO:00002047)' \
-                    if re.match('Urine', row['SAMPLE_FLUID_TYPE']) \
-                    else 'plasma(ENVO:01000798)',
+            'material': 'blood(ENVO:02000020)',
             'project_name': 'iHMP',
             'rel_to_oxygen': 'N/A',
-            'samp_collect_device': 'self-sample' \
-                    if re.match('Urine', row['SAMPLE_FLUID_TYPE']) \
-                    else 'blood draw',
+            'samp_collect_device': 'blood draw',
             'samp_mat_process': 'N/A',
             'samp_size': 'N/A',
-            'source_mat_id': []
+            'source_mat_id': [],
             }
-
         return mixs
     except Exception as e:
         log.warn('Conversion to MIXS format failed?! (SampleName: {}).\n'
@@ -106,7 +101,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
             'visit id: ' + record['visit_id'],
             'subject id: ' + record['rand_subject_id'],
             'study: prediabetes',
-            'substudy: ' + record['sub-study'],
+            'substudy: ' + record['Group'],
             )
     # node._attribs = record['attributes']
 
