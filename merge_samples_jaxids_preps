@@ -308,9 +308,11 @@ def match_base_filenames_prepids(filename_list, sample_sheet_merged):
 
             # get library id from filename (IFF present!)
             jaxid_match = re.search('_(J[0-9]{5})',file_base)
+            runid_match =  re.search('_A[A-Z0-9]{4}$',file_base)
             # match library id to sample prep_id
-            if jaxid_match:
+            if jaxid_match and runid_match:
                 jaxid_library = jaxid_match.group(1)
+                runid = runid_match.group(1)
                 log.info('Jaxid library in file_base: %s', jaxid_library)
 
                 try:
@@ -322,7 +324,7 @@ def match_base_filenames_prepids(filename_list, sample_sheet_merged):
                             smatch = re.search(parent_id,sam_prep)
                             # log.debug('smatch %s', str(smatch))
                             if re.search(jaxid_library,sam_prep) and \
-                                re.search(run_id,sam_prep):
+                                re.search(runid,sam_prep):
                                 log.info('matching prep_id %s', sam_prep)
                                 row['dcc_file_base'] = sam_prep
                                 # log.debug('prep_id: %s', sam_prep)

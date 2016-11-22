@@ -118,20 +118,21 @@ def checksums(filename):
 
     return (md5_str, sha256_str)
 
-def generate_tar(file_prefix=""):
-    """generate tar archives, return file name
-    """
-    # TODO: debug this, as it always says: 'command returned non-zero exit status 1'
+def generate_raw_tar(dest_path="./", file_prefix=""):
+    """generate tar archives, return file name"""
     try:
-        tar_file = file_prefix + '.raw.fastq.tar'
-        tar_cmd = ['tar', 'cf', tar_file, file_prefix+'*']
+        src_path = os.path.dirname(file_prefix)
+        prefix = os.path.basename(file_prefix)
+        os.chdir(src_path)
+        tar_file = os.path.join(dest_path, file_prefix + '.raw.fastq.tar')
+        tar_cmd = ' '.join(['tar', 'chf', tar_file, prefix+'*'])
         tar_stat = get_output(tar_cmd)
-        
-        log.info('Archive file created: '+tar_file)
+
+        log.info('Archive file created: %s', tar_file)
         return tar_file
 
     except Exception, e:
-        log.error('Uh-Oh (generate_tar)... %s', e)
+        log.error('Uh-Oh (generate_raw_tar)... %s', e)
         raise e
 
 def generate_tarbz(file_prefix="", outfile='list.log.csv'):
@@ -160,15 +161,18 @@ def generate_tarbz(file_prefix="", outfile='list.log.csv'):
         log.error('Uh-Oh... %s', e)
         raise e  # (or?) continue with log to show error
 
-def write_checksum_list(file_name="", outfile='checksum_file_list.csv'):
+def write_checksum_list(file_name, checksum_file):
     """generate list of file_name, md5sum and sha256sum
        then write file_name, file_size, md5sum, sha256sum values to csv outfile
     """
+    log.info( '-> Beginning function %s', 'write_checksum_list')
     fields = ['local_file','size','format','md5','sha256']
-    if not os.path.exists(outfile) and os.path.getsize(outfile) >= 0:
-        write_out_csv(outfile, fields) #write headers
+    if not (os.path.exists(checksum_file) or os.path.getsize(checksum_file) >= 0):
+        write_out_csv(checksum_file, fields) #write headers
     try:
+        # log.debug( '-> Beginning try with: %s', file_name)
         if os.path.exists(file_name) and os.path.getsize(file_name) >= 0:
+            # log.debug('checksums for file being created: %s', file_name)
             (md5_str, sha_str) = checksums(file_name)
             log.info('checksums for file created: %s', file_name)
             file_size = os.stat(file_name).st_size
@@ -182,16 +186,57 @@ def write_checksum_list(file_name="", outfile='checksum_file_list.csv'):
                 if re.search(type, file_name):
                     format = type
 
-            values = [{'local_file':file_path,
-                       'size':file_size,
-                       'format':format,
-                       'md5':md5_str,
-                       'sha256':sha_str
+            values = [{'local_file': file_path,
+                       'size':       file_size,
+                       'format':     format,
+                       'md5':        md5_str,
+                       'sha256':     sha_str
                       }]
-            write_out_csv(outfile, fields, values)
+            write_out_csv(checksum_file, fields, values)
+        else:
+            log.error('No such file?  %s', file_name)
 
     except Exception, e:
         log.error('Uh-Oh with writing list %s... %s', file_name, e)
+
+def dir_checksum(args):
+    """convert compression, checksum final file, writeout fields"""
+    log.info( '-> Beginning function %s', 'dir_checksum')
+    data_path = os.path.join(args.data_path, args.renamed_path)
+    checksum_file = args.checksum_list_file
+
+    checksummed = 0
+    errored = 0
+    errfiles = []
+    try:
+        subdirs = ['raw', 'clean']
+        for subdir in subdirs:
+            subpath = os.path.join(data_path, subdir)
+            log.debug('subpath:', subpath)
+            try:
+                for file in os.listdir(subpath):
+                    # log.debug('file in dir: %s', file)
+                    # write_checksum_list(os.path.abspath(file), checksum_file)
+                    file_path = os.path.join(subpath, file)
+                    log.debug('file path: %s', file_path)
+                    write_checksum_list(file_path, checksum_file)
+                    checksummed += 1
+            except Exception as e:
+                log.error('Error in "%s"!!!   %s', 'file_in_subpath', e)
+                errored += 1
+                errfiles.append(file)
+                raise e
+    except Exception, e:
+        log.error('Error in "%s"!!!   %s', 'convert_and_checksum', e)
+        # continue to next, instead of `raise e`
+
+    # summarize:
+    log.info( '-> Files compression checksummed: %4s', str(checksummed))
+    log.error('-> Errors found when processing:  %4s', str(errored))
+    if errored:
+        log.error('  -> For specifics on these files that errored, '
+                  'please see the logfile.')
+        log.error('Files: %s', str(errfiles))
 
 def convert_gz_to_bz2(file_name):
     """convert gzip to bzip2 compression format"""
@@ -212,67 +257,43 @@ def convert_gz_to_bz2(file_name):
         log.error('Uh-Oh... compressing: %s', e)
         raise e  # (or?) continue with log to show error
 
-def archive_fastq_files(args):
+def archive_raw_fastq_files(args):
     """ only run this func for raw fastq PE files!!
     """
 
     map_file = args.mapping_file
-    checksum_file = args.checksum_list_file
     renamed_path = args.renamed_path
+    data_path = args.data_path
 
     archived = 0
     errored = 0
     errfiles = []
     for row in yield_csv_data(map_file):
-        if row['dcc_file_base'] != '': #row is not empty
+        if (re.search('raw', row['dir']) and
+                row['dcc_file_base'] != ''):
             dest = row['dcc_file_base']
-            path = row['dir']
+            dir = row['dir']
             try:
-                file_path = os.path.join(renamed_path, path, dest)
-                log.debug('(%s)... file_path: %s', 'archive', file_path)
-                tar_file = generate_tar(file_path)
-                archived += 1
+                file_path = os.path.join(data_path, renamed_path, dir)
+                # log.debug('(%s)... file_path: %s', 'archive', file_path)
+                pref = os.path.join(file_path, dest)
+                tar_file = generate_raw_tar(file_path, file_prefix=pref)
+                # archived += 1 #debug "+= 1" syntax errors
 
             except Exception, e:
-                log.error('Error in "%s"!!!   %s', 'archive_fastq_files', e)
-                errored += 1
+                log.error('Error in "%s"!!!   %s', 'archive_raw_fastq_files', e)
+                # errored += 1 #debug "+= 1" syntax errors
                 errfiles.append(dest)
                 # continue to next, instead of `raise e`
 
     # summarize:
     log.info( '-> Files successfully archived: %4s', str(archived))
     log.error('-> Errors found when moving:    %4s', str(errored))
-    if errored:
+    # if errored:
+    if True: #debug "+= 1" syntax errors
         log.error('  -> For specifics on these files that errored, '
                   'please see the logfile.')
         log.error('Files: %s', str(errfiles))
-
-def dir_checksum(args):
-    """convert compression, checksum final file, writeout fields"""
-    checksum_file = args.checksum_list_file
-
-    checksummed = 0
-    errored = 0
-    errfiles = []
-    try:
-        for file in os.listdir(os.curdir):
-            write_checksum_list(file, outfile=checksum_file)
-            checksummed += 1
-
-    except Exception, e:
-        log.error('Error in "%s"!!!   %s', 'convert_and_checksum', e)
-        errored += 1
-        errfiles.append(file)
-        # continue to next, instead of `raise e`
-
-    # summarize:
-    log.info( '-> Files compression checksummed: %4s', str(checksummed))
-    log.error('-> Errors found when processing:  %4s', str(errored))
-    if errored:
-        log.error('  -> For specifics on these files that errored, '
-                  'please see the logfile.')
-        log.error('Files: %s', str(errfiles))
-
 
 def rename_files(args):
     """loop through mapping_file, subloop through files in curdir+row-subdir,
@@ -284,6 +305,7 @@ def rename_files(args):
     map_file = args.mapping_file
     checksum_file = args.checksum_list_file
     renamed_path = args.renamed_path
+    data_path = args.data_path
 
     class summary:
         renamed = 0
@@ -294,7 +316,7 @@ def rename_files(args):
         pending_files = []
 
     for row in yield_csv_data(map_file):
-        if row['original_file_base']: #row is not empty
+        if row['original_file_base'] and row['dcc_file_base']: #row isn't empty
             # dir = row['dir']
             srce = row['second_file_base'] \
                 if row['second_file_base'] != '' \
@@ -302,36 +324,41 @@ def rename_files(args):
             dest = row['dcc_file_base']
             # log.debug('__srce:'+srce+', dest:'+dest)
             try:
-                # for file in os.listdir(os.curdir):
-                curpath = os.path.join(os.curdir, row['dir'])
-                for file in os.listdir(curpath):
-                    # log.debug('__ file='+file)
+                filepath = os.path.join(data_path, row['dir'])
+                # log.debug('__ filepath='+filepath)
+                for file in os.listdir(filepath):
+                    # log.debug('__ file=%s, %s', file, row['dir'])
                     if re.match(srce, file):
-                        file = os.path.join(curpath, file)
-                        repl = re.sub(srce, dest, file)
-                        # repl_path = os.path.abspath(os.path.dirname(repl))
-                        repl_file = os.path.join(renamed_path, repl)
-                        log.info('Moving "%s" to "%s"', file, repl)
-                        os.renames(file, repl_file)
-                        # if re.search('raw', row['dir']):
-                        #     #WARN: presumes illumina 'L'ane and 'R'ead numbers!
-                        #     repl_glob = re.sub('[-_][LRS][0-9]*[-_].*',
-                        #                        '', repl_file)
-                        #     tar_file = generate_tar(repl_glob)
-                        #     repl_file = tar_file
-                        if re.search('raw', row['dir']):
-                            continue # pending archive pre-checksumming
-                        if os.stat(repl_file).st_size > 0:
-                            summary.renamed += 1
-                            write_checksum_list(repl_file,
-                                    outfile=checksum_file)
-                            # else:
-                    #     log.info('___Not Moving "%s"', file)
-                    #     summary.pending += 1
-                    #     summary.pending_files.append(file)
+                        repl_sub = re.sub(srce, dest, file)
+                        repl_path = os.path.join(data_path, renamed_path, row['dir'])
+                        repl_file = os.path.join(repl_path, repl_sub)
+                        file = os.path.join(filepath, file)
+                        log.info('Moving "%s" to "%s"', file, repl_file)
+                        try:
+                            os.renames(file, repl_file)
+                            try:
+                                #TODO: check is_symlink before .st_size? (only if on same host)
+                                if int(os.stat(repl_file).st_size) > 0:
+                                    pass
+                                    # os.chmod(repl_file, 0444) # not needed for links, only for new files
+                                else:
+                                    log.error('Error in "%s"!!! file: %s, except: %s',
+                                        'file.stat', file, e)
 
-            except Exception, e:
-                log.error('Error in "%s"!!!   %s', 'rename_files', e)
+                            except Exception, e:
+                                log.error('Error in "%s"!!! file: %s, except: %s',
+                                        'rename_files.stat+chmod', file, e)
+                                # raise e
+                        except Exception, e:
+                            log.error('Error in "%s"!!! file: %s, except: %s',
+                                    'rename_files.os-renames', file, e)
+                            summary.errored += 1
+                            summary.errfiles.append(srce)
+                            # raise e
+
+
+            except Exception as e:
+                log.error('Error in "%s"!!! row: %s, except: %s', 'rename_files', row, e)
                 summary.errored += 1
                 summary.errfiles.append(srce)
                 # continue to next, instead of `raise e`
@@ -349,23 +376,65 @@ def rename_files(args):
                 'please see the logfile.')
         log.error('  -> Files: %s', str(summary.errfiles))
 
+def create_mapping_file(args):
+    """create the mapping file adds in the column dcc_file_base using 'prep_id'
+       from the dnaprep_file jaxid_library field matched to the mapping_file
+    """
+    prep_file = args.dnaprep_file
+    map_file = args.mapping_file
+    map_outfile = args.map_outfile
+
+    fields = ['dcc_file_base', 'dir', 'original_file_base', 'second_file_base',
+              'final_sample_name', 'rand_subject_id', 'flag_meanings']
+    write_out_csv(map_outfile, fields) # headers to outfiles
+
+    preps = [row for row in yield_csv_data(prep_file)]
+    for maprow in yield_csv_data(map_file):
+        srce_file = maprow['second_file_base'] \
+            if maprow['second_file_base'] != '' \
+            else maprow['original_file_base']
+        for prep in preps:
+            libid = prep['jaxid_library']
+            runid = prep['run_id']
+            if libid:
+                # log.debug('jaxid_library: %s', libid)
+                if re.search(libid,srce_file) and re.search(runid,srce_file):
+                    maprow['dcc_file_base'] = prep['prep_id']
+        write_out_csv(map_outfile, fields, [maprow])
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Make it Happen' ~~~~~
 
 if __name__ == '__main__':
-    """This script must be run from within the directory containing all the
-        files to be processed!
+    """Mod main functions run called below as you need them (files need
+       many steps, at different times...)
     """
 
     class args:
-        renamed_path = 'renamed'
-        mapping_file = '20160616-HMP2_metadata-filename_changes.csv'
-        mapping_file = '/data/HMP2/20160616-HMP2-filename_changes.csv'
+        # ...[ defaults ]...
+        base_path = '/Users/bleopold/osdf/ipop_osdf/submit_osdf/data_files/'
+        data_path = '/Volumes/helix_weinstock/projects/HMP2/submissions/data/'
+        # renamed_path = 'renamed'
 
-        mapping_file = '/Volumes/helix_data-weinstock/projects/HMP2/submissions/data/data_files.fof_ready.ZOZOW1T_mwgs_raw.csv'
-        checksum_list_file = '/Users/bleopold/JAXGM/projects/HMP2/submission/20160824-checksums.csv'
+        # ...[ 16S ]...
+        mapping_file = data_path + '20161116-16Sdnaprep_nodupes_ready.csv'
+        checksum_list_file = base_path + '20161121-checksums_16S.csv'
+        renamed_path = 'renamed/16S'
 
-    # write_checksum_list(args)
+        # ...[ mwgs ]...
+        # dnaprep_file = base_path + '20160930-dnaPrep_mwgs_all_merged.csv_submitted.csv'
+        # mapping_file = data_path + 'data_files_mwgs.fof_ready.csv'
+        # checksum_list_file = base_path + '20160930-checksums_mwgs.csv'
+        # renamed_path = 'renamed/mwgs'
+
+        # ...[ rnaseq ]...
+        # dnaprep_file = base_path + '20160930-dnaPrep_rna_all_merged.csv_submitted.csv'
+        # mapping_file = data_path + 'data_files_rnaseq.fof_ready.csv'
+        # checksum_list_file = base_path + '20160930-checksums_rnaseq.csv'
+        # renamed_path = 'renamed/rnaseq'
+
+        map_outfile = re.sub('\.fof.*', '.ready.csv', mapping_file)
+
+
+    # rename_files(args)
+    # archive_raw_fastq_files(args)
     dir_checksum(args)
-    # rename_files(arg)
-    # archive_fastq_files(args)
