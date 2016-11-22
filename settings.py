@@ -78,6 +78,18 @@ NodeDataFiles = {
         'hostWgsSample':  './data_files/wgs_samples.csv',
         'hostRawSeqPrep' : './data_files/host_seq_prep.csv',
         'hostSeqPrepTranscriptome' : './data_files/host_transcriptomics_hostSeqSet.csv',
+        #
+        'r16sDnaPrep':  './data_files/20160930-dnaPrep_16S_all_merged.csv',
+        'WgsDnaPrep':   './data_files/20160930-dnaPrep_mwgs_all_merged.csv',
+        'RnaPrep':      './data_files/20160930-dnaPrep_rna_all_merged.csv',
+        #
+        'r16sRawSeqs':  './data_files/20161011-seqfiles_16s-raw.csv',
+        'r16sTrimSeqs': './data_files/20161011-seqfiles_16s-trim_ready.csv',
+        'MicrobRnaRaw': './data_files/20161011-seqfiles_rnaseq-raw.csv',
+        'WgsRawSeqs':   './data_files/20161011-seqfiles_mwgs-raw.csv',
+        #
+        'r16sDnaPrep':  './data_files/20161108_dnaPrep_16S_samples_merged.csv',
+
         }
 
 

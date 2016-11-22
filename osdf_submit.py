@@ -81,8 +81,8 @@ def main():
     #sample_nodes = sample.submit(settings.NodeDataFiles['hostTranscriptomicSample'])
 
     """ HostTranscriptomicRawSeqPrep node """
-    from nodes import hostTranscriptomicsRawSeqSet
-    host_transcriptomic_raw_seq_set_nodes = hostTranscriptomicsRawSeqSet.submit(settings.NodeDataFiles['hostTranscriptomicsRawSeqSet'])
+    # from nodes import hostTranscriptomicsRawSeqSet
+    # host_transcriptomic_raw_seq_set_nodes = hostTranscriptomicsRawSeqSet.submit(settings.NodeDataFiles['hostTranscriptomicsRawSeqSet'])
 
     """ HostAssayPrep node """
     ## from nodes import host_Assay_Prep
@@ -126,9 +126,9 @@ def main():
     #         settings.NodeDataFiles['Sample'])
 
     """ 16S DNA Prep node """
-    # from nodes import r16sDnaPrep
-    # r16_nodes = r16sDnaPrep.submit(
-    #         settings.NodeDataFiles['r16sDnaPrep'])
+    from nodes import r16sDnaPrep
+    r16_nodes = r16sDnaPrep.submit(
+            settings.NodeDataFiles['r16sDnaPrep'])
     """ 16S Raw Sequence Set node """
     # from nodes import r16sRawSeqSet
     # raw_nodes = r16sRawSeqSet.submit(
