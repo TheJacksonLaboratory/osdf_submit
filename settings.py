@@ -3,6 +3,7 @@
 """
 import os
 import yaml
+import time
 
 
 def load_string_from_file(filename):
@@ -35,62 +36,88 @@ class node_id_tracking:
 
 # data file names
 NodeDataFiles = {
-        # 'Project':      './data_files/project_info.yaml',
-        # 'Study':        './data_files/study_info.yaml',
-        # 'Subject':      './data_files/20160608-HMP2_metadata-subjects.csv',
-        # 'Visit':        './data_files/20160609-HMP2_metadata-visits_jaxgm.csv',
-        # 'Sample':       './data_files/20160610-HMP2_metadata-samples-final.csv',
-        # 'Visit':        './data_files/20160623-HMP2_metadata-visits-ZOZOW1T.csv',
-        # 'Sample':       './data_files/20160623-HMP2_metadata-samples-ZOZOW1T.csv',
-        # 'Visit':        './data_files/20160708_HMP2_metadata-visits_jaxgm.csv',
-        #
-        # 'Sample':       './data_files/20160711_HMP2_metadata-r16sSamples_13J_seqd.csv',
-        # 'r16sDnaPrep':  './data_files/20160708_HMP2_metadata-r16sDnaPrep_1st6.csv',
-        # 'r16sRawSeqs':  './data_files/20160708_HMP2_metadata-r16sRaw_1st6.csv',
-        # 'r16sTrimSeqs': './data_files/20160708_HMP2_metadata-r16sTrim_1st6.csv',
-        #
-        # 'Sample':       './data_files/HMP2_metadata-MasterSampleSheet_0801_new_jaxids-visits_20160804.csv',
-        #
-        # 'WgsDnaPrep':   './data_files/dnaPrep_mwgs_0801_20160808_merged_ZOZOW1T.csv',
-        # 'WgsRawSeqs':   './data_files/20160824_mwgs_raw_ready.csv',
-        #
-        ## re-submissions/modifications:
-        # 'Subject':      './data_files/20160926-subjects-consented.csv',
-        # 'Visit':        './data_files/20160921-visits_jaxgm_newConsents.csv',
-        # 'Sample':       './data_files/20160921-samples-lot16.csv',
-        'Visit':        './data_files/20160927-HMP2-visits_ALL.csv',
-        'Sample':       './data_files/20160927-HMP2-samples_ALL.csv',
-        #
-        'r16sDnaPrep':  './data_files/20160913-dnaPrep_16S_merged.csv',
-        'r16sRawSeqs':  './data_files/20160920-16S-rawseqs.csv',
-        'r16sTrimSeqs': './data_files/20160920-16S-trimseqs.csv',
-        #
-        'RnaPrep':      './data_files/20160913-metadata-dnaPrep_rna.csv',
-        'MicrobRnaRaw': './data_files/20160920_rnaseq_raw.csv',
-        #
-        'metabolome':   './data_files/metabolome.csv',
-        'metabolomeSample': './data_files/metabolome.csv',
-        'hostAssayPrep':   './data_files/metabolome.csv',
-        'hostTranscriptomicSample':'./data_files/brian_host_transcriptomics_raw_seq_set.csv',
-        'hostTranscriptomicsRawSeqSet':   './data_files/host_transcriptomics_hostSeqSet.csv',
-        'hostSeqPrep' : './data_files/host_seq_prep.csv',
-        'proteome' :    './data_files/proteome.csv',
-        'hostWgsSample':  './data_files/wgs_samples.csv',
-        'hostRawSeqPrep' : './data_files/host_seq_prep.csv',
-        'hostSeqPrepTranscriptome' : './data_files/host_transcriptomics_hostSeqSet.csv',
-        #
-        'r16sDnaPrep':  './data_files/20160930-dnaPrep_16S_all_merged.csv',
-        'WgsDnaPrep':   './data_files/20160930-dnaPrep_mwgs_all_merged.csv',
-        'RnaPrep':      './data_files/20160930-dnaPrep_rna_all_merged.csv',
-        #
-        'r16sRawSeqs':  './data_files/20161011-seqfiles_16s-raw.csv',
-        'r16sTrimSeqs': './data_files/20161011-seqfiles_16s-trim_ready.csv',
-        'MicrobRnaRaw': './data_files/20161011-seqfiles_rnaseq-raw.csv',
-        'WgsRawSeqs':   './data_files/20161011-seqfiles_mwgs-raw.csv',
-        #
-        'r16sDnaPrep':  './data_files/20161108_dnaPrep_16S_samples_merged.csv',
+    # 'Project':      './data_files/project_info.yaml',
+    # 'Study':        './data_files/study_info.yaml',
+    # 'Subject':      './data_files/20160608-HMP2_metadata-subjects.csv',
+    # 'Visit':        './data_files/20160609-HMP2_metadata-visits_jaxgm.csv',
+    # 'Sample':       './data_files/20160610-HMP2_metadata-samples-final.csv',
+    # 'Visit':        './data_files/20160623-HMP2_metadata-visits-ZOZOW1T.csv',
+    # 'Sample':       './data_files/20160623-HMP2_metadata-samples-ZOZOW1T.csv',
+    # 'Visit':        './data_files/20160708_HMP2_metadata-visits_jaxgm.csv',
+    #
+    # 'Sample':       './data_files/20160711_HMP2_metadata-r16sSamples_13J_seqd.csv',
+    # 'r16sDnaPrep':  './data_files/20160708_HMP2_metadata-r16sDnaPrep_1st6.csv',
+    # 'r16sRawSeqs':  './data_files/20160708_HMP2_metadata-r16sRaw_1st6.csv',
+    # 'r16sTrimSeqs': './data_files/20160708_HMP2_metadata-r16sTrim_1st6.csv',
+    #
+    # 'Sample':       './data_files/HMP2_metadata-MasterSampleSheet_0801_new_jaxids-visits_20160804.csv',
+    #
+    # 'WgsDnaPrep':   './data_files/dnaPrep_mwgs_0801_20160808_merged_ZOZOW1T.csv',
+    # 'WgsRawSeqs':   './data_files/20160824_mwgs_raw_ready.csv',
+    #
+    ## re-submissions/modifications:
+    # 'Subject':      './data_files/20160926-subjects-consented.csv',
+    # 'Visit':        './data_files/20160921-visits_jaxgm_newConsents.csv',
+    # 'Sample':       './data_files/20160921-samples-lot16.csv',
+    'Visit':        './data_files/20160927-HMP2-visits_ALL.csv',
+    'Sample':       './data_files/20160927-HMP2-samples_ALL.csv',
+    #
+    'r16sDnaPrep':  './data_files/20160913-dnaPrep_16S_merged.csv',
+    'r16sRawSeqs':  './data_files/20160920-16S-rawseqs.csv',
+    'r16sTrimSeqs': './data_files/20160920-16S-trimseqs.csv',
+    #
+    'RnaPrep':      './data_files/20160913-metadata-dnaPrep_rna.csv',
+    'MicrobRnaRaw': './data_files/20160920_rnaseq_raw.csv',
+    #
+    'metabolome':   './data_files/metabolome.csv',
+    'metabolomeSample': './data_files/metabolome.csv',
+    'hostAssayPrep':   './data_files/metabolome.csv',
+    'hostTranscriptomicSample':'./data_files/brian_host_transcriptomics_raw_seq_set.csv',
+    'hostTranscriptomicsRawSeqSet':   './data_files/host_transcriptomics_hostSeqSet.csv',
+    'hostSeqPrep' : './data_files/host_seq_prep.csv',
+    'proteome' :    './data_files/proteome.csv',
+    'hostWgsSample':  './data_files/wgs_samples.csv',
+    'hostRawSeqPrep' : './data_files/host_seq_prep.csv',
+    'hostSeqPrepTranscriptome' : './data_files/host_transcriptomics_hostSeqSet.csv',
+    #
+    #
+    #'r16sDnaPrep':  './data_files/20160930-dnaPrep_16S_all_merged.csv',
+    #'r16sDnaPrep':  './data_files/20161122-16S_dnaPreps-to_submit_dupe_samples_ready.csv',
+    #'r16sRawSeqs':  './data_files/20161121-16S_raw_seqfiles.csv',
+    #'r16sTrimSeqs': './data_files/20161121-16S_trim_seqfiles.csv',
+    #'r16sRawSeqs':  './data_files/20161207-16S-preps_missing_files-raw.csv',
+    #'r16sTrimSeqs':  './data_files/20161207-16S-preps_missing_files-clean.csv',
+    #
+    #'WgsDnaPrep':   './data_files/20161212-mwgs-samples_merged_checksummed_matches.csv',
+    #'WgsRawSeqs':   './data_files/20161212-mwgs-samples_merged_checksummed_matches_consented_post-net-error1.csv',
+    #
+    #'RnaPrep':      './data_files/20161219-samples_rnaseq_merged.csv',
+    #'RnaPrep':      './data_files/20161219-samples_rnaseq_merged_2A.csv',
+    #'MicrobRnaRaw': './data_files/20161219-samples_rnaseq_merged_checksummed_part2.csv'
 
-        }
+    'r16sDnaPrep':    './data_files/20170202-16S_set_merged.csv',
+    # 'r16sRawSeqs':  './data_files/20170105_update-dnaPreps_113_raws.csv',
+    # 'r16sTrimSeqs': './data_files/20170105_update-dnaPreps_113_cleaned.csv',
+
+    # Non-consenting!
+    # 'Visit':        './data_files/20161220-VisitsNoConsent.csv',
+    # 'Sample':       './data_files/20161220-SamplesNoConsent.csv',
+    # ...plus all dnaPreps, rawFiles, etc....
+    }
+
+CURDATE = time.strftime("%Y%m%d")
+NodeRetrievalFiles = {
+    'Subject':      './osdf_node_records/{}_subjects.csv'.format(CURDATE),
+    'Visit':        './osdf_node_records/{}_visits.csv'.format(CURDATE),
+    'Sample':       './osdf_node_records/{}_samples.csv'.format(CURDATE),
+    'r16sDnaPrep':  './osdf_node_records/{}_r16sdnapreps.csv'.format(CURDATE),
+    'r16sRawSeqs':  './osdf_node_records/{}_r16srawseqs.csv'.format(CURDATE),
+    'r16sTrimSeqs': './osdf_node_records/{}_r16strimseqs.csv'.format(CURDATE),
+    'WgsDnaPrep':   './osdf_node_records/{}_wgsdnapreps.csv'.format(CURDATE),
+    'WgsRawSeqs':   './osdf_node_records/{}_wgsrawseqs.csv'.format(CURDATE),
+    'RnaPrep':      './osdf_node_records/{}_rnapreps.csv'.format(CURDATE),
+    'MicrobRnaRaw': './osdf_node_records/{}_microbrnarawseqs.csv'.format(CURDATE),
+    }
 
 
 class node_hierarchy:
@@ -133,5 +160,3 @@ if __name__ == '__main__':
     print('nodes')
     n = node_hierarchy()
     pprint(n.node_tree)
-
-    pass
