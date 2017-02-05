@@ -4,6 +4,7 @@
 import os
 import csv
 import re
+import yaml
 import logging
 import time
 import importlib
@@ -34,10 +35,17 @@ def log_it(logname=os.path.basename(__file__), logdir="logs"):
     ch.setFormatter(formatter)
     l.addHandler(ch)
 
-    # fh = logging.FileHandler(logfile, mode='a')
-    # fh.setLevel(loglevel)
-    # fh.setFormatter(formatter)
-    # l.addHandler(fh)
+    fh = logging.FileHandler(logfile, mode='a')
+    fh.setLevel(loglevel)
+    fh.setFormatter(formatter)
+    l.addHandler(fh)
+
+    warnlogfile = '.'.join([curtime, logname, 'WARN', 'log'])
+    warnlogfile = os.path.join(logdir, warnlogfile)
+    wfh = logging.FileHandler(warnlogfile, mode='a')
+    wfh.setLevel(logging.WARNING)
+    wfh.setFormatter(formatter)
+    # l.addHandler(wfh)
 
     # utils = logging.getLogger(logname)
     # utils.setLevel(loglevel)
@@ -93,7 +101,7 @@ def load_data(csv_file):
     """
     log.info('Loading rows from {}'.format(csv_file))
     with open(csv_file, 'rb') as csvfh:
-        reader = csv.DictReader(csvfh)
+        reader = csv.DictReader(csvfh, dialect='excel')
         # log.debug('csv dictreader opened')
         try:
             for row in reader:
@@ -122,11 +130,11 @@ def write_out_csv(csv_file,fieldnames=id_fields,values=[]):
     Values is list of dicts w/ keys matching fieldnames.
     To write header to file, omit `values`
     """
-    log.info('Writing csv to {}'.format(csv_file))
     try:
         with open(csv_file, 'a') as csvout:
             writer = csv.DictWriter(csvout, fieldnames)
             if values:
+                log.info('Writing csv to {}'.format(csv_file))
                 try:
                     for row in values:
                         if isinstance(row, dict):
@@ -194,9 +202,9 @@ def get_parent_node_id(id_file_name, node_type, parent_id):
             if re.match(node_type.lower(),row['node_type']):
                 # node_ids.append(row.parent_id)
                 if re.match(parent_id,row['internal_id']):
-                    log.debug('--> matching node row: '+ str(row))
-                    log.debug('parent type: {}, osdf_node_id: {}'.format(
-                        node_type,str(row['osdf_node_id'])))
+                    # log.debug('--> matching node row: '+ str(row))
+                    # log.debug('parent type: {}, osdf_node_id: {}'.format(
+                    #     node_type,str(row['osdf_node_id'])))
                     return row['osdf_node_id']
                 # else:
                     # log.debug('--> no match node row for: '+ str(parent_id))
@@ -204,6 +212,21 @@ def get_parent_node_id(id_file_name, node_type, parent_id):
             # else:
                 # log.debug('--> no match node row: '+ str(node_type))
                 # return None
+    except Exception as e:
+        raise e
+
+
+def get_node_id(id_file_name, node_type, node_id):
+    """ read node ids from csv tracking file
+        return node id matching node_type
+    """
+    try:
+        for row in load_data(id_file_name):
+            if re.match(node_type,row['node_type']):
+                if re.match(node_id,row['internal_id']):
+                    log.debug('matching, node type: {}, osdf_node_id: {}'.format(
+                        node_type,str(row['osdf_node_id'])))
+                    return row['osdf_node_id']
     except Exception as e:
         raise e
 
