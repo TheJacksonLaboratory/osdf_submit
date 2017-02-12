@@ -10,7 +10,8 @@ import settings
 from cutlass_utils import \
         load_data, get_parent_node_id, list_tags, format_query, \
         write_csv_headers, values_to_node_dict, write_out_csv, \
-        load_node, get_field_header, dump_args, log_it
+        load_node, get_field_header, dump_args, log_it, \
+        get_cur_datetime
 
 filename=os.path.basename(__file__)
 log = log_it(filename)
@@ -57,7 +58,8 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     write_csv_headers(data_file_name,fieldnames=csv_fieldnames)
 
     node.study         = 'prediabetes'
-    node.comment       = record['prep_id'] + ' ... Quality trimmed, cleaned, '\
+    node.comment       = os.path.basename(record['local_file']) \
+                            + ' ... Quality trimmed, cleaned, '\
                             + 'dehosted, converted fastq to fasta.'
     node.format        = record['format'] # only 'fasta', 'fastq' allowed!
     node.format_doc    = 'https://en.wikipedia.org/wiki/' +\
@@ -73,7 +75,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
                                           else 'jaxid (library): none',
                           'sample name: '+record['sample_name_id'],
                           'body site: '+record['body_site'],
-                          'visit id: '+record['visit_id'],
+                          # 'visit id: '+record['visit_id'],
                           'subject id: '+record['rand_subject_id'],
                           'study: prediabetes',
                           'dna_prep_id: '+ record['prep_id'],
@@ -83,14 +85,15 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     log.debug('parent_id: '+str(parent_id))
     node.links = {'computed_from':[parent_id]}
 
-    csv_fieldnames = get_field_header(data_file_name)
     if not node.is_valid():
-        write_out_csv(data_file_name+'_invalid_records.csv',
-                      fieldnames=csv_fieldnames, values=[record,])
-        invalidities = node.validate()
-        err_str = "Invalid {}!\n\t{}".format(node_type, str(invalidities))
+        invalidities = str(node.validate())
+        err_str = "Invalid node {}!\t\t{}".format(node_type, invalidities)
         log.error(err_str)
-        # raise Exception(err_str)
+        # vals = [record]
+        # vals.append(invalidities)
+        write_out_csv(data_file_name+'_invalid_records.csv',
+                      fieldnames=csv_fieldnames,
+                      values=[record,])
     elif node.save():
         write_out_csv(data_file_name+'_submitted.csv',
                       fieldnames=csv_fieldnames, values=[record,])
@@ -130,11 +133,13 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                                         data_file_name=data_file)
                 if saved:
                     header = settings.node_id_tracking.id_fields
+                    saved_name = os.path.basename(getattr(saved, load_search_field))
                     vals = values_to_node_dict(
-                            [[node_type.lower(),saved_name,saved.id,
-                              parent_type.lower(),parent_internal_id,parent_id]],
-                            header
-                            )
+                        [[node_type.lower(), saved_name, saved.id,
+                          parent_type.lower(), parent_internal_id, parent_id,
+                          get_cur_datetime()]],
+                        header
+                        )
                     nodes.append(vals)
                     if node_is_new:
                         write_out_csv(id_tracking_file,

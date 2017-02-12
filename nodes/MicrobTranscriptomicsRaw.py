@@ -4,24 +4,26 @@
 import os
 import re
 
-from cutlass.MicrobTranscriptomicsRawSeqSet import MicrobTranscriptomicsRawSeqSet
+from cutlass.MicrobTranscriptomicsRawSeqSet \
+    import MicrobTranscriptomicsRawSeqSet
 
 import settings
 from cutlass_utils import \
         load_data, get_parent_node_id, list_tags, format_query, \
         write_csv_headers, values_to_node_dict, write_out_csv, \
-        load_node, get_field_header, dump_args, log_it
+        load_node, get_field_header, dump_args, log_it, \
+        get_cur_datetime
 
 filename = os.path.basename(__file__)
 log = log_it(filename)
 
 # the Higher-Ups
-node_type          = 'MicrobTranscriptRawSeqs'
-parent_type        = 'WgsDnaPrep'
-grand_parent_type  = 'Sample'
-great_parent_type  = 'Visit'
-great_great1_type  = 'Subject'
-great_great2_type  = 'Study'
+node_type         = 'MicrobTranscriptRawSeqs'
+parent_type       = 'WgsDnaPrep'
+grand_parent_type = 'Sample'
+great_parent_type = 'Visit'
+great_great1_type = 'Subject'
+great_great2_type = 'Study'
 
 node_tracking_file = settings.node_id_tracking.path
 
@@ -58,17 +60,17 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     """
     log.info("in validate/save: "+node_type)
     csv_fieldnames = get_field_header(data_file_name)
-    write_csv_headers(data_file_name,fieldnames=csv_fieldnames)
+    write_csv_headers(data_file_name, fieldnames=csv_fieldnames)
 
     node.study         = 'prediabetes'
-    node.comment       = record['local_file']
+    node.comment       = os.path.basename(record['local_file'])
     node.sequence_type = 'nucleotide'
     node.seq_model     = record['seq_model']
     node.format        = 'fastq'
     node.format_doc    = 'https://en.wikipedia.org/wiki/FASTQ_format'
-    node.exp_length    = 0 #record['exp_length']
+    node.exp_length    = 0  # record['exp_length']
     node.local_file    = record['local_file']
-    node.checksums     = {'md5':record['md5'], 'sha256':record['sha256']}
+    node.checksums     = {'md5': record['md5'], 'sha256': record['sha256']}
     node.size          = int(record['size'])
     node.tags = list_tags(node.tags,
                           'jaxid (sample): '  + record['jaxid_sample'],
@@ -133,11 +135,13 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                 saved = validate_record(parent_id, node, record,
                                         data_file_name=data_file)
                 if saved:
+                    # load_search_field = 'urls'
                     header = settings.node_id_tracking.id_fields
-                    saved_name = getattr(saved, load_search_field)
+                    saved_name = os.path.basename(getattr(saved, load_search_field))
                     vals = values_to_node_dict(
-                        [[node_type.lower(),saved_name,saved.id,
-                          parent_type.lower(),parent_internal_id,parent_id]],
+                        [[node_type.lower(), saved_name, saved.id,
+                          parent_type.lower(), parent_internal_id, parent_id,
+                          get_cur_datetime()]],
                         header
                         )
                     nodes.append(vals)

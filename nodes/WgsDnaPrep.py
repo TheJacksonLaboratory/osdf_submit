@@ -10,7 +10,9 @@ import settings
 from cutlass_utils import \
         load_data, get_parent_node_id, list_tags, format_query, \
         write_csv_headers, values_to_node_dict, write_out_csv, \
-        load_node, get_field_header, dump_args, log_it
+        load_node, get_field_header, dump_args, log_it, \
+        get_cur_datetime
+
 
 filename = os.path.basename(__file__)
 log = log_it(filename)
@@ -101,8 +103,8 @@ def concat_tag(index_type,index_seq):
         tag_pre = TAG_pri_D7[0]
         tag_post = TAG_pri_D7[1]
     elif re.match('A', index_type):
-        tag_pre = TAG_pri_A[0]
-        tag_post = TAG_pri_A[1]
+        tag_pre = TAG_A[0]
+        tag_post = TAG_A[1]
     else: # for single-read runs
         tag_pre = ''
         tag_post = ''
@@ -279,8 +281,9 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                     header = settings.node_id_tracking.id_fields
                     saved_name = getattr(saved, load_search_field)
                     vals = values_to_node_dict(
-                        [[node_type.lower(),saved_name,saved.id,
-                          parent_type.lower(),parent_internal_id,parent_id]],
+                        [[node_type.lower(), saved_name, saved.id,
+                          parent_type.lower(), parent_internal_id, parent_id,
+                          get_cur_datetime()]],
                         header
                         )
                     nodes.append(vals)

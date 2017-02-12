@@ -10,7 +10,8 @@ import settings
 from cutlass_utils import \
         load_data, get_parent_node_id, list_tags, format_query, \
         write_csv_headers, values_to_node_dict, write_out_csv, \
-        load_node, get_field_header, dump_args, log_it
+        load_node, get_field_header, dump_args, log_it, \
+        get_cur_datetime
 
 filename = os.path.basename(__file__)
 log = log_it(filename)
@@ -183,7 +184,6 @@ def load(internal_id, search_field):
     return load_node(internal_id, search_field, NodeTypeName, NodeLoadFunc)
 
 
-# @dump_args
 def validate_record(parent_id, node, record, data_file_name=node_type):
     """update record fields
        validate node
@@ -213,7 +213,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
                           'jaxid (library): '+record['jaxid_library'] \
                                           if record['jaxid_library'] \
                                           else 'jaxid (library): unknown',
-                          'visit id: '+record['visit_id'],
+                          # 'visit id: '+record['visit_id'],
                           'subject id: '+record['rand_subject_id'],
                           'study: prediabetes',
                           'file prefix: '+ record['prep_id'],
@@ -224,12 +224,12 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
 
     csv_fieldnames = get_field_header(data_file_name)
     if not node.is_valid():
-        write_out_csv(data_file_name+'_invalid_records.csv',
-                      fieldnames=csv_fieldnames, values=[record,])
-        invalidities = node.validate()
-        err_str = "Invalid {}!\n\t{}".format(node_type, str(invalidities))
+        invalidities = str(node.validate())
+        err_str = "Invalid node {}!\t\t{}".format(node_type, invalidities)
         log.error(err_str)
-        # raise Exception(err_str)
+        write_out_csv(data_file_name+'_invalid_records.csv',
+                      fieldnames=csv_fieldnames.append('invalidities'),
+                      values=[record.append(invalidities),])
     elif node.save():
         write_out_csv(data_file_name+'_submitted.csv',
                       fieldnames=csv_fieldnames, values=[record,])
@@ -254,7 +254,7 @@ def submit(data_file, id_tracking_file=node_tracking_file):
             load_search_field = 'prep_id'
             internal_id = record['prep_id']
             parent_internal_id = record['sample_name_id']
-            grand_parent_internal_id = record['visit_id']
+            # grand_parent_internal_id = record['visit_id']
 
             parent_id = get_parent_node_id(
                 id_tracking_file, parent_type, parent_internal_id)
@@ -273,15 +273,17 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                     header = settings.node_id_tracking.id_fields
                     saved_name = getattr(saved, load_search_field)
                     vals = values_to_node_dict(
-                        [[node_type.lower(),saved_name,saved.id,
-                          parent_type.lower(),parent_internal_id,parent_id]],
+                        [[node_type.lower(), saved_name, saved.id,
+                          parent_type.lower(), parent_internal_id, parent_id,
+                          get_cur_datetime()]],
                         header
                         )
                     nodes.append(vals)
                     if node_is_new:
-                        write_out_csv(id_tracking_file,
-                              fieldnames=get_field_header(id_tracking_file),
-                              values=vals)
+                        write_out_csv(
+                            id_tracking_file,
+                            fieldnames=get_field_header(id_tracking_file),
+                            values=vals)
             else:
                 log.error('No parent_id found for %s', parent_internal_id)
 

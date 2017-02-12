@@ -11,7 +11,8 @@ from cutlass_utils import \
         load_data, get_parent_node_id, \
         list_tags, format_query, \
         values_to_node_dict, write_out_csv, \
-        log_it, dump_args
+        log_it, dump_args, \
+        get_cur_datetime
 
 filename=os.path.basename(__file__)
 log = log_it(filename)
@@ -132,7 +133,8 @@ def submit(parent_name, parent_id, data_file,
                     header = settings.node_id_tracking.id_fields
                     vals = values_to_node_dict(
                             [[node_type,saved.rand_subject_id,saved.id,
-                              parent_type,parent_name,parent_id]]
+                              parent_type,parent_name,parent_id,
+                              get_cur_datetime()]]
                             )
                     write_out_csv(id_tracking_file,
                             values=vals)

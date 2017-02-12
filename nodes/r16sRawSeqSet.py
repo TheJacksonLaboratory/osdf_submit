@@ -10,7 +10,8 @@ import settings
 from cutlass_utils import \
         load_data, get_parent_node_id, list_tags, format_query, \
         write_csv_headers, values_to_node_dict, write_out_csv, \
-        load_node, get_field_header, dump_args, log_it
+        load_node, get_field_header, dump_args, log_it, \
+        get_cur_datetime
 
 filename = os.path.basename(__file__)
 log = log_it(filename)
@@ -73,10 +74,11 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     csv_fieldnames = get_field_header(data_file_name)
     write_csv_headers(data_file_name,fieldnames=csv_fieldnames)
 
+    local_file = os.path.basename(record['local_file'])
     node.study         = 'prediabetes'
-    node.comment       = record['local_file']
+    node.comment       = local_file
     node.sequence_type = 'nucleotide'
-    node.seq_model     = record['seq_model']
+    node.seq_model     = 'MiSeq'  # record['seq_model']
     node.format        = 'fastq'
     node.format_doc    = 'https://en.wikipedia.org/wiki/FASTQ_format'
     node.exp_length    = 0 #record['exp_length']
@@ -86,12 +88,9 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.tags = list_tags(node.tags,
                           # 'test', # for debug!!
                           'jaxid (sample): '+record['jaxid_sample'],
-                          'jaxid (library): '+record['jaxid_library'] \
-                                          if record['jaxid_library'] \
-                                          else 'jaxid (library): unknown',
-                          'sample name: '+record['visit_id'],
+                          'jaxid (library): '+record['jaxid_library'],
+                          'sample name: '+record['sample_name_id'],
                           'body site: '+record['body_site'],
-                          'visit id: '+record['visit_id'],
                           'subject id: '+record['rand_subject_id'],
                           'study: prediabetes',
                           'file prefix: '+ record['prep_id'],
@@ -101,14 +100,13 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     log.debug('parent_id: '+str(parent_link))
     node.links = parent_link
 
-    csv_fieldnames = get_field_header(data_file_name)
     if not node.is_valid():
-        write_out_csv(data_file_name+'_invalid_records.csv',
-                      fieldnames=csv_fieldnames, values=[record,])
-        invalidities = node.validate()
-        err_str = "Invalid {}!\n\t{}".format(node_type, str(invalidities))
+        invalidities = str(node.validate())
+        err_str = "Invalid node {}!\t\t{}".format(node_type, invalidities)
         log.error(err_str)
-        # raise Exception(err_str)
+        write_out_csv(data_file_name+'_invalid_records.csv',
+                      fieldnames=csv_fieldnames.append('invalidities'),
+                      values=[record.append(invalidities),])
     elif node.save():
         write_out_csv(data_file_name+'_submitted.csv',
                       fieldnames=csv_fieldnames, values=[record,])
@@ -130,10 +128,12 @@ def submit(data_file, id_tracking_file=node_tracking_file):
             log.debug('data record: '+str(record))
 
             # node-specific variables:
-            load_search_field = 'local_file'
-            internal_id = os.path.basename(record[load_search_field])
-            parent_internal_id = record['prep_id']
-            grand_parent_internal_id = record['visit_id']
+            if record['local_file'] != '':
+                load_search_field = 'local_file'
+                internal_id = os.path.basename(record['local_file'])
+                parent_internal_id = record['prep_id']
+                grand_parent_internal_id = record['prep_id']
+            # grand_parent_internal_id = record['visit_id']
 
             parent_id = get_parent_node_id(
                 id_tracking_file, parent_type, parent_internal_id)
@@ -150,10 +150,11 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                                         data_file_name=data_file)
                 if saved:
                     header = settings.node_id_tracking.id_fields
-                    saved_name = getattr(saved, load_search_field)
+                    saved_name = os.path.basename(getattr(saved, load_search_field))
                     vals = values_to_node_dict(
-                        [[node_type.lower(),saved_name,saved.id,
-                          parent_type.lower(),parent_internal_id,parent_id]],
+                        [[node_type.lower(), saved_name, saved.id,
+                          parent_type.lower(), parent_internal_id, parent_id,
+                          get_cur_datetime()]],
                         header
                         )
                     nodes.append(vals)
@@ -166,7 +167,7 @@ def submit(data_file, id_tracking_file=node_tracking_file):
 
         except Exception, e:
             log.exception(e)
-            raise e
+            # raise e
     return nodes
 
 

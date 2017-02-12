@@ -10,7 +10,8 @@ import settings
 from cutlass_utils import \
         load_data, get_parent_node_id, list_tags, format_query, \
         write_csv_headers, values_to_node_dict, write_out_csv, \
-        load_node, get_field_header, dump_args, log_it
+        load_node, get_field_header, dump_args, log_it, \
+        get_cur_datetime
 
 filename=os.path.basename(__file__)
 log = log_it(filename)
@@ -52,16 +53,31 @@ def generate_mixs(row):
     try:
         mixs = {
             'biome': 'terrestrial biome [ENVO:00000446]',
-            'body_product': row['body_site'],
+            'body_product': row['body_site'].lower(),
             'collection_date': ('2112-12-21'), #not allowed by IRB!
-            'env_package': 'human-associated',
+            # 'env_package': 'human-associated',
+            'env_package': 'human-gut' \
+                           if re.match('stool', row['body_site'].lower()) \
+                           else 'human-associated',
             'feature': 'N/A',
             'geo_loc_name': 'Palo Alto, CA, USA',
             'lat_lon': '37.441883, -122.143019',
-            'material': 'blood(ENVO:02000020)',
+            'material': 'feces(ENVO:00002003)' \
+                    if re.match('stool', row['body_site'].lower()) \
+                    else 'oronasal secretion(ENVO:02000035)',
+            # 'material': 'blood(ENVO:02000020)',
+            # 'material': 'urine(ENVO:00002047)' \
+            #         if re.match('Urine', row['SAMPLE_FLUID_TYPE']) \
+            #         else 'plasma(ENVO:01000798)',
             'project_name': 'iHMP',
             'rel_to_oxygen': 'N/A',
-            'samp_collect_device': 'blood draw',
+            # 'samp_collect_device': 'blood draw',
+            'samp_collect_device': \
+                    'self-sample' if re.match('stool', row['body_site'].lower()) \
+                    else 'self-swab' if re.match('nasal', row['body_site'].lower()) \
+                    else 'self-sample' if re.match('Urine', row['SAMPLE_FLUID_TYPE']) \
+                    else 'blood draw',
+                    # else '',
             'samp_mat_process': 'N/A',
             'samp_size': 'N/A',
             'source_mat_id': [],
@@ -69,7 +85,7 @@ def generate_mixs(row):
         return mixs
     except Exception as e:
         log.warn('Conversion to MIXS format failed?! (SampleName: {}).\n'
-                 '    Exception message:{}'.format(row['sample_name'],
+                 '    Exception message:{}'.format(row['sample_name_id'],
                                                    e.message))
 
 
@@ -96,12 +112,13 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.fma_body_site = record['fma_body_site']
     node.mixs = generate_mixs(record)
     node.tags = list_tags(node.tags,
-            # 'test', # for debug!!
             'sample id: ' + record['sample_name_id'],
             'visit id: ' + record['visit_id'],
             'subject id: ' + record['rand_subject_id'],
             'study: prediabetes',
-            'substudy: ' + record['Group'],
+            # 'substudy: ' + record['Group'],
+            'substudy: ' + record['sub_study'],
+            'consented: ' + record['consented'],
             )
     # node._attribs = record['attributes']
 
@@ -167,7 +184,8 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                         saved_name = getattr(saved, load_search_field)
                         vals = values_to_node_dict(
                             [[node_type.lower(),saved_name,saved.id,
-                              parent_type.lower(),parent_internal_id,parent_id]],
+                              parent_type.lower(),parent_internal_id,parent_id,
+                              get_cur_datetime()]],
                             header
                             )
                         nodes.append(vals)
