@@ -17,7 +17,7 @@ filename = os.path.basename(__file__)
 log = log_it(filename)
 
 # the Higher-Ups
-node_type          = 'SixteenSDnaPrep'
+node_type          = '16s_dna_prep'
 parent_type        = 'Sample'
 grand_parent_type  = 'Visit'
 great_parent_type  = 'Subject'
@@ -156,14 +156,14 @@ def generate_mimarks(row):
             'target_subfragment': 'V1-V3',
             'url': [],
             'experimental_factor': 'human-gut' \
-                    if re.match('stool', row['body_site'])\
-                    else 'human-associated',
+                if 'stool' == row['body_site'].lower() \
+                else 'human-associated',
             'material': 'feces(ENVO:00002003)' \
-                    if re.match('stool', row['body_site']) \
-                    else 'oronasal secretion(ENVO:02000035)',
+                if 'stool' == row['body_site'].lower() \
+                else 'oronasal secretion(ENVO:02000035)',
             'samp_collect_device': 'self-sample' \
-                    if re.match('stool', row['body_site']) \
-                    else 'self-swab',
+                if 'stool' == row['body_site'].lower() \
+                else 'self-swab',
             'samp_mat_process': 'N/A',
         }
         return mimarks
@@ -199,7 +199,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.lib_selection = ''
     node.mimarks = generate_mimarks(record)
     node.ncbi_taxon_id = '408170' \
-            if 'stool' == record['body_site'] \
+            if 'stool' == record['body_site'].lower() \
             else '1131769' # nasal
             # ST: http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=408170
             # NS: http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=1131769
@@ -207,13 +207,8 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.sequencing_center = 'Jackson Laboratory for Genomic Medicine'
     node.sequencing_contact = 'George Weinstock'
     node.storage_duration = 2112
-    node.tags = list_tags(node.tags,
-                          # 'test', # for debug!!
+    node.tags = list_tags(
                           'jaxid (sample): '+record['jaxid_sample'],
-                          'jaxid (library): '+record['jaxid_library'] \
-                                          if record['jaxid_library'] \
-                                          else 'jaxid (library): unknown',
-                          # 'visit id: '+record['visit_id'],
                           'subject id: '+record['rand_subject_id'],
                           'study: prediabetes',
                           'file prefix: '+ record['prep_id'],
@@ -230,6 +225,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
         write_out_csv(data_file_name+'_invalid_records.csv',
                       fieldnames=csv_fieldnames.append('invalidities'),
                       values=[record.append(invalidities),])
+        return False
     elif node.save():
         write_out_csv(data_file_name+'_submitted.csv',
                       fieldnames=csv_fieldnames, values=[record,])

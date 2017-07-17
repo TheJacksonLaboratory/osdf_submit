@@ -17,8 +17,8 @@ filename = os.path.basename(__file__)
 log = log_it(filename)
 
 # the Higher-Ups
-node_type          = 'SixteenSRawSeqSet'
-parent_type        = 'SixteenSDnaPrep'
+node_type          = '16s_raw_seq_set'
+parent_type        = '16s_dna_prep'
 grand_parent_type  = 'Sample'
 great_parent_type  = 'Visit'
 great_great1_type  = 'Subject'
@@ -74,28 +74,32 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     csv_fieldnames = get_field_header(data_file_name)
     write_csv_headers(data_file_name,fieldnames=csv_fieldnames)
 
-    local_file = os.path.basename(record['local_file'])
+    local_file_name = os.path.basename(record['local_file_raw'])
     node.study         = 'prediabetes'
-    node.comment       = local_file
+    node.comment       = local_file_name
     node.sequence_type = 'nucleotide'
     node.seq_model     = 'MiSeq'  # record['seq_model']
     node.format        = 'fastq'
     node.format_doc    = 'https://en.wikipedia.org/wiki/FASTQ_format'
     node.exp_length    = 0 #record['exp_length']
-    node.local_file    = record['local_file']
-    node.checksums     = {'md5':record['md5'], 'sha256':record['sha256']}
-    node.size          = int(record['size'])
-    node.tags = list_tags(node.tags,
-                          # 'test', # for debug!!
+    if record['consented'] == 'YES':
+        node.local_file = record['local_file_raw']
+        node.checksums  = {'md5':record['md5'], 'sha256':record['sha256']}
+        node.size       = int(record['size'])
+    else:
+        node.private_files = True
+        node.checksums     = {'md5': '00000000000000000000000000000000'}
+        node.size          = 1
+    node.tags = list_tags(
                           'jaxid (sample): '+record['jaxid_sample'],
-                          'jaxid (library): '+record['jaxid_library'],
                           'sample name: '+record['sample_name_id'],
                           'body site: '+record['body_site'],
                           'subject id: '+record['rand_subject_id'],
                           'study: prediabetes',
-                          'file prefix: '+ record['prep_id'],
-                          'file name: '+ record['local_file'],
+                          'prep_id:' + record['prep_id'],
+                          'file name: '+ local_file_name,
                          )
+
     parent_link = {'sequenced_from':[parent_id]}
     log.debug('parent_id: '+str(parent_link))
     node.links = parent_link
@@ -107,6 +111,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
         write_out_csv(data_file_name+'_invalid_records.csv',
                       fieldnames=csv_fieldnames.append('invalidities'),
                       values=[record.append(invalidities),])
+        return False
     elif node.save():
         write_out_csv(data_file_name+'_submitted.csv',
                       fieldnames=csv_fieldnames, values=[record,])
@@ -123,21 +128,20 @@ def submit(data_file, id_tracking_file=node_tracking_file):
     csv_fieldnames = get_field_header(data_file)
     write_csv_headers(data_file,fieldnames=csv_fieldnames)
     for record in load_data(data_file):
-        log.info('...next record...')
+        log.info('\n...next record...')
         try:
             log.debug('data record: '+str(record))
 
             # node-specific variables:
-            if record['local_file'] != '':
+            if record['local_file_raw'] != '':
                 load_search_field = 'local_file'
-                internal_id = os.path.basename(record['local_file'])
+                internal_id = os.path.basename(load_search_field)
                 parent_internal_id = record['prep_id']
-                grand_parent_internal_id = record['prep_id']
-            # grand_parent_internal_id = record['visit_id']
+                # grand_parent_internal_id = record['visit_id']
 
-            parent_id = get_parent_node_id(
-                id_tracking_file, parent_type, parent_internal_id)
-            log.debug('matched parent_id: %s', parent_id)
+                parent_id = get_parent_node_id(
+                    id_tracking_file, parent_type, parent_internal_id)
+                log.debug('matched parent_id: %s', parent_id)
 
             if parent_id:
                 node_is_new = False # set to True if newbie
@@ -147,10 +151,13 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                     node_is_new = True
 
                 saved = validate_record(parent_id, node, record,
-                                        data_file_name=data_file)
+                        data_file_name=data_file)
                 if saved:
                     header = settings.node_id_tracking.id_fields
-                    saved_name = os.path.basename(getattr(saved, load_search_field))
+                    if record['consented'] == 'YES':
+                        saved_name = os.path.basename(getattr(saved, load_search_field))
+                    else:
+                       saved_name = '-'.join([getattr(saved, 'comment'), 'private_file'])
                     vals = values_to_node_dict(
                         [[node_type.lower(), saved_name, saved.id,
                           parent_type.lower(), parent_internal_id, parent_id,

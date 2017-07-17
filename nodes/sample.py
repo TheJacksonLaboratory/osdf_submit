@@ -62,9 +62,9 @@ def generate_mixs(row):
             'feature': 'N/A',
             'geo_loc_name': 'Palo Alto, CA, USA',
             'lat_lon': '37.441883, -122.143019',
-            'material': 'feces(ENVO:00002003)' \
-                    if re.match('stool', row['body_site'].lower()) \
-                    else 'oronasal secretion(ENVO:02000035)',
+            'material': 'feces(ENVO:00002003)' if re.match('stool', row['body_site'].lower()) \
+                    else 'oronasal secretion(ENVO:02000035)' if re.match('nasal', row['body_site'].lower()) \
+                    else '',
             # 'material': 'blood(ENVO:02000020)',
             # 'material': 'urine(ENVO:00002047)' \
             #         if re.match('Urine', row['SAMPLE_FLUID_TYPE']) \
@@ -111,13 +111,11 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.body_site = record['body_site'].lower()
     node.fma_body_site = record['fma_body_site']
     node.mixs = generate_mixs(record)
-    node.tags = list_tags(node.tags,
+    node.tags = list_tags(
             'sample id: ' + record['sample_name_id'],
             'visit id: ' + record['visit_id'],
             'subject id: ' + record['rand_subject_id'],
             'study: prediabetes',
-            # 'substudy: ' + record['Group'],
-            'substudy: ' + record['sub_study'],
             'consented: ' + record['consented'],
             )
     # node._attribs = record['attributes']

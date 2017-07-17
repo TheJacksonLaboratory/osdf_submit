@@ -5,50 +5,55 @@ import sys
 from cutlass import iHMPSession
 
 from settings import auth
-from settings import NodeRetrievalFiles as NodeDataFiles
-from cutlass_utils import log_it
-from cutlass_search import retrieve_nodes
+from settings import NodeRetrievalFiles
+from cutlass_utils import log_it, format_query
+from cutlass_search import retrieve_nodes, retrieve_query_all
 
-log = log_it('jax_osdf_submit')
-log.info('Starting metadata submission to OSDF server.')
+log = log_it('retrieve_osdf_nodes')
+log.info('Starting metadata download from OSDF server.')
 
 # load username, password from files
-dcc_user = auth.dcc_user
-dcc_pass = auth.dcc_pass
-session = iHMPSession(dcc_user, dcc_pass)
+session = iHMPSession(auth.dcc_user, auth.dcc_pass, ssl=False)
 log.info('Loaded session: {}'.format(session.get_session()))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Main Actions ~~~~~
+def retrieve_node_type(session, node_type):
+    data_file_name = NodeRetrievalFiles[node_type]
+    qry = '&&'.join([format_query("prediabetes", field="tags"),
+                     format_query(node_type, field="node_type")])
+    log.debug("query: %s", qry)
+    retrieve_query_all(session, qry, data_file_name)
+
 
 def main():
     """make it happen!"""
 
-    # study_name = 'prediabetes'
-    # study_node_id = '194149ed5273e3f94fc60a9ba58f7c24'
-
     """ Subject node """
-    retrieve_nodes(session, NodeDataFiles['Subject'], 'subject')
-
-    """ Vimportisit node """
-    retrieve_nodes(session, NodeDataFiles['Visit'], 'visit')
+    # retrieve_node_type(session, 'subject')
+    """ Visit node """
+    # retrieve_node_type(session, 'visit')
     """ Sample node """
-    retrieve_nodes(session, NodeDataFiles['Sample'], 'sample')
+    # retrieve_node_type(session, 'sample')
 
     """ 16S nodes """
-    retrieve_nodes(session, NodeDataFiles['r16sDnaPrep'], '16s_dna_prep')
-    retrieve_nodes(session, NodeDataFiles['r16sRawSeqs'], '16s_raw_seq_set')
-    retrieve_nodes(session, NodeDataFiles['r16sTrimSeqs'], '16s_trimmed_seq_set')
+    # retrieve_node_type(session, '16s_dna_prep')
+    retrieve_node_type(session, '16s_raw_seq_set')
+    retrieve_node_type(session, '16s_trimmed_seq_set')
 
-    """ WGS DNA Prep node """
-    retrieve_nodes(session, NodeDataFiles['WgsDnaPrep'], 'wgs_dna_prep')
-    """ WGS Raw Sequence Set node """
-    retrieve_nodes(session, NodeDataFiles['WgsRawSeqs'], 'wgs_raw_seq_set')
+    """ WGS nodes """
+    # retrieve_node_type(session, 'wgs_dna_prep')
+    # retrieve_node_type(session, 'wgs_raw_seq_set')
 
-    """ RNA Prep node """
+    """ RNA nodes """
     # grep wgs_dna_prep set above for '_R_':
-    # retrieve_nodes(session, NodeDataFiles['RnaPrep'], 'wgs_dna_prep')
-    """ RNASeq Raw Sequence Set node """
-    retrieve_nodes(session, NodeDataFiles['MicrobRnaRaw'], 'microb_transcriptomics_raw_seq_set')
+    # retrieve_node_type(session, 'microb_transcriptomics_raw_seq_set')
+
+    """ get all node_type's """
+    qry = format_query("prediabetes", field="tags")
+    # qry = '&&'.join([format_query("prediabetes", field="tags"),
+    #                  format_query("932d8fbc70ae8f856028b3f67cc2baab", field="id")])
+    # log.debug("query: %s", qry)
+    # retrieve_query_all(session, qry)
 
 
 if __name__ == '__main__':

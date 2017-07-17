@@ -48,7 +48,7 @@ def load(internal_id, search_field):
 
     # node-specific variables:
     NodeTypeName = 'MicrobTranscriptomicsRawSeqSet'
-    NodeLoadFunc = 'load_microb_transcriptomics_raw_set_set'
+    NodeLoadFunc = 'load_microb_transcriptomics_raw_seq_set'
 
     return load_node(internal_id, search_field, NodeTypeName, NodeLoadFunc)
 
@@ -62,26 +62,32 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     csv_fieldnames = get_field_header(data_file_name)
     write_csv_headers(data_file_name, fieldnames=csv_fieldnames)
 
+    local_file_name    = os.path.basename(record['local_file'])
+    node.comment       = local_file_name
     node.study         = 'prediabetes'
-    node.comment       = os.path.basename(record['local_file'])
     node.sequence_type = 'nucleotide'
     node.seq_model     = record['seq_model']
     node.format        = 'fastq'
     node.format_doc    = 'https://en.wikipedia.org/wiki/FASTQ_format'
     node.exp_length    = 0  # record['exp_length']
-    node.local_file    = record['local_file']
-    node.checksums     = {'md5': record['md5'], 'sha256': record['sha256']}
-    node.size          = int(record['size'])
-    node.tags = list_tags(node.tags,
+    # node.local_file    = record['local_file'] if record['consented'] == 'YES' else ''
+    if record['consented'] == 'YES':
+        node.local_file = record['local_file']
+        node.checksums     = {'md5': record['md5'], 'sha256': record['sha256']}
+        node.size          = int(record['size'])
+    else:
+        node.private_files = True
+        node.checksums     = {'md5': '00000000000000000000000000000000'}
+        node.size          = 0
+    node.tags = list_tags(
+                          'sequence type: '   + 'RNAseq',
                           'jaxid (sample): '  + record['jaxid_sample'],
-                          'jaxid (library): ' + record['jaxid_library'],
-                          'sample name: '     + record['visit_id'],
+                          'sample name: '     + record['sample_name_id'],
                           'body site: '       + record['body_site'],
-                          'visit id: '        + record['visit_id'],
                           'subject id: '      + record['rand_subject_id'],
                           'study: '           + 'prediabetes',
-                          'file prefix: '     + record['prep_id'],
-                          'file name: '       + record['local_file'],
+                          'prep_id:'          + record['prep_id'],
+                          'file name: '       + local_file_name,
                          )
     parent_link = {'sequenced_from':[parent_id]}
     log.debug('parent_id: '+str(parent_link))
@@ -137,7 +143,10 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                 if saved:
                     # load_search_field = 'urls'
                     header = settings.node_id_tracking.id_fields
-                    saved_name = os.path.basename(getattr(saved, load_search_field))
+                    if record['consented'] == 'YES':
+                        saved_name = os.path.basename(getattr(saved, load_search_field))
+                    else:
+                        saved_name = '-'.join([getattr(saved, 'comment'), 'private_file'])
                     vals = values_to_node_dict(
                         [[node_type.lower(), saved_name, saved.id,
                           parent_type.lower(), parent_internal_id, parent_id,

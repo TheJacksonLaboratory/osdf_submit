@@ -32,7 +32,8 @@ class data_node_ids():
 class node_id_tracking:
     path = './data_files/prediabetes_node_id_tracking.csv'
     id_fields = ['node_type', 'internal_id', 'osdf_node_id',
-                 'parent_node_type', 'parent_id', 'parent_node_id']
+                 'parent_node_type', 'parent_id', 'parent_node_id',
+                 'date_submitted']
 
 # data file names
 NodeDataFiles = {
@@ -59,26 +60,26 @@ NodeDataFiles = {
     # 'Subject':      './data_files/20160926-subjects-consented.csv',
     # 'Visit':        './data_files/20160921-visits_jaxgm_newConsents.csv',
     # 'Sample':       './data_files/20160921-samples-lot16.csv',
-    'Visit':        './data_files/20160927-HMP2-visits_ALL.csv',
-    'Sample':       './data_files/20160927-HMP2-samples_ALL.csv',
+    # 'Visit':        './data_files/20160927-HMP2-visits_ALL.csv',
+    # 'Sample':       './data_files/20160927-HMP2-samples_ALL.csv',
     #
-    'r16sDnaPrep':  './data_files/20160913-dnaPrep_16S_merged.csv',
-    'r16sRawSeqs':  './data_files/20160920-16S-rawseqs.csv',
-    'r16sTrimSeqs': './data_files/20160920-16S-trimseqs.csv',
+    # 'r16sDnaPrep':  './data_files/20160913-dnaPrep_16S_merged.csv',
+    # 'r16sRawSeqs':  './data_files/20160920-16S-rawseqs.csv',
+    # 'r16sTrimSeqs': './data_files/20160920-16S-trimseqs.csv',
     #
-    'RnaPrep':      './data_files/20160913-metadata-dnaPrep_rna.csv',
-    'MicrobRnaRaw': './data_files/20160920_rnaseq_raw.csv',
+    # 'RnaPrep':      './data_files/20160913-metadata-dnaPrep_rna.csv',
+    # 'MicrobRnaRaw': './data_files/20160920_rnaseq_raw.csv',
     #
-    'metabolome':   './data_files/metabolome.csv',
-    'metabolomeSample': './data_files/metabolome.csv',
-    'hostAssayPrep':   './data_files/metabolome.csv',
-    'hostTranscriptomicSample':'./data_files/brian_host_transcriptomics_raw_seq_set.csv',
-    'hostTranscriptomicsRawSeqSet':   './data_files/host_transcriptomics_hostSeqSet.csv',
-    'hostSeqPrep' : './data_files/host_seq_prep.csv',
-    'proteome' :    './data_files/proteome.csv',
-    'hostWgsSample':  './data_files/wgs_samples.csv',
-    'hostRawSeqPrep' : './data_files/host_seq_prep.csv',
-    'hostSeqPrepTranscriptome' : './data_files/host_transcriptomics_hostSeqSet.csv',
+    # 'metabolome':   './data_files/metabolome.csv',
+    # 'metabolomeSample': './data_files/metabolome.csv',
+    # 'hostAssayPrep':   './data_files/metabolome.csv',
+    # 'hostTranscriptomicSample':'./data_files/brian_host_transcriptomics_raw_seq_set.csv',
+    # 'hostTranscriptomicsRawSeqSet':   './data_files/host_transcriptomics_hostSeqSet.csv',
+    # 'hostSeqPrep' : './data_files/host_seq_prep.csv',
+    # 'proteome' :    './data_files/proteome.csv',
+    # 'hostWgsSample':  './data_files/wgs_samples.csv',
+    # 'hostRawSeqPrep' : './data_files/host_seq_prep.csv',
+    # 'hostSeqPrepTranscriptome' : './data_files/host_transcriptomics_hostSeqSet.csv',
     #
     #
     #'r16sDnaPrep':  './data_files/20160930-dnaPrep_16S_all_merged.csv',
@@ -87,36 +88,107 @@ NodeDataFiles = {
     #'r16sTrimSeqs': './data_files/20161121-16S_trim_seqfiles.csv',
     #'r16sRawSeqs':  './data_files/20161207-16S-preps_missing_files-raw.csv',
     #'r16sTrimSeqs':  './data_files/20161207-16S-preps_missing_files-clean.csv',
-    #
+
     #'WgsDnaPrep':   './data_files/20161212-mwgs-samples_merged_checksummed_matches.csv',
     #'WgsRawSeqs':   './data_files/20161212-mwgs-samples_merged_checksummed_matches_consented_post-net-error1.csv',
-    #
+
     #'RnaPrep':      './data_files/20161219-samples_rnaseq_merged.csv',
     #'RnaPrep':      './data_files/20161219-samples_rnaseq_merged_2A.csv',
     #'MicrobRnaRaw': './data_files/20161219-samples_rnaseq_merged_checksummed_part2.csv'
+    # 'RnaPrep':      './data_files/20170206_rnaseq_prep_ids_raws.csv',
+    # 'MicrobRnaRaw': './data_files/20170206_rnaseq_prep_ids_raws.csv',
 
-    'r16sDnaPrep':    './data_files/20170202-16S_set_merged.csv',
-    # 'r16sRawSeqs':  './data_files/20170105_update-dnaPreps_113_raws.csv',
-    # 'r16sTrimSeqs': './data_files/20170105_update-dnaPreps_113_cleaned.csv',
+    # 'r16sDnaPrep':  './data_files/20170202-samples_16S_merged.csv',
+    # 'r16sRawSeqs':  './data_files/20170202-samples_16S_rawseqs_2.csv',
+    # 'r16sTrimSeqs': './data_files/20170210-samples_16S_trimseqs.csv',
+
+    # 'WgsDnaPrep':   './data_files/20170206-samples_mWGS_merged.csv',
+    # 'WgsRawSeqs':   './data_files/20170206-samples_mWGS_merged_merged_parent_ids.csv',
 
     # Non-consenting!
-    # 'Visit':        './data_files/20161220-VisitsNoConsent.csv',
-    # 'Sample':       './data_files/20161220-SamplesNoConsent.csv',
+    # 'Visit':        './data_files/HMP2_metadata-visitsNoConsent.csv',
+    # 'Sample':       './data_files/HMP2_metadata-SamplesNoConsent.csv',
+    # 'Visit':        './data_files/HMP2_metadata-visits_NotSubmitted-20170212.csv',
+    # 'Sample':       './data_files/HMP2_metadata-samples_NotSubmitted-20170212.csv',
+
+    # 'Subject':      './data_files/HMP2_metadata-subjects_NotSubmitted-20170212.csv',
+    # 'Visit':        './data_files/HMP2_metadata-visits_NotSubmitted-20170212_2.csv',
+    # 'Sample':       './data_files/HMP2_metadata-samples_NotSubmitted-20170212_2.csv',
+
+
     # ...plus all dnaPreps, rawFiles, etc....
+    # 'RnaPrep':      './data_files/20170213-grep-rnaseq_missing_sample_preps.csv',
+    # 'RnaPrep':      './data_files/20170213-grep-rnaseq_missing_sample_preps_2.csv',
+    # 'RnaPrep':      './data_files/20170213-grep-rnaseq_missing_sample_preps_3.csv',
+    # 'RnaPrep':      './data_files/20170213-grep-rnaseq_missing_sample_preps_5_redo.csv',
+    # 'WgsDnaPrep':   './data_files/20170214_mwgs_prep_ids-unsubmitted.csv',
+    # 'WgsDnaPrep':   './data_files/20170214_mwgs_prep_ids-unsubmitted_1.csv',
+    # 'r16sDnaPrep':  './data_files/20170216_16S_dna_prep.csv',
+
+    # ... and then the raw files...
+    # 'r16sRawSeqs':  './data_files/20170202-samples_16S_rawseqs_2.csv',
+    # 'WgsRawSeqs':   './data_files/20170223_mwgs_raw_1.csv',
+    # 'WgsRawSeqs':   './data_files/20170223_mwgs_raw_2.csv',
+    # 'WgsRawSeqs':   './data_files/20170223_mwgs_raw_3.csv',
+    # 'WgsRawSeqs':   './data_files/20170223_mwgs_raw_4.csv',
+    # 'WgsRawSeqs':   './data_files/20170223_mwgs_raw_5.csv',
+    # 'MicrobRnaRaw': './data_files/20170223_rna_raw_2.csv',
+    # 'MicrobRnaRaw': './data_files/20170223_rna_raw_2.csv_invalid_records.csv',
+
+    # 'r16sRawSeqs':  './data_files/20170301_16S_raw.csv',
+    # 'r16sRawSeqs':  './data_files/20170301_16S_raw_NO.csv',
+    # 'r16sTrimSeqs': './data_files/20170301_16S_clean_1.csv',
+    # 'r16sTrimSeqs': './data_files/20170301_16S_clean_NO.csv',
+    # 'r16sRawSeqs':  './data_files/20170306_submittable_16S_nodes_raw_clean.csv',
+    # 'r16sTrimSeqs': './data_files/20170306_submittable_16S_nodes_clean.csv',
+    # 'r16sDnaPrep':  './data_files/20170308_submittable_16S_nodes_preps_raw_clean.csv',
+    # 'r16sRawSeqs':  './data_files/20170308_submittable_16S_nodes_preps_raw_clean.csv',
+    # 'r16sTrimSeqs': './data_files/20170308_submittable_16S_nodes_clean.csv',
+
+    # 'WgsDnaPrep':   './data_files/20170427_mwgs_preps.csv',
+    # 'WgsDnaPrep':   './data_files/20170515_mwgs_prep_raw.csv',
+    # 'WgsRawSeqs':   './data_files/20170515_mwgs_prep_raw.csv',
+
+    # 'Sample':       './data_files/20170515-samples_mwgs_missing.csv',
+
+    # Last Lots
+    # 'Visit':        './data_files/20170629_visits_missing.csv',
+    'Sample':       './data_files/20170630_sample_missing.csv',
+    'r16sDnaPrep':  './data_files/20170630_sample_missing.csv',
+    'r16sRawSeqs':  './data_files/20170630_sample_missing.csv',
+    'r16sTrimSeqs': './data_files/20170630_16Scleans_missing.csv',
+
     }
 
 CURDATE = time.strftime("%Y%m%d")
 NodeRetrievalFiles = {
-    'Subject':      './osdf_node_records/{}_subjects.csv'.format(CURDATE),
-    'Visit':        './osdf_node_records/{}_visits.csv'.format(CURDATE),
-    'Sample':       './osdf_node_records/{}_samples.csv'.format(CURDATE),
-    'r16sDnaPrep':  './osdf_node_records/{}_r16sdnapreps.csv'.format(CURDATE),
-    'r16sRawSeqs':  './osdf_node_records/{}_r16srawseqs.csv'.format(CURDATE),
-    'r16sTrimSeqs': './osdf_node_records/{}_r16strimseqs.csv'.format(CURDATE),
-    'WgsDnaPrep':   './osdf_node_records/{}_wgsdnapreps.csv'.format(CURDATE),
-    'WgsRawSeqs':   './osdf_node_records/{}_wgsrawseqs.csv'.format(CURDATE),
-    'RnaPrep':      './osdf_node_records/{}_rnapreps.csv'.format(CURDATE),
-    'MicrobRnaRaw': './osdf_node_records/{}_microbrnarawseqs.csv'.format(CURDATE),
+    'subject':      './osdf_node_records/{}_subjects.csv'.format(CURDATE),
+    'visit':        './osdf_node_records/{}_visits.csv'.format(CURDATE),
+    'sample':       './osdf_node_records/{}_samples.csv'.format(CURDATE),
+    '16s_dna_prep':        './osdf_node_records/{}_r16sdnapreps.csv'.format(CURDATE),
+    '16s_raw_seq_set':     './osdf_node_records/{}_r16srawseqs.csv'.format(CURDATE),
+    '16s_trimmed_seq_set': './osdf_node_records/{}_r16strimseqs.csv'.format(CURDATE),
+    'wgs_dna_prep':        './osdf_node_records/{}_wgsdnapreps.csv'.format(CURDATE),
+    'wgs_raw_seq_set':     './osdf_node_records/{}_wgsrawseqs.csv'.format(CURDATE),
+    'rnaseq_prep':         './osdf_node_records/{}_rnapreps.csv'.format(CURDATE),
+    'microb_transcriptomics_raw_seq_set': './osdf_node_records/{}_microbrnarawseqs.csv'.format(CURDATE),
+    }
+
+NodeUpdateFiles = {
+    'Subject':      './osdf_node_records/20170220_update_subjects.csv',
+    'Visit':        './osdf_node_records/20170220_update_visits.csv',
+    'Sample':       './osdf_node_records/20170505_samples_correct_N-ST.csv',
+
+    'WgsDnaPrep':   './osdf_node_records/20170220_update_wgsdnapreps.csv',
+    'WgsRawSeqs':   './osdf_node_records/20170324_update_wgsrawseqs.csv',
+    'RnaPrep':      './osdf_node_records/20170220_update_rnapreps.csv',
+    'MicrobRnaRaw': './osdf_node_records/20170210_update_microbrnarawseqs.csv',
+
+    'r16sDnaPrep':  './osdf_node_records/20170308_update_r16sPreps.csv',
+    'r16sDnaPrep':  './osdf_node_records/20170302_update_r16sdnapreps_2.csv',
+    'r16sRawSeqs':  './osdf_node_records/20170302_update_r16srawseqs.csv',
+    'r16sTrimSeqs': './osdf_node_records/20170307_update_r16sTrimSeqs_comments.csv',
+    'r16sDnaPrep':  './osdf_node_records/20170317_update_16SdnaPreps_linkage.csv',
     }
 
 

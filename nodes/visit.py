@@ -53,12 +53,9 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.visit_id = record['visit_id']
     node.visit_number = int(record['visit_number'])
     node.interval = int(record['interval'])
-    node.tags = list_tags(node.tags,
-                # 'test', # for debug!!
+    node.tags = list_tags(
                 'rand_subject_id: '+record['rand_subject_id'],
                 'study: prediabetes',
-                # 'study: '+record['study'],
-                # 'sub_study: '+record['sub_study'],
                 )
     log.debug('parent_id: '+str(parent_id))
     node.links = {'by':[parent_id]}
@@ -87,8 +84,9 @@ def submit(data_file, id_tracking_file=node_tracking_file):
     csv_fieldnames = get_field_header(data_file)
     write_csv_headers(data_file,fieldnames=csv_fieldnames)
     for record in load_data(data_file):
-        if record['consented'] == 'YES' \
-        and record['visit_number'] != 'UNK':
+        # if record['consented'] == 'YES' \
+        # and record['visit_number'] != 'UNK':
+        if record['visit_number'] != 'UNK':
             # use of 'UNK' = hack workaround for unreconciled visit list
             log.info('\n...next record...')
             try:
@@ -105,28 +103,31 @@ def submit(data_file, id_tracking_file=node_tracking_file):
                 # grand_parent_id = get_parent_node_id(
                     # id_tracking_file, grand_parent_type, grand_parent_internal_id)
 
-                node_is_new = False # set to True if newbie
-                node = load(internal_id, load_search_field)
-                if not getattr(node, load_search_field):
-                    log.debug('loaded node newbie...')
-                    node_is_new = True
+                if parent_id:
+                    node_is_new = False # set to True if newbie
+                    node = load(internal_id, load_search_field)
+                    if not getattr(node, load_search_field):
+                        log.debug('loaded node newbie...')
+                        node_is_new = True
 
-                saved = validate_record(parent_id, node, record,
-                                        data_file_name=data_file)
-                if saved:
-                    header = settings.node_id_tracking.id_fields
-                    saved_name = getattr(saved, load_search_field)
-                    vals = values_to_node_dict(
-                        [[node_type.lower(), saved_name, saved.id,
-                          parent_type.lower(), parent_internal_id, parent_id,
-                          get_cur_datetime()]],
-                        header
-                        )
-                    nodes.append(vals)
-                    if node_is_new:
-                        write_out_csv(id_tracking_file,
-                              fieldnames=get_field_header(id_tracking_file),
-                              values=vals)
+                    saved = validate_record(parent_id, node, record,
+                                            data_file_name=data_file)
+                    if saved:
+                        header = settings.node_id_tracking.id_fields
+                        saved_name = getattr(saved, load_search_field)
+                        vals = values_to_node_dict(
+                            [[node_type.lower(), saved_name, saved.id,
+                              parent_type.lower(), parent_internal_id, parent_id,
+                              get_cur_datetime()]],
+                            header
+                            )
+                        nodes.append(vals)
+                        if node_is_new:
+                            write_out_csv(id_tracking_file,
+                                  fieldnames=get_field_header(id_tracking_file),
+                                  values=vals)
+                else:
+                    log.error('No parent_id found for %s', parent_internal_id)
 
             except Exception, e:
                 log.exception(e)

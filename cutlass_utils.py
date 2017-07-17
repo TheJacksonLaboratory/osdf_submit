@@ -44,8 +44,10 @@ def log_it(logname=os.path.basename(__file__), logdir="logs"):
     warnlogfile = os.path.join(logdir, warnlogfile)
     wfh = logging.FileHandler(warnlogfile, mode='a')
     wfh.setLevel(logging.WARNING)
+    warn_logFormat = "%(levelname)5s: %(message)s"
+    warn_formatter = logging.Formatter(warn_logFormat)
     wfh.setFormatter(formatter)
-    # l.addHandler(wfh)
+    l.addHandler(wfh)
 
     # utils = logging.getLogger(logname)
     # utils.setLevel(loglevel)
@@ -84,24 +86,30 @@ def dump_args(func):
 #
 # f1(1, 2, 3)
 
+def get_cur_datetime():
+    """return datetime stamp of NOW"""
+    return time.strftime("%Y-%m-%d %H:%M")
+
+
 def get_field_header(csv_file):
     """returns first row of csv file as list of fieldnames"""
     log.info('Loading fields from {}'.format(csv_file))
-    with open(csv_file) as csvfh:
+    with open(csv_file, 'rU') as csvfh:
         try:
             reader = csv.DictReader(csvfh)
-            return reader.fieldnames
+            return list(reader.fieldnames)
         except csv.Error as e:
             log.exception('Reading CSV file %s, line %d: %s',
                     csv_file, reader.line_num, e)
 
 
-def load_data(csv_file):
+def load_data(csv_file,  delim=',', quotechar='"'):
     """yield row dicts from csv_file using DictReader
     """
     log.info('Loading rows from {}'.format(csv_file))
-    with open(csv_file, 'rb') as csvfh:
-        reader = csv.DictReader(csvfh, dialect='excel')
+    with open(csv_file, 'rU') as csvfh:
+        reader = csv.DictReader(csvfh, dialect='excel',
+                                delimiter=delim, quotechar=quotechar)
         # log.debug('csv dictreader opened')
         try:
             for row in reader:
@@ -137,11 +145,12 @@ def write_out_csv(csv_file,fieldnames=id_fields,values=[]):
                 log.info('Writing csv to {}'.format(csv_file))
                 try:
                     for row in values:
+                        # log.debug('Next row {}'.format(str(row)[0:50]+'...'))
                         if isinstance(row, dict):
                             log.debug(row)
                             writer.writerow(row)
                 except Exception as e:
-                    log.exception('Writing CSV file %s, %s', csv_file, str(e))
+                    log.exception('Error writing CSV file %s, %s', csv_file, str(e))
                     raise e
             else:
                 log.info('Writing header of fieldnames to {}'.format(csv_file))
@@ -164,7 +173,7 @@ def write_csv_headers(base_filename='node_data_file', fieldnames=[]):
         if not os.path.exists(base_filename+suff) ]
 
 
-def values_to_node_dict(values=[],keynames=id_fields):
+def values_to_node_dict(values=[], keynames=id_fields):
     """pass list of lists of values and list of keys of desired dict
        This converts to list of dicts
     """
@@ -175,6 +184,7 @@ def values_to_node_dict(values=[],keynames=id_fields):
     key_dict = OrderedDict()
     for key in keynames:
         key_dict[key] = ''
+    # log.debug('key_dict: %s', key_dict)
 
     for vals in values:
         l = vals
@@ -183,7 +193,7 @@ def values_to_node_dict(values=[],keynames=id_fields):
         for x in range(len(d)):
             lx = l[x] if len(l) > x and l[x] is not None else ''
             d[k[x]] = lx
-        # log.debug(d)
+        # log.debug('val_dict: %s', d)
         final_list.append(d)
 
     return final_list
@@ -305,10 +315,9 @@ def format_query(strng, patt='[-. ]', field='rand_subj_id', mode='&&'):
     return strng.lower()
 
 
-def list_tags(node_tags, *tags):
+def list_tags(*tags):
     """generate list of all tags to be used in add_tag method, then rm dupes"""
     end_tags = []
-    [end_tags.append(t) for t in node_tags]
     [end_tags.append(t) for t in tags]
     return sorted(set(end_tags))
 

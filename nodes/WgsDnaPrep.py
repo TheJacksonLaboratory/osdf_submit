@@ -34,6 +34,11 @@ TAG_pri_D7 = ['GATCGGAAGAGCACACGTCTGAACTCCAGTCAC',
 TAG_A = ['AGATCGGAAGAGCACACGTCTGAAC',
          'AGATCGGAAGAGCGTCGTGTAGGGA']
 
+TAG_N = ['CAAGCAGAAGACGGCATACGAGAT',
+         'GTCTCGTGGGCTCGG']
+TAG_S = ['AATGATACGGCGACCACCGAGATCTACAC',
+         'TCGTCGGCAGCGTC']
+
 
 class node_values:
     comment = ''
@@ -105,6 +110,12 @@ def concat_tag(index_type,index_seq):
     elif re.match('A', index_type):
         tag_pre = TAG_A[0]
         tag_post = TAG_A[1]
+    elif re.match('N', index_type):
+        tag_pre = TAG_N[0]
+        tag_post = TAG_N[1]
+    elif re.match('S', index_type):
+        tag_pre = TAG_S[0]
+        tag_post = TAG_S[1]
     else: # for single-read runs
         tag_pre = ''
         tag_post = ''
@@ -112,12 +123,29 @@ def concat_tag(index_type,index_seq):
     return tag_pre + index_seq + tag_post
 
 
+def determine_findex(index1_id, index1_seq, index2_id, index2_seq):
+    """calc the findex based on index id value"""
+    findex = index1_seq
+    if re.match('D5', index2_id):
+        findex = index2_seq
+    return findex
+
+
+def determine_rindex(index1_id, index1_seq, index2_id, index2_seq):
+    """calc the findex based on index id value"""
+    rindex = index2_seq
+    if re.match('D7', index1_id):
+        rindex = index1_seq
+    return rindex
+
+
 def generate_mims(row):
     try:
         # body_site specifics:
-        gsc_package = 'human-gut' \
-                if re.match('stool', row['body_site']) \
-                else 'human-associated'
+        gsc_package = \
+                'human-gut' if row['body_site'] == 'stool' else \
+                'human-associated' if row['body_site'] == 'nasal' \
+                else ''
         mims = {
             # seq specifics:
             'adapters': ','.join([concat_tag(index_code, index_seq)
@@ -125,12 +153,10 @@ def generate_mims(row):
                                  [(row['index1_id'], row['index1_seq']),
                                   (row['index2_id'], row['index2_seq']) ]
                                  ]),
-            'findex': row['index2_seq'] \
-                    if re.match('D5', row['index2_id']) else '',
-            'rindex': row['index1_seq'] \
-                    if re.match('D7', row['index1_id']) else '',
-            'findex': row['index1_seq'] \
-                    if re.match('A', row['index1_id']) else '',
+            'findex': determine_findex(row['index1_id'], row['index1_seq'],
+                                       row['index2_id'], row['index2_seq']),
+            'rindex': determine_rindex(row['index1_id'], row['index1_seq'],
+                                       row['index2_id'], row['index2_seq']),
             # generics:
             'annot_source': 'N/A',
             'assembly': 'N/A',
@@ -144,7 +170,7 @@ def generate_mims(row):
             'geo_loc_name': 'Palo Alto, CA, USA',
             'investigation_type': 'metagenome',
             'lat_lon': '37.441883, -122.143019',
-            'lib_const_meth': '?????',
+            'lib_const_meth': 'N/A',
             'lib_reads_seqd': 'N/A',
             'lib_size': 700,
             'lib_vector': 'N/A',
@@ -166,12 +192,14 @@ def generate_mims(row):
             'url': [],
             'experimental_factor': gsc_package,
             'env_package': gsc_package,
-            'material': 'feces(ENVO:00002003)' \
-                    if re.match('stool', row['body_site']) \
-                    else 'oronasal secretion(ENVO:02000035)',
-            'samp_collect_device': 'self-sample' \
-                    if re.match('stool', row['body_site']) \
-                    else 'self-swab',
+            'material': \
+                'feces(ENVO:00002003)' if row['body_site'] == 'stool' else \
+                'oronasal secretion(ENVO:02000035)' if row['body_site'] == 'nasal' \
+                else '',
+            'samp_collect_device': \
+                'self-sample' if row['body_site'] == 'stool' else \
+                'self-swab' if row['body_site'] == 'nasal' \
+                else '',
             'samp_mat_process': 'N/A',
         }
         return mims
@@ -206,25 +234,21 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.lib_layout = 'Paired End libraries, with nominal insert size of 450-550bp with a standard deviation of 50-60 bp'
     node.lib_selection = ''
     node.mims = generate_mims(record)
-    node.ncbi_taxon_id = '408170' \
-                         if 'stool' == record['body_site'] \
-                         else '1131769' # nasal
+    node.ncbi_taxon_id = '408170' if 'stool' == record['body_site'] \
+                         else '1131769' if 'nasal' == record['body_site'] \
+                         else ''
             # ST: http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=408170
             # NS: http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=1131769
     node.prep_id = record['prep_id']
     node.sequencing_center = 'Jackson Laboratory for Genomic Medicine'
     node.sequencing_contact = 'George Weinstock'
     node.storage_duration = 1
-    node.tags = list_tags(node.tags,
-            # 'test', # for debug!!
+    node.tags = list_tags(
+            'dna_prep_id: '+ record['prep_id'],
             'jaxid (sample): ' +record['jaxid_sample'],
             'sample type: ' +record['body_site'],
-            'visit id: ' +record['visit_id'],
             'subject id: ' +record['rand_subject_id'],
             'study: ' +'prediabetes',
-            'sub_study: ' +record['sub_study'],
-            'visit type: ' +record['visit_type'],
-            'dna_prep_id: '+ record['prep_id'],
            )
     parent_link = {'prepared_from':[parent_id]}
     log.debug('parent_id: '+str(parent_link))
@@ -262,7 +286,7 @@ def submit(data_file, id_tracking_file=node_tracking_file):
             load_search_field = 'prep_id'
             internal_id = record['prep_id']
             parent_internal_id = record['sample_name_id']
-            grand_parent_internal_id = record['visit_id']
+            # grand_parent_internal_id = record['visit_id']
 
             parent_id = get_parent_node_id(
                 id_tracking_file, parent_type, parent_internal_id)

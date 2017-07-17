@@ -202,8 +202,7 @@ def validate_record(parent_id, node, record, data_file_name=node_type):
     node.sequencing_center = 'Jackson Laboratory for Genomic Medicine'
     node.sequencing_contact = 'George Weinstock'
     node.storage_duration = 1
-    node.tags = list_tags(node.tags,
-            # 'test', # for debug!!
+    node.tags = list_tags(
             'jaxid (sample): ' +record['jaxid_sample'],
             'sample type: ' +record['material_received'],
             'visit id: ' +record['visit_id'],
