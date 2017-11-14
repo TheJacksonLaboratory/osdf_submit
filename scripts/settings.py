@@ -153,11 +153,20 @@ NodeDataFiles = {
 
     # Last Lots
     # 'Visit':        './data_files/20170629_visits_missing.csv',
-    'Sample':       './data_files/20170630_sample_missing.csv',
-    'r16sDnaPrep':  './data_files/20170630_sample_missing.csv',
-    'r16sRawSeqs':  './data_files/20170630_sample_missing.csv',
-    'r16sTrimSeqs': './data_files/20170630_16Scleans_missing.csv',
+    # 'Sample':       './data_files/20170630_sample_missing.csv',
+    # 'r16sDnaPrep':  './data_files/20170630_sample_missing.csv',
+    # 'r16sRawSeqs':  './data_files/20170630_sample_missing.csv',
+    # 'r16sTrimSeqs': './data_files/20170630_16Scleans_missing.csv',
 
+    # 'Sample':       './data_files/resubmits_20171101/20171108_sample_new.csv',
+    # 'r16sDnaPrep':  './data_files/resubmits_20171101/20171109_16S_prep_raw_clean.csv',
+    # 'r16sRawSeqs':  './data_files/resubmits_20171101/20171109_16S_prep_raw_clean.csv',
+    # 'r16sTrimSeqs': './data_files/resubmits_20171101/20171109_16S_prep_raw_clean.csv',
+    # 'r16sTrimSeqs': './data_files/resubmits_20171101/20171109_16S_clean_3.csv',
+    # 'r16sRawSeqs':  './data_files/resubmits_20171101/20171110_16S_raw_clean_new_2.csv',
+    # 'r16sTrimSeqs': './data_files/resubmits_20171101/20171110_16S_raw_clean_new_2.csv',
+    'r16sRawSeqs':  './data_files/resubmits_20171101/20171110_16S_raw_clean_new_1.csv',
+    'r16sTrimSeqs': './data_files/resubmits_20171101/20171110_16S_raw_clean_new_1.csv',
     }
 
 CURDATE = time.strftime("%Y%m%d")
@@ -175,6 +184,8 @@ NodeRetrievalFiles = {
     }
 
 NodeUpdateFiles = {
+    'general':      './data_files/resubmits_20171101/20171110_16S_stool_node_updates.csv',
+
     'Subject':      './osdf_node_records/20170220_update_subjects.csv',
     'Visit':        './osdf_node_records/20170220_update_visits.csv',
     'Sample':       './osdf_node_records/20170505_samples_correct_N-ST.csv',
@@ -184,7 +195,7 @@ NodeUpdateFiles = {
     'RnaPrep':      './osdf_node_records/20170220_update_rnapreps.csv',
     'MicrobRnaRaw': './osdf_node_records/20170210_update_microbrnarawseqs.csv',
 
-    'r16sDnaPrep':  './osdf_node_records/20170308_update_r16sPreps.csv',
+    'r16sDnaPrep':  '../osdf_node_records/20170308_update_r16sPreps.csv',
     'r16sDnaPrep':  './osdf_node_records/20170302_update_r16sdnapreps_2.csv',
     'r16sRawSeqs':  './osdf_node_records/20170302_update_r16srawseqs.csv',
     'r16sTrimSeqs': './osdf_node_records/20170307_update_r16sTrimSeqs_comments.csv',
@@ -193,38 +204,38 @@ NodeUpdateFiles = {
 
 
 class node_hierarchy:
-  """node_hierarchy lists nodes in hierarchical tree
-     => project.study.subject.visit.sample.[16S,wgs,rnaseq,host,genome,...]
-        16S[dnaprep,raw,trim]
-        wgs[dnaprep,raw,assembled]
-        rnaseq[dnaprep,raw,...]
-        host[dnaprep,raw,...]
-  """
-  node_tree = [
-    'project', [
-      'study', [
-        'subject', [
-          'visit', [
-            'sample',[
-              [ 'r16sDnaPrep',[
-                    'r16sRawSeqSet',[
-                       'r16sTrimSeqSet',] ] ],
-              [ 'wgsDnaPrep', [
-                    'wgsRawSeqSet',[
-                      'wgsAssembledSeqSet', ],
-                    'MicrobTranscriptomicsRawSeqSet'
-                    ] ],
-              ['hostAssay', 'etc',],
-              ['metabolome', 'etc',],
-              ['hostTranscriptomicsRawSeqSet', 'etc',],
-              ['hostSeqPrep','etc',],
-              ['proteome','etc',],
+    """node_hierarchy lists nodes in hierarchical tree
+       => project.study.subject.visit.sample.[16S,wgs,rnaseq,host,genome,...]
+          16S[dnaprep,raw,trim]
+          wgs[dnaprep,raw,assembled]
+          rnaseq[dnaprep,raw,...]
+          host[dnaprep,raw,...]
+    """
+    node_tree = [
+      'project', [
+        'study', [
+          'subject', [
+            'visit', [
+              'sample',[
+                [ 'r16sDnaPrep',[
+                      'r16sRawSeqSet',[
+                         'r16sTrimSeqSet',] ] ],
+                [ 'wgsDnaPrep', [
+                      'wgsRawSeqSet',[
+                        'wgsAssembledSeqSet', ],
+                      'MicrobTranscriptomicsRawSeqSet'
+                      ] ],
+                ['hostAssay', 'etc',],
+                ['metabolome', 'etc',],
+                ['hostTranscriptomicsRawSeqSet', 'etc',],
+                ['hostSeqPrep','etc',],
+                ['proteome','etc',],
+              ]
             ]
           ]
         ]
       ]
     ]
-  ]
 
 
 if __name__ == '__main__':

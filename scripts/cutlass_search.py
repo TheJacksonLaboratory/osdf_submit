@@ -236,8 +236,8 @@ def update_node(session, record, node_type):
         result = osdf.get_node(node_id)
         # log.warn("node result: %s", result)
         if result:
-            # internal_id = record['internal_id']
-            internal_id = result['meta']['comment']
+            internal_id = record['internal_id']
+            # internal_id = result['meta']['comment']
             log.info('Updating %s node: %s', node_type, str(internal_id))
             # log.debug('linkage: %s', record['linkage'] )
             if record['linkage']:
@@ -269,6 +269,21 @@ def update_nodes(session, data_file, node_type):
         try:
             # log.debug("record: %s", record)
             update_node(session, record, node_type)
+        except Exception, e:
+            log.exception(e)
+            raise e
+
+
+def update_nodes_general(session, data_file):
+    """Retrieve node info for each 'internal_id' found in search()
+    """
+    data_file_log = data_file + '.updated.csv'
+
+    for record in load_data(data_file):
+        try:
+            log.info('Starting updates of %ss.', record['node_type'])
+            # log.debug("record: %s", record)
+            update_node(session, record, record['node_type'])
         except Exception, e:
             log.exception(e)
             raise e

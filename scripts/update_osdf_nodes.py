@@ -7,7 +7,7 @@ from cutlass import iHMPSession
 from settings import auth
 from settings import NodeUpdateFiles
 from cutlass_utils import log_it
-from cutlass_search import update_nodes, delete_nodes
+from cutlass_search import update_nodes, delete_nodes, update_nodes_general
 
 log = log_it('jax_osdf_update')
 log.info('Starting metadata submission to OSDF server.')
@@ -51,10 +51,12 @@ def main():
 
     """ Arbitrary """
     # update_nodes(session, 'osdf_node_records/20170309_update_r16sPreps_4.csv', 'multiple')
+    # update_nodes(session, 'osdf_node_records/20170309_update_r16sPreps_4.csv', 'multiple')
+    update_nodes_general(session, NodeUpdateFiles['general'])
 
     """ Deletions """
     from osdf_delete_ids import node_ids
-    delete_nodes(session, node_ids)
+    # delete_nodes(session, node_ids)
 
 if __name__ == '__main__':
     sys.exit(main())
